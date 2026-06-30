@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:el_csadmin/core/theme/src/app_colors.dart';
+
+import '../../../core/theme/src/app_colors.dart';
+
 
 class AppSidebar extends StatelessWidget {
   final String selectedRoute;
@@ -190,7 +192,7 @@ class AppSidebar extends StatelessWidget {
         ),
       ),
       selected: isSelected,
-      selectedTileColor: AppColors.primaryDark.withOpacity(0.1),
+      selectedTileColor: AppColors.primaryDark.withValues(alpha: 0.1),
       onTap: () => onItemSelected(route),
     );
   }

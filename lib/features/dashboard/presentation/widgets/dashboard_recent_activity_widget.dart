@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/src/app_colors.dart';
+import '../../../../core/theme/src/app_colors.dart';
 
 class DashboardRecentActivityWidget extends StatelessWidget {
   const DashboardRecentActivityWidget({super.key});
@@ -39,7 +39,7 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                 return ListTile(
                   contentPadding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 8.0),
                   leading: CircleAvatar(
-                    backgroundColor: AppColors.primaryDark.withOpacity(0.1),
+                    backgroundColor: AppColors.primaryDark.withValues(alpha: 0.1),
                     child: const Icon(Icons.person, color: AppColors.primaryDark),
                   ),
                   title: Text(

@@ -1,19 +1,25 @@
 import 'package:dio/dio.dart';
-import 'package:el_csadmin/features/approval/data/models/approval_screen_model.dart';
-import 'package:el_csadmin/features/online/data/models/online_id_model.dart';
-import 'package:el_csadmin/features/reports/data/models/reset_password_report_model.dart';
+import 'package:el_csadmin/features/cs/cs_logs/data/models/cs_log_model.dart';
+import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
 import '../../../../../core/constants/endpoint.dart';
 import '../../../../../core/network/server_config.dart';
-import '../../../../../features/manage_cs/data/models/cs_user_model.dart';
-import '../../../../../features/cs_logs/data/models/cs_log_model.dart';
+import '../../../../../features/online/approval/data/models/approval_screen_model.dart';
+import '../../../../../features/cs/manage_cs/data/models/cs_user_model.dart';
+import '../../../../../features/reports/reset_password_report/data/models/reset_password_report_model.dart';
 
 abstract class ApiDatafeedNetworkDataSource {
-  Future<List<CsUserModel>> fetchCsList();
+  Future<List<ManageCsUsersModel>> fetchCsList();
   Future<List<CsLogModel>> fetchCsLogs({String? loginId, String? targetId});
   Future<List<OnlineIdModel>> fetchOnlineIds();
   Future<List<ApprovalScreenModel>> fetchApprovals();
   Future<List<ResetPasswordReportModel>> fetchResetPasswordReports();
+  Future<void> addCsUser(Map<String, dynamic> requestData);
+  Future<void> deleteCsUser(String loginId);
+  Future<void> editCsUser(Map<String, dynamic> requestData);
+  Future<void> resetPassword(Map<String, dynamic> requestData);
 }
+
+class CsUserModel {}
 
 // 2. IMPLEMENTASI REAL API
 class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
@@ -21,7 +27,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   const ApiDatafeedNetworkDataSourceImpl(this.dio);
 
   @override
-  Future<List<CsUserModel>> fetchCsList() async {
+  Future<List<ManageCsUsersModel>> fetchCsList() async {
     final baseUrl = await ServerConfig.getBaseUrl();
     if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
     dio.options.baseUrl = baseUrl;
@@ -32,7 +38,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     );
     final List<dynamic> responseData = response.data['data'] ?? [];
     return responseData
-        .map((item) => CsUserModel.fromMap(item as Map<String, dynamic>))
+        .map((item) => ManageCsUsersModel.fromMap(item as Map<String, dynamic>))
         .toList();
   }
 
@@ -63,20 +69,47 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
 
   @override
   Future<List<OnlineIdModel>> fetchOnlineIds() async {
-    // Nanti kita isi dengan logika tembak API sungguhan
     throw UnimplementedError('API Real untuk Online IDs belum dibuat');
   }
 
   @override
   Future<List<ApprovalScreenModel>> fetchApprovals() async {
-    // Sementara kita buat error dulu sampai nanti API aslinya benar-benar siap
     throw UnimplementedError('API Real untuk Approval belum dibuat');
   }
-  
+
   @override
   Future<List<ResetPasswordReportModel>> fetchResetPasswordReports() {
     // TODO: implement fetchResetPasswordReports
     throw UnimplementedError();
+  }
+
+  @override
+  Future<void> addCsUser(Map<String, dynamic> requestData) async {
+    final baseUrl = await ServerConfig.getBaseUrl();
+    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    dio.options.baseUrl = baseUrl;
+    final response = await dio.post(Endpoint.postAddCs, data: requestData);
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(response.data['message'] ?? 'Gagal menambahkan CS');
+    }
+  }
+
+  @override
+  Future<void> deleteCsUser(String loginId) async {
+    await dio.delete(
+      Endpoint.deleteCs,
+      queryParameters: {'loginId': loginId, 'deletedBy': 'admin'},
+    );
+  }
+
+  @override
+  Future<void> editCsUser(Map<String, dynamic> requestData) async {
+    await dio.put(Endpoint.putEditCs, data: requestData);
+  }
+
+  @override
+  Future<void> resetPassword(Map<String, dynamic> requestData) async {
+    await dio.put(Endpoint.putResetPw, data: requestData);
   }
 }
 
@@ -86,24 +119,36 @@ class ApiDatafeedNetworkDataSourceMockImpl
   const ApiDatafeedNetworkDataSourceMockImpl();
 
   @override
-  Future<List<CsUserModel>> fetchCsList() async {
+  Future<List<ManageCsUsersModel>> fetchCsList() async {
     await Future.delayed(const Duration(milliseconds: 800));
     return [
-      CsUserModel(
+      ManageCsUsersModel(
         loginId: 'admin',
         employeeId: '000001',
         email: 'dayatburgerkill3@gmail.com',
         isActive: true,
         isCs: true,
         isOnline: true,
+        permissions: 255,
+        created: '2026-06-25',
+        lastModified: '-',
+        lastLogin: '-',
+        createdBy: 'system',
+        modifiedBy: '-',
       ),
-      CsUserModel(
+      ManageCsUsersModel(
         loginId: 'admintest4',
         employeeId: '001',
         email: 'test123@gmail.com',
         isActive: true,
         isCs: true,
         isOnline: true,
+        permissions: 0,
+        created: '2026-06-26',
+        lastModified: '-',
+        lastLogin: '-',
+        createdBy: 'admin',
+        modifiedBy: '-',
       ),
     ];
   }
@@ -280,5 +325,28 @@ class ApiDatafeedNetworkDataSourceMockImpl
         approveDate: '-',
       ),
     ];
+  }
+
+  @override
+  Future<void> addCsUser(Map<String, dynamic> requestData) async {
+    await Future.delayed(const Duration(milliseconds: 1000));
+  }
+
+  @override
+  Future<void> deleteCsUser(String loginId) {
+    // TODO: implement deleteCsUser
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> editCsUser(Map<String, dynamic> requestData) {
+    // TODO: implement editCsUser
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> resetPassword(Map<String, dynamic> requestData) {
+    // TODO: implement resetPassword
+    throw UnimplementedError();
   }
 }

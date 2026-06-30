@@ -1,13 +1,16 @@
-import 'package:el_csadmin/core/network/server_config.dart';
-import 'package:el_csadmin/core/theme/src/app_colors.dart';
-import 'package:el_csadmin/features/authentication/presentation/bloc/authentication_bloc.dart';
-import 'package:el_csadmin/features/authentication/presentation/bloc/authentication_event.dart';
-import 'package:el_csadmin/features/authentication/presentation/bloc/authentication_state.dart';
-import 'package:el_csadmin/shared/widgets/custom_button.dart';
-import 'package:el_csadmin/shared/widgets/custom_text_field.dart';
-import 'package:el_csadmin/shared/widgets/layout/main_layout.dart';
+import 'package:el_csadmin/data/remote/dio_client.dart';
+import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
+import '../../../../core/network/server_config.dart';
+import '../../../../core/theme/src/app_colors.dart';
+import '../../../../shared/widgets/custom_button.dart';
+import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/layout/main_layout.dart';
+import '../bloc/authentication_bloc.dart';
+import '../bloc/authentication_event.dart';
+import '../bloc/authentication_state.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -37,6 +40,10 @@ class _LoginPageState extends State<LoginPage> {
       _hostController.text = host;
       _portController.text = port;
     });
+    final savedBaseUrl = await ServerConfig.getBaseUrl();
+    if (savedBaseUrl.isNotEmpty) {
+      locator<DioClient>().dio.options.baseUrl = savedBaseUrl;
+    }
   }
 
   @override
@@ -100,10 +107,11 @@ class _LoginPageState extends State<LoginPage> {
               backgroundColor: AppColors.primaryColor,
             ),
             onPressed: () async {
-              await ServerConfig.saveServer(
-                _hostController.text.trim(),
-                _portController.text.trim(),
-              );
+              final hostInput = _hostController.text.trim();
+              final portInput = _portController.text.trim();
+              await ServerConfig.saveServer(hostInput, portInput);
+              final newBaseUrl = await ServerConfig.getBaseUrl();
+              locator<DioClient>().dio.options.baseUrl = newBaseUrl;
 
               if (context.mounted) {
                 Navigator.pop(context);
@@ -150,7 +158,7 @@ class _LoginPageState extends State<LoginPage> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.accentGreen.withOpacity(0.2),
+                      color: AppColors.accentGreen.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Text(
@@ -189,7 +197,7 @@ class _LoginPageState extends State<LoginPage> {
                       color: AppColors.cardDark,
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.textGrey.withOpacity(0.2),
+                        color: AppColors.textGrey.withValues(alpha: 0.2),
                       ),
                     ),
                     child: const Center(
@@ -218,7 +226,7 @@ class _LoginPageState extends State<LoginPage> {
                       style: OutlinedButton.styleFrom(
                         foregroundColor: AppColors.textWhite,
                         side: BorderSide(
-                          color: AppColors.textGrey.withOpacity(0.5),
+                          color: AppColors.textGrey.withValues(alpha: 0.5),
                         ),
                       ),
                       onPressed: _showIpConfigDialog,

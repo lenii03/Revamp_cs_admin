@@ -16,6 +16,10 @@ dependencies:
   shared_preferences: ^2.5.5
   equatable: ^2.0.8
   trina_grid: ^2.2.2
+  fl_chart: ^1.2.0
+  encrypt: ^5.0.3
+  get_storage: ^2.1.1
+  pretty_dio_logger: ^1.4.0
 
 dev_dependencies:
   flutter_test:

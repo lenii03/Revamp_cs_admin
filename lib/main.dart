@@ -1,15 +1,14 @@
-import 'package:el_csadmin/injector.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'core/theme/src/app_colors.dart';
 import 'features/authentication/presentation/pages/login_page.dart';
 import 'features/authentication/presentation/bloc/authentication_bloc.dart';
+import 'injector.dart';
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  setupLocator();
-
+  await setupLocator();
   runApp(const MainApp());
 }
 

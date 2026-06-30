@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:trina_grid/trina_grid.dart';
-import '../../../core/theme/src/app_colors.dart';
+import '../../core/theme/src/app_colors.dart';
 
 class AppDataGrid extends StatelessWidget {
   final List<TrinaColumn> columns;
@@ -24,14 +24,14 @@ class AppDataGrid extends StatelessWidget {
         onLoaded: onLoaded,
         configuration: TrinaGridConfiguration(
           columnSize: const TrinaGridColumnSizeConfig(
-            autoSizeMode: TrinaAutoSizeMode.scale,
+            autoSizeMode: TrinaAutoSizeMode.none,
           ),
           style: TrinaGridStyleConfig.dark(
             gridBackgroundColor: AppColors.systemGroupedBackgroundDark,
             rowColor: AppColors.systemGroupedBackgroundDark,
             gridBorderColor: AppColors.separatorDark,
             borderColor: AppColors.separatorDark,
-            activatedColor: AppColors.primaryDark.withOpacity(0.2),
+            activatedColor: AppColors.primaryDark.withValues(alpha: 0.2),
             cellTextStyle: const TextStyle(
               color: AppColors.textColorDark,
               fontSize: 13,
