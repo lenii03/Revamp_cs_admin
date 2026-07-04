@@ -1,10 +1,10 @@
 import 'package:el_csadmin/features/cs/cs_logs/presentation/bloc/cs_logs_bloc.dart';
+import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'data/local/session_service.dart';
 import 'data/remote/dio_client.dart';
 import 'data/repositories/login_repository.dart';
-import 'features/online/approval/presentation/bloc/approval_state.dart';
 import 'features/authentication/domain/repositories/auth_repository.dart';
 import 'features/authentication/domain/repositories/auth_repository_impl.dart';
 import 'features/authentication/presentation/bloc/authentication_bloc.dart';
@@ -50,7 +50,6 @@ Future<void> setupLocator() async {
   locator.registerFactory<OnlineIdBloc>(
     () => OnlineIdBloc(repository: locator<ApiDatafeedRepository>()),
   );
-
   locator.registerFactory<ApprovalScreenBloc>(
     () => ApprovalScreenBloc(repository: locator<ApiDatafeedRepository>()),
   );

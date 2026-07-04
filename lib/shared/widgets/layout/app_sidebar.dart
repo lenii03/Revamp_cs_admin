@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-
 import '../../../core/theme/src/app_colors.dart';
-
 
 class AppSidebar extends StatelessWidget {
   final String selectedRoute;
@@ -16,7 +14,7 @@ class AppSidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 270,
+      width: 260,
       color: AppColors.systemGroupedBackgroundDark,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,37 +79,37 @@ class AppSidebar extends StatelessWidget {
                     ),
                   ],
                 ),
-                _buildExpandableMenu(
-                  context,
-                  icon: Icons.analytics_outlined,
-                  title: "Report",
-                  children: [
-                    _buildSubMenu(
-                      title: "Reset Password Report",
-                      route: 'report_reset_pw',
-                    ),
-                    _buildSubMenu(
-                      title: "Report Reset PIN Code",
-                      route: 'report_reset_pin',
-                    ),
-                    _buildSubMenu(
-                      title: "Report Send Password and Pin Code",
-                      route: 'report_send_pwd_pin',
-                    ),
-                    _buildSubMenu(
-                      title: "Report Send Demo Account",
-                      route: 'report_send_demo',
-                    ),
-                    _buildSubMenu(
-                      title: "Report Linked Account",
-                      route: 'report_linked_account',
-                    ),
-                    _buildSubMenu(
-                      title: "Report Client Login Activity",
-                      route: 'report_client_login',
-                    ),
-                  ],
-                ),
+                // _buildExpandableMenu(
+                //   context,
+                //   icon: Icons.analytics_outlined,
+                //   title: "Report",
+                //   children: [
+                //     _buildSubMenu(
+                //       title: "Reset Password Report",
+                //       route: 'report_reset_pw',
+                //     ),
+                //     _buildSubMenu(
+                //       title: "Report Reset PIN Code",
+                //       route: 'report_reset_pin',
+                //     ),
+                //     _buildSubMenu(
+                //       title: "Report Send Password and Pin Code",
+                //       route: 'report_send_pwd_pin',
+                //     ),
+                //     _buildSubMenu(
+                //       title: "Report Send Demo Account",
+                //       route: 'report_send_demo',
+                //     ),
+                //     _buildSubMenu(
+                //       title: "Report Linked Account",
+                //       route: 'report_linked_account',
+                //     ),
+                //     _buildSubMenu(
+                //       title: "Report Client Login Activity",
+                //       route: 'report_client_login',
+                //     ),
+                //   ],
+                // ),
                 _buildExpandableMenu(
                   context,
                   icon: Icons.mail_outline,
@@ -177,9 +175,7 @@ class AppSidebar extends StatelessWidget {
               : AppColors.secondaryTextColorDark);
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(
-        horizontal: 20.0,
-      ), // Padding dirapatkan
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20.0),
       leading: Icon(icon, color: color, size: 20),
       title: Text(
         title,
@@ -206,9 +202,7 @@ class AppSidebar extends StatelessWidget {
     return Theme(
       data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
       child: ExpansionTile(
-        tilePadding: const EdgeInsets.symmetric(
-          horizontal: 20.0,
-        ), // Padding dirapatkan
+        tilePadding: const EdgeInsets.symmetric(horizontal: 20.0),
         leading: Icon(icon, color: AppColors.secondaryTextColorDark, size: 20),
         title: Text(
           title,
@@ -228,10 +222,7 @@ class AppSidebar extends StatelessWidget {
   Widget _buildSubMenu({required String title, required String route}) {
     final isSelected = selectedRoute == route;
     return ListTile(
-      contentPadding: const EdgeInsets.only(
-        left: 52.0,
-        right: 16.0,
-      ), // Jarak indentasi disesuaikan
+      contentPadding: const EdgeInsets.only(left: 52.0, right: 16.0),
       title: Text(
         title,
         style: TextStyle(

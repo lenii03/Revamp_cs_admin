@@ -522,13 +522,10 @@ class ManageCsTableWidget extends StatelessWidget {
                             onPressed: () {
                               if (formKey.currentState!.validate()) {
                                 int newPermissions = 0;
-                                if (createCsLogin)
-                                  newPermissions +=
-                                      1; 
+                                if (createCsLogin) newPermissions += 1;
                                 final payload = {
                                   "LoginId": user.loginId,
-                                  "EmployeeId": cEmployeeId
-                                      .text, 
+                                  "EmployeeId": cEmployeeId.text,
                                   "Email": cEmail.text,
                                   "Permissions": newPermissions,
                                   "Status": suspended ? 1 : 0,
@@ -542,6 +539,7 @@ class ManageCsTableWidget extends StatelessWidget {
                                 Navigator.pop(ctx);
                               }
                             },
+
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF06B6D4),
                               shape: RoundedRectangleBorder(

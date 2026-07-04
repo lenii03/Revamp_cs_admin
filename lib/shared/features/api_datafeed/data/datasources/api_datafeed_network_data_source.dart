@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:el_csadmin/features/cs/cs_logs/data/models/cs_log_model.dart';
+import 'package:el_csadmin/features/online/approval/data/models/link_account_model.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
 import '../../../../../core/constants/endpoint.dart';
 import '../../../../../core/network/server_config.dart';
@@ -9,10 +10,21 @@ import '../../../../../features/reports/reset_password_report/data/models/reset_
 
 abstract class ApiDatafeedNetworkDataSource {
   Future<List<ManageCsUsersModel>> fetchCsList();
-  Future<List<CsLogModel>> fetchCsLogs({String? loginId, String? targetId});
-  Future<List<OnlineIdModel>> fetchOnlineIds();
+  Future<List<CsLogModel>> fetchCsLogs({
+    String? loginId,
+    String? targetId,
+    int? logType,
+    int? page,
+    int? size,
+  });
+  Future<List<OnlineIdModel>> fetchOnlineIds({
+    String? search,
+    int? page,
+    int? size,
+  });
   Future<List<ApprovalScreenModel>> fetchApprovals();
-  Future<List<ResetPasswordReportModel>> fetchResetPasswordReports();
+  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(String loginId);
+  // Future<List<ResetPasswordReportModel>> fetchResetPasswordReports();
   Future<void> addCsUser(Map<String, dynamic> requestData);
   Future<void> deleteCsUser(String loginId);
   Future<void> editCsUser(Map<String, dynamic> requestData);
@@ -46,19 +58,32 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<List<CsLogModel>> fetchCsLogs({
     String? loginId,
     String? targetId,
+    int? logType,
+    int? page,
+    int? size,
   }) async {
     final baseUrl = await ServerConfig.getBaseUrl();
     if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
     dio.options.baseUrl = baseUrl;
 
+    final queryParams = <String, dynamic>{
+      "page": page ?? 1,
+      "size": size ?? 30,
+    };
+
+    if (loginId != null && loginId.isNotEmpty) {
+      queryParams["csLoginId"] = loginId;
+    }
+    if (targetId != null && targetId.isNotEmpty) {
+      queryParams["loginId"] = targetId;
+    }
+    if (logType != null && logType != -1) {
+      queryParams["logType"] = logType;
+    }
+
     final response = await dio.get(
       Endpoint.getCsLogs,
-      queryParameters: {
-        "page": 1,
-        "size": 30,
-        "login_id": loginId,
-        "target_id": targetId,
-      },
+      queryParameters: queryParams,
     );
 
     final List<dynamic> responseData = response.data['data'] ?? [];
@@ -68,13 +93,86 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   }
 
   @override
-  Future<List<OnlineIdModel>> fetchOnlineIds() async {
-    throw UnimplementedError('API Real untuk Online IDs belum dibuat');
+  Future<List<OnlineIdModel>> fetchOnlineIds({
+    String? search,
+    int? page,
+    int? size,
+  }) async {
+    final baseUrl = await ServerConfig.getBaseUrl();
+    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    dio.options.baseUrl = baseUrl;
+
+    final queryParams = <String, dynamic>{
+      "page": page ?? 1,
+      "size": size ?? 30,
+    };
+
+    if (search != null && search.isNotEmpty) {
+      queryParams["loginId"] = search;
+    }
+
+    final response = await dio.get(
+      Endpoint.getOnlineUser,
+      queryParameters: queryParams,
+    );
+
+    final List<dynamic> responseData = response.data['data'] ?? [];
+    return responseData
+        .map((item) => OnlineIdModel.fromMap(item as Map<String, dynamic>))
+        .toList();
   }
 
   @override
   Future<List<ApprovalScreenModel>> fetchApprovals() async {
-    throw UnimplementedError('API Real untuk Approval belum dibuat');
+    final baseUrl = await ServerConfig.getBaseUrl();
+    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    dio.options.baseUrl = baseUrl;
+    final response = await dio.get(
+      Endpoint.getApprovalList,
+      queryParameters: {"page": 1, "size": 30},
+    );
+
+    final List<dynamic> responseData = response.data['data'] ?? [];
+    return responseData
+        .map(
+          (item) => ApprovalScreenModel.fromMap(item as Map<String, dynamic>),
+        )
+        .toList();
+  }
+
+  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(String loginId) async {
+    final baseUrl = await ServerConfig.getBaseUrl();
+    dio.options.baseUrl = baseUrl;
+
+    List<LinkAccountInfoModel> oldLinks = [];
+    List<NewLinkAccountInfoModel> newLinks = [];
+    try {
+      final responseOld = await dio.get(
+        Endpoint.getLinkedInfoAccount,
+        queryParameters: {'loginId': loginId},
+      );
+      final List<dynamic> rawOldLinks = responseOld.data['data'] ?? [];
+      oldLinks = rawOldLinks
+          .map((e) => LinkAccountInfoModel.fromMap(e))
+          .toList();
+    } catch (e) {
+      print("ERROR FETCH OLD LINK: $e");
+    }
+    try {
+      final responseNew = await dio.get(
+        Endpoint.getLinkedInfoAccountApproval,
+        queryParameters: {'loginId': loginId},
+      );
+      final List<dynamic> rawNewLinks =
+          responseNew.data['data'] ?? responseNew.data['List'] ?? [];
+      newLinks = rawNewLinks
+          .map((e) => NewLinkAccountInfoModel.fromMap(e))
+          .toList();
+    } catch (e) {
+      print("ERROR FETCH NEW LINK (Approval): $e");
+    }
+
+    return {'old': oldLinks, 'new': newLinks};
   }
 
   @override
@@ -157,6 +255,9 @@ class ApiDatafeedNetworkDataSourceMockImpl
   Future<List<CsLogModel>> fetchCsLogs({
     String? loginId,
     String? targetId,
+    int? logType,
+    int? page,
+    int? size,
   }) async {
     await Future.delayed(const Duration(milliseconds: 800));
     return [
@@ -180,53 +281,40 @@ class ApiDatafeedNetworkDataSourceMockImpl
   }
 
   @override
-  Future<List<OnlineIdModel>> fetchOnlineIds() async {
+  Future<List<OnlineIdModel>> fetchOnlineIds({
+    String? search,
+    int? page,
+    int? size,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 800));
-
     return [
       OnlineIdModel(
-        loginId: 'a003',
-        email: 'dimas@evergreensekuritas.co.id',
-        approvedAt: '2026-02-25 09:31:21',
-        hp: '081578375557',
-        birth: '2001-01-01',
-        type: 'Client',
-        status: 'Active',
-        pwdRetry: '0',
-        pinRetry: '0',
-      ),
-      OnlineIdModel(
-        loginId: 'A009',
-        email: 'm@m.mm',
-        approvedAt: '-',
-        hp: '-',
-        birth: '-',
-        type: 'Client',
-        status: 'Active',
-        pwdRetry: '0',
-        pinRetry: '0',
-      ),
-      OnlineIdModel(
-        loginId: 'alam',
-        email: 'dalamsyah09@gmail.com',
-        approvedAt: '-',
-        hp: '-',
-        birth: '-',
-        type: 'Client',
-        status: 'Active',
-        pwdRetry: '10',
-        pinRetry: '0',
-      ),
-      OnlineIdModel(
-        loginId: 'andri2',
-        email: 'andri2@gmail.com',
-        approvedAt: '-',
-        hp: '-',
-        birth: '-',
-        type: 'Sales',
-        status: 'Active',
-        pwdRetry: '0',
-        pinRetry: '0',
+        loginId: 'mock001',
+        email: 'mock@example.com',
+        approvedBy: 'admin',
+        emailApprovedAt: '-',
+        created: '2026-07-01',
+        createdBy: 'admin',
+        handphoneNo: '08123456789',
+        handphone: '08123456789',
+        birthDate: '1990-01-01',
+        lastAcctLogin: '-',
+        lastLogin: '-',
+        lastModified: '-',
+        lastModifiedBy: '-',
+        lastPinChg: '-',
+        lastPasswordChg: '-',
+        loginType: 1,
+        pin: '123456',
+        pinExpired: '-',
+        password: 'password123',
+        permissions: 0,
+        pwdExpired: null,
+        salesId: 'S001',
+        status: 1,
+        accountExpired: null,
+        errorPinRetry: 0,
+        errorPwdRetry: 0,
       ),
     ];
   }
@@ -246,6 +334,8 @@ class ApiDatafeedNetworkDataSourceMockImpl
         createdBy: 'dimas2',
         permissions: '0',
         approvalId: '10500',
+        handphoneNo: '',
+        birthDate: '',
       ),
       ApprovalScreenModel(
         action: 'Add',
@@ -258,6 +348,8 @@ class ApiDatafeedNetworkDataSourceMockImpl
         createdBy: 'dimas2',
         permissions: '0',
         approvalId: '10499',
+        handphoneNo: '',
+        birthDate: '',
       ),
       ApprovalScreenModel(
         action: 'Add',
@@ -270,6 +362,8 @@ class ApiDatafeedNetworkDataSourceMockImpl
         createdBy: 'dimas2',
         permissions: '0',
         approvalId: '10497',
+        handphoneNo: '',
+        birthDate: '',
       ),
       ApprovalScreenModel(
         action: 'Add',
@@ -282,50 +376,52 @@ class ApiDatafeedNetworkDataSourceMockImpl
         createdBy: 'aa@aa.aa',
         permissions: '0',
         approvalId: '445',
+        handphoneNo: '',
+        birthDate: '',
       ),
     ];
   }
 
-  @override
-  Future<List<ResetPasswordReportModel>> fetchResetPasswordReports() async {
-    await Future.delayed(const Duration(milliseconds: 800));
+  // @override
+  // Future<List<ResetPasswordReportModel>> fetchResetPasswordReports() async {
+  //   await Future.delayed(const Duration(milliseconds: 800));
 
-    return [
-      ResetPasswordReportModel(
-        no: '1',
-        clientCode: 'A001',
-        clientName: 'Budi Santoso',
-        requestDate: '2026-06-18 10:00',
-        reason: 'Forgot Password',
-        validation1: 'Valid',
-        validation2: 'Matched',
-        approveBy: 'admin',
-        approveDate: '2026-06-18 10:15',
-      ),
-      ResetPasswordReportModel(
-        no: '2',
-        clientCode: 'B005',
-        clientName: 'Siti Aminah',
-        requestDate: '2026-06-17 14:30',
-        reason: 'Locked Account',
-        validation1: 'Valid',
-        validation2: 'Matched',
-        approveBy: 'dimas2',
-        approveDate: '2026-06-17 15:00',
-      ),
-      ResetPasswordReportModel(
-        no: '3',
-        clientCode: 'C102',
-        clientName: 'Andi Wijaya',
-        requestDate: '2026-06-16 09:20',
-        reason: 'Forgot PIN',
-        validation1: 'Pending',
-        validation2: 'Pending',
-        approveBy: '-',
-        approveDate: '-',
-      ),
-    ];
-  }
+  //   return [
+  //     ResetPasswordReportModel(
+  //       no: '1',
+  //       clientCode: 'A001',
+  //       clientName: 'Budi Santoso',
+  //       requestDate: '2026-06-18 10:00',
+  //       reason: 'Forgot Password',
+  //       validation1: 'Valid',
+  //       validation2: 'Matched',
+  //       approveBy: 'admin',
+  //       approveDate: '2026-06-18 10:15',
+  //     ),
+  //     ResetPasswordReportModel(
+  //       no: '2',
+  //       clientCode: 'B005',
+  //       clientName: 'Siti Aminah',
+  //       requestDate: '2026-06-17 14:30',
+  //       reason: 'Locked Account',
+  //       validation1: 'Valid',
+  //       validation2: 'Matched',
+  //       approveBy: 'dimas2',
+  //       approveDate: '2026-06-17 15:00',
+  //     ),
+  //     ResetPasswordReportModel(
+  //       no: '3',
+  //       clientCode: 'C102',
+  //       clientName: 'Andi Wijaya',
+  //       requestDate: '2026-06-16 09:20',
+  //       reason: 'Forgot PIN',
+  //       validation1: 'Pending',
+  //       validation2: 'Pending',
+  //       approveBy: '-',
+  //       approveDate: '-',
+  //     ),
+  //   ];
+  // }
 
   @override
   Future<void> addCsUser(Map<String, dynamic> requestData) async {
@@ -347,6 +443,12 @@ class ApiDatafeedNetworkDataSourceMockImpl
   @override
   Future<void> resetPassword(Map<String, dynamic> requestData) {
     // TODO: implement resetPassword
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(String loginId) {
+    // TODO: implement fetchLinkedAccountsDetail
     throw UnimplementedError();
   }
 }

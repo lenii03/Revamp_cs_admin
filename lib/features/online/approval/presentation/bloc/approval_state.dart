@@ -1,23 +1,31 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../shared/features/api_datafeed/domain/repositories/api_datafeed_repository.dart';
-import 'approval_bloc.dart';
-import 'approval_event.dart';
+import 'package:equatable/equatable.dart';
+import '../../data/models/approval_screen_model.dart';
 
-class ApprovalScreenBloc
-    extends Bloc<ApprovalScreenEvent, ApprovalScreenState> {
-  final ApiDatafeedRepository repository;
+abstract class ApprovalScreenState extends Equatable {
+  const ApprovalScreenState();
+  
+  @override
+  List<Object> get props => [];
+}
 
-  ApprovalScreenBloc({required this.repository})
-    : super(ApprovalScreenInitial()) {
-    on<FetchApprovalsEvent>((event, emit) async {
-      emit(ApprovalScreenLoading());
+class ApprovalScreenInitial extends ApprovalScreenState {}
 
-      final result = await repository.fetchApprovals();
+class ApprovalScreenLoading extends ApprovalScreenState {}
 
-      result.fold(
-        (error) => emit(ApprovalScreenError(error)),
-        (data) => emit(ApprovalScreenLoaded(data)),
-      );
-    });
-  }
+class ApprovalScreenLoaded extends ApprovalScreenState {
+  final List<ApprovalScreenModel> data;
+
+  const ApprovalScreenLoaded(this.data);
+
+  @override
+  List<Object> get props => [data];
+}
+
+class ApprovalScreenError extends ApprovalScreenState {
+  final String message;
+
+  const ApprovalScreenError(this.message);
+
+  @override
+  List<Object> get props => [message];
 }

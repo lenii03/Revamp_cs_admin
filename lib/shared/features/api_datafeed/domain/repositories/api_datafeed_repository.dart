@@ -6,11 +6,18 @@ import 'package:el_csadmin/features/online/online_id/data/models/online_id_model
 
 abstract class ApiDatafeedRepository {
   Future<Either<String, List<ManageCsUsersModel>>> fetchCsList();
-  Future<Either<String, List<OnlineIdModel>>> fetchOnlineIds();
+  Future<Either<String, List<OnlineIdModel>>> fetchOnlineIds({
+    String? search,
+    int? page,
+    int? size,
+  });
   Future<Either<String, List<ApprovalScreenModel>>> fetchApprovals();
   Future<Either<String, List<CsLogModel>>> fetchCsLogs({
     String? loginId,
     String? targetId,
+    int? logType,
+    int? page,
+    int? size,
   });
   Future<Either<String, void>> addCsUser(Map<String, dynamic> requestData);
   Future<Either<String, void>> editCsUser(Map<String, dynamic> requestData);

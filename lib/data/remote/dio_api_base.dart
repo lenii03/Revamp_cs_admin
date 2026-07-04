@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart' show Response, DioException;
-import 'package:flutter/material.dart';
 
 import '../../features/cs/manage_cs/data/models/cs_user_model.dart';
 import '../../injector.dart';
@@ -91,7 +90,7 @@ class DioApiBase<T> {
     required Future<Response<dynamic>> apiRequest,
   }) async {
     try {
-      final Response response = await apiRequest;
+      await apiRequest;
       String success = 'success';
       return right(success);
     } on DioException catch (e) {

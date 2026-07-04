@@ -28,11 +28,17 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   Future<Either<String, List<CsLogModel>>> fetchCsLogs({
     String? loginId,
     String? targetId,
+    int? logType,
+    int? page,
+    int? size,
   }) async {
     try {
       final result = await _networkDataSource.fetchCsLogs(
         loginId: loginId,
         targetId: targetId,
+        logType: logType,
+        page: page,
+        size: size,
       );
       return Right(result);
     } catch (e) {
@@ -41,16 +47,24 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   }
 
   @override
-  Future<Either<String, List<OnlineIdModel>>> fetchOnlineIds() async {
+  Future<Either<String, List<OnlineIdModel>>> fetchOnlineIds({
+    String? search,
+    int? page,
+    int? size,
+  }) async {
     try {
-      final result = await _networkDataSource.fetchOnlineIds();
+      final result = await _networkDataSource.fetchOnlineIds(
+        search: search,
+        page: page,
+        size: size,
+      );
       return Right(result);
     } catch (e) {
       return Left(e.toString());
     }
   }
 
-  @override
+  @override                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         
   Future<Either<String, List<ApprovalScreenModel>>> fetchApprovals() async {
     try {
       final result = await _networkDataSource.fetchApprovals();
@@ -59,9 +73,11 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
       return Left(e.toString());
     }
   }
-  
+
   @override
-  Future<Either<String, void>> addCsUser(Map<String, dynamic> requestData) async {
+  Future<Either<String, void>> addCsUser(
+    Map<String, dynamic> requestData,
+  ) async {
     try {
       await _networkDataSource.addCsUser(requestData);
       return const Right(null); // Sukses
@@ -69,21 +85,13 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
       return Left(e.toString()); // Gagal
     }
   }
-  
- @override
-  Future<Either<String, void>> deleteCsUser(String loginId) async {
-    try {
-      await _networkDataSource.deleteCsUser(loginId); // Sesuaikan nama method di DataSource
-      return const Right(null); 
-    } catch (e) {
-      return Left(e.toString());
-    }
-  }
 
   @override
-  Future<Either<String, void>> editCsUser(Map<String, dynamic> requestData) async {
+  Future<Either<String, void>> deleteCsUser(String loginId) async {
     try {
-      await _networkDataSource.editCsUser(requestData); // Sesuaikan nama method di DataSource
+      await _networkDataSource.deleteCsUser(
+        loginId,
+      ); // Sesuaikan nama method di DataSource
       return const Right(null);
     } catch (e) {
       return Left(e.toString());
@@ -91,9 +99,27 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   }
 
   @override
-  Future<Either<String, void>> resetPassword(Map<String, dynamic> requestData) async {
+  Future<Either<String, void>> editCsUser(
+    Map<String, dynamic> requestData,
+  ) async {
     try {
-      await _networkDataSource.resetPassword(requestData); // Sesuaikan nama method di DataSource
+      await _networkDataSource.editCsUser(
+        requestData,
+      ); // Sesuaikan nama method di DataSource
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, void>> resetPassword(
+    Map<String, dynamic> requestData,
+  ) async {
+    try {
+      await _networkDataSource.resetPassword(
+        requestData,
+      ); // Sesuaikan nama method di DataSource
       return const Right(null);
     } catch (e) {
       return Left(e.toString());

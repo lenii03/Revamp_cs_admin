@@ -17,7 +17,7 @@ class LoginRepository extends DioApiBase<LoginUserModel> {
     Map<String, dynamic> form,
   ) async {
     cancelToken = CancelToken();
-    final dioClient = locator<DioClient>();
+    locator<DioClient>();
     return makeLoginRequestC(
       apiRequest: _dioClient.dio.post(
         Endpoint.signIn,
@@ -31,7 +31,7 @@ class LoginRepository extends DioApiBase<LoginUserModel> {
   Future<Either<String, String>> resetPasswordCS(
     Map<String, dynamic> postData,
   ) async {
-    final dioClient = locator<DioClient>();
+    locator<DioClient>();
     return makeSingleRequest(
       apiRequest: _dioClient.dio.post(Endpoint.resetPasswordCs, data: postData),
     );
