@@ -70,7 +70,7 @@ class _DashboardPendingApprovalWidgetState
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const Text(
-                  "Antrean Persetujuan Nasabah",
+                  "Pending Approval",
                   style: TextStyle(
                     color: AppColors.textColorDark,
                     fontSize: 16,
