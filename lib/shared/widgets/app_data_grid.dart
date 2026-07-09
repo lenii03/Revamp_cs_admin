@@ -6,12 +6,14 @@ class AppDataGrid extends StatelessWidget {
   final List<TrinaColumn> columns;
   final List<TrinaRow> rows;
   final void Function(TrinaGridOnLoadedEvent)? onLoaded;
+  final void Function(int rowIndex)? onRowDoubleTap;
 
   const AppDataGrid({
     super.key,
     required this.columns,
     required this.rows,
     this.onLoaded,
+    this.onRowDoubleTap,
   });
 
   @override
@@ -21,6 +23,11 @@ class AppDataGrid extends StatelessWidget {
       child: TrinaGrid(
         columns: columns,
         rows: rows,
+        onRowDoubleTap: onRowDoubleTap == null 
+                ? null 
+                : (event) {
+                    onRowDoubleTap!(event.rowIdx);
+                  },
         onLoaded: onLoaded,
         configuration: TrinaGridConfiguration(
           columnSize: const TrinaGridColumnSizeConfig(

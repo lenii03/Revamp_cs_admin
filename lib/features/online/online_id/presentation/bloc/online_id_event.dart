@@ -1,10 +1,11 @@
+import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class OnlineIdEvent extends Equatable {
   const OnlineIdEvent();
 
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class FetchOnlineIdsEvent extends OnlineIdEvent {}
@@ -36,4 +37,12 @@ class ResetOnlineIdEvent extends OnlineIdEvent {
   const ResetOnlineIdEvent({required this.loginId, required this.resetType});
   @override
   List<Object> get props => [loginId, resetType];
+}
+
+class SelectOnlineIdEvent extends OnlineIdEvent {
+  final OnlineIdModel selectedUser;
+  const SelectOnlineIdEvent(this.selectedUser);
+  
+  @override
+  List<Object> get props => [selectedUser];
 }

@@ -1,3 +1,4 @@
+import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trina_grid/trina_grid.dart';
@@ -42,7 +43,7 @@ class OnlineIdTableWidget extends StatelessWidget {
                 ),
               );
             }
-            return _buildTable(state.data);
+            return _buildTable(context, state.data);
           }
           return const Center(
             child: Text(
@@ -55,7 +56,7 @@ class OnlineIdTableWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTable(List<OnlineIdModel> dataList) {
+  Widget _buildTable(BuildContext context, List<OnlineIdModel> dataList) {
     Widget permissionRenderer(TrinaColumnRendererContext renderContext) {
       final value = renderContext.cell.value.toString();
       final bool hasPermission = value == 'Y';
@@ -243,10 +244,17 @@ class OnlineIdTableWidget extends StatelessWidget {
       );
     }).toList();
 
-    return AppDataGrid(columns: columns, rows: rows);
+    return AppDataGrid(
+      columns: columns,
+      rows: rows,
+      onRowDoubleTap: (index) {
+        final selectedData = dataList[index];
+        context.read<OnlineIdBloc>().add(SelectOnlineIdEvent(selectedData));
+      },
+    );
   }
 
-  String _getLoginTypeName(int type) {
+  String _getLoginTypeName(int type) {            
     switch (type) {
       case 1:
         return 'Client';

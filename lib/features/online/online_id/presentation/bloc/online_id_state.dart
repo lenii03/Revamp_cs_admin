@@ -3,9 +3,9 @@ import '../../data/models/online_id_model.dart';
 
 abstract class OnlineIdState extends Equatable {
   const OnlineIdState();
-  
+
   @override
-  List<Object> get props => [];
+  List<Object?> get props => [];
 }
 
 class OnlineIdInitial extends OnlineIdState {}
@@ -14,11 +14,21 @@ class OnlineIdLoading extends OnlineIdState {}
 
 class OnlineIdLoaded extends OnlineIdState {
   final List<OnlineIdModel> data;
+  final OnlineIdModel? selectedUser;
 
-  const OnlineIdLoaded(this.data);
+  const OnlineIdLoaded({required this.data, this.selectedUser});
+  OnlineIdLoaded copyWith({
+    List<OnlineIdModel>? data,
+    OnlineIdModel? selectedUser,
+  }) {
+    return OnlineIdLoaded(
+      data: data ?? this.data,
+      selectedUser: selectedUser ?? this.selectedUser,
+    );
+  }
 
   @override
-  List<Object> get props => [data];
+  List<Object?> get props => [data, selectedUser];
 }
 
 class OnlineIdError extends OnlineIdState {

@@ -135,7 +135,8 @@ class DashboardActivityChart extends StatelessWidget {
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppColors.primaryDark.withValues(alpha: 0.15,
+                      color: AppColors.primaryDark.withValues(
+                        alpha: 0.15,
                       ), // Efek gradient di bawah garis
                     ),
                   ),

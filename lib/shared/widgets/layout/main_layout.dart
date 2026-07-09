@@ -1,5 +1,6 @@
 import 'package:el_csadmin/features/cs/cs_logs/presentation/pages/show_cs_logs_page.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/pages/create_online_id_page.dart';
+import 'package:el_csadmin/features/user_communication/send_email/presentation/pages/send_email_forgot_page.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/src/app_colors.dart';
 import '../../../features/online/approval/presentation/pages/approval_screen_page.dart';
@@ -27,6 +28,7 @@ class _MainLayoutState extends State<MainLayout> {
     // 'report_reset_pw': const ResetPasswordReportPage(),
     // 'report_reset_pin': const ReportResetPinCodePage(),
     'report_send_pwd_pin': const ReportSendPwdPinPage(),
+    'send_email_forgot': const SendEmailForgotPage(),
   };
 
   void _onMenuSelected(String route) {

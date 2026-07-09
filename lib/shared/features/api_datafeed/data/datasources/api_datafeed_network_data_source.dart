@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:el_csadmin/features/cs/cs_logs/data/models/cs_log_model.dart';
 import 'package:el_csadmin/features/online/approval/data/models/link_account_model.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
+import 'package:el_csadmin/features/user_communication/send_email/data/models/send_email_forgot_model.dart';
 import '../../../../../core/constants/endpoint.dart';
 import '../../../../../core/network/server_config.dart';
 import '../../../../../features/online/approval/data/models/approval_screen_model.dart';
@@ -29,6 +30,12 @@ abstract class ApiDatafeedNetworkDataSource {
   Future<void> deleteCsUser(String loginId);
   Future<void> editCsUser(Map<String, dynamic> requestData);
   Future<void> resetPassword(Map<String, dynamic> requestData);
+  Future<bool> sendEmailForgotPinPassword(
+    String loginId,
+    int actionType,
+    String csLoginId,
+  );
+  Future<List<SendEmailForgotModel>> fetchSendEmailForgotList();
 }
 
 class CsUserModel {}
@@ -208,6 +215,41 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   @override
   Future<void> resetPassword(Map<String, dynamic> requestData) async {
     await dio.put(Endpoint.putResetPw, data: requestData);
+  }
+
+  Future<bool> sendEmailForgotPinPassword(
+    String loginId,
+    int actionType,
+    String csLoginId,
+  ) async {
+    try {
+      final baseUrl = await ServerConfig.getBaseUrl();
+      dio.options.baseUrl = baseUrl;
+
+      final Map<String, dynamic> payload = {
+        "LoginId": loginId,
+        "ActionType": actionType,
+        "CSLoginId": csLoginId,
+      };
+
+      final response = await dio.post(
+        Endpoint.sendEmailPINAndPasswordOnlineUser,
+        data: payload,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      print("ERROR SEND EMAIL: $e");
+      return false;
+    }
+  }
+
+  @override
+  Future<List<SendEmailForgotModel>> fetchSendEmailForgotList() async {
+    throw UnimplementedError('API GET Send Email Forgot belum tersedia');
   }
 }
 
@@ -450,5 +492,53 @@ class ApiDatafeedNetworkDataSourceMockImpl
   Future<Map<String, dynamic>> fetchLinkedAccountsDetail(String loginId) {
     // TODO: implement fetchLinkedAccountsDetail
     throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> sendEmailForgotPinPassword(
+    String loginId,
+    int actionType,
+    String csLoginId,
+  ) {
+    // TODO: implement sendEmailForgotPinPassword
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<SendEmailForgotModel>> fetchSendEmailForgotList() async {
+    await Future.delayed(
+      const Duration(milliseconds: 800),
+    ); // Simulasi loading API
+
+    return [
+      SendEmailForgotModel(
+        actionType: 1,
+        loginId: 'Hidayat',
+        email: 'dayatburgerkill389@gmail.com',
+        loginType: 1,
+        status: 1,
+      ),
+      SendEmailForgotModel(
+        actionType: 0,
+        loginId: 'A007',
+        email: 'dalamsyah09@gmail.com',
+        loginType: 1,
+        status: 1,
+      ),
+      SendEmailForgotModel(
+        actionType: 1,
+        loginId: 'Hidayat',
+        email: 'dayatburgerkill389@gmail.com',
+        loginType: 1,
+        status: 1,
+      ),
+      SendEmailForgotModel(
+        actionType: 0,
+        loginId: 'Hidayat',
+        email: 'dayatburgerkill389@gmail.com',
+        loginType: 1,
+        status: 1,
+      ),
+    ];
   }
 }

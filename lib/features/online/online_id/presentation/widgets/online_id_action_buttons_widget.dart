@@ -1,5 +1,7 @@
+import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_bloc.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_event.dart';
+import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_state.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/widgets/add_edit_online_id_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -10,35 +12,67 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: Wrap(
-            spacing: 12.0,
-            runSpacing: 12.0,
-            children: [
-              _buildActionButton(context, "Add", Icons.add, isPrimary: true),
-              _buildActionButton(context, "Edit", Icons.edit),
-              _buildActionButton(
-                context,
-                "Delete",
-                Icons.delete,
-                isDestructive: true,
+    return BlocBuilder<OnlineIdBloc, OnlineIdState>(
+      builder: (context, state) {
+        OnlineIdModel? selectedUser;
+        if (state is OnlineIdLoaded) {
+          selectedUser = state.selectedUser;
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Wrap(
+                spacing: 12.0,
+                runSpacing: 12.0,
+                children: [
+                  _buildActionButton(
+                    context,
+                    "Add",
+                    Icons.add,
+                    isPrimary: true,
+                    selectedUser: selectedUser,
+                  ),
+                  _buildActionButton(
+                    context,
+                    "Edit",
+                    Icons.edit,
+                    selectedUser: selectedUser,
+                  ),
+                  _buildActionButton(
+                    context,
+                    "Delete",
+                    Icons.delete,
+                    isDestructive: true,
+                    selectedUser: selectedUser,
+                  ),
+                  _buildActionButton(
+                    context,
+                    "Reset Password",
+                    Icons.lock_reset,
+                    selectedUser: selectedUser,
+                  ),
+                  _buildActionButton(
+                    context,
+                    "Reset PIN",
+                    Icons.pin,
+                    selectedUser: selectedUser,
+                  ),
+                ],
               ),
-              _buildActionButton(context, "Reset Password", Icons.lock_reset),
-              _buildActionButton(context, "Reset PIN", Icons.pin),
-            ],
-          ),
-        ),
-        const SizedBox(width: 12),
-        _buildActionButton(
-          context,
-          "Link Account",
-          Icons.link,
-          isPrimary: true,
-        ),
-      ],
+            ),
+            const SizedBox(width: 12),
+            _buildActionButton(
+              context,
+              "Link Account",
+              Icons.link,
+              isPrimary: true,
+              selectedUser: selectedUser,
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -48,6 +82,7 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
     IconData icon, {
     bool isPrimary = false,
     bool isDestructive = false,
+    OnlineIdModel? selectedUser,
   }) {
     Color bgColor = const Color(0xFF2A2A36);
     Color textColor = AppColors.textColorDark;
@@ -62,7 +97,19 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
 
     return ElevatedButton.icon(
       onPressed: () {
-        String selectedUserId = "a003";
+        if (title != "Add" && selectedUser == null) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text("Silakan pilih user di tabel terlebih dahulu!"),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return;
+        }
+
+        // 3. Gunakan data dinamis dari selectedUser
+        final String loginId = selectedUser?.loginId ?? "";
+        final String email = selectedUser?.email ?? "";
 
         if (title == "Add") {
           showDialog(
@@ -78,18 +125,15 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
             context: context,
             builder: (ctx) => AddEditOnlineIdDialog(
               isEdit: true,
-              initialData: {
-                "loginId": selectedUserId,
-                "email": "dimas@contoh.com",
-              },
+              initialData: {"loginId": loginId, "email": email},
               onSave: (data) =>
                   context.read<OnlineIdBloc>().add(EditOnlineIdEvent(data)),
             ),
           );
         } else if (title == "Delete") {
-          _showDeleteDialog(context, selectedUserId);
+          _showDeleteDialog(context, loginId);
         } else if (title == "Reset Password" || title == "Reset PIN") {
-          _showResetDialog(context, title, selectedUserId);
+          _showResetDialog(context, title, loginId);
         }
       },
       icon: Icon(icon, color: textColor, size: 18),
@@ -166,9 +210,7 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
                       Navigator.pop(ctx);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(
-                        0xFF8B5CF6,
-                      ), // Warna ungu seperti di gambar
+                      backgroundColor: const Color(0xFF8B5CF6),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8),
                       ),

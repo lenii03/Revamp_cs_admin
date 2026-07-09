@@ -1,6 +1,7 @@
 import 'package:el_csadmin/features/cs/cs_logs/presentation/bloc/cs_logs_bloc.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_bloc.dart';
+import 'package:el_csadmin/features/user_communication/send_email/presentation/bloc/send_email_bloc.dart';
 import 'package:get_it/get_it.dart';
 import 'data/local/session_service.dart';
 import 'data/remote/dio_client.dart';
@@ -53,4 +54,5 @@ Future<void> setupLocator() async {
   locator.registerFactory<ApprovalScreenBloc>(
     () => ApprovalScreenBloc(repository: locator<ApiDatafeedRepository>()),
   );
+  locator.registerFactory(() => SendEmailForgotBloc(apiDataSource: locator()));
 }
