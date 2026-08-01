@@ -1,3 +1,4 @@
+import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 
@@ -8,20 +9,31 @@ class DashboardActivityChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final separatorColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.separatorLight;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final subTextColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.unselectedLabel;
+
     return Container(
       padding: const EdgeInsets.all(24.0),
       decoration: BoxDecoration(
-        color: AppColors.systemGroupedBackgroundDark,
+        color: Theme.of(
+          context,
+        ).extension<ThemeColors>()?.appContainerBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.separatorDark),
+        border: Border.all(color: separatorColor),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            "Tren Aktivitas Log (7 Hari Terakhir)",
+          Text(
+            "Tren Aktivitas Log (7 Hari Terakhir)",            
             style: TextStyle(
-              color: AppColors.textColorDark,
+              color: textColor,
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),
@@ -35,8 +47,8 @@ class DashboardActivityChart extends StatelessWidget {
                   drawVerticalLine: false,
                   horizontalInterval: 200,
                   getDrawingHorizontalLine: (value) {
-                    return const FlLine(
-                      color: AppColors.separatorDark,
+                    return FlLine(
+                      color: separatorColor,
                       strokeWidth: 1,
                       dashArray: [5, 5],
                     );
@@ -56,35 +68,35 @@ class DashboardActivityChart extends StatelessWidget {
                       reservedSize: 30,
                       interval: 1,
                       getTitlesWidget: (value, meta) {
-                        const style = TextStyle(
-                          color: AppColors.secondaryTextColorDark,
+                        final style = TextStyle(
+                          color: subTextColor, 
                           fontSize: 12,
                         );
                         Widget text;
                         switch (value.toInt()) {
                           case 1:
-                            text = const Text('Sen', style: style);
+                            text = Text('Sen', style: style);
                             break;
                           case 2:
-                            text = const Text('Sel', style: style);
+                            text = Text('Sel', style: style);
                             break;
                           case 3:
-                            text = const Text('Rab', style: style);
+                            text = Text('Rab', style: style);
                             break;
                           case 4:
-                            text = const Text('Kam', style: style);
+                            text = Text('Kam', style: style);
                             break;
                           case 5:
-                            text = const Text('Jum', style: style);
+                            text = Text('Jum', style: style);
                             break;
                           case 6:
-                            text = const Text('Sab', style: style);
+                            text = Text('Sab', style: style);
                             break;
                           case 7:
-                            text = const Text('Min', style: style);
+                            text = Text('Min', style: style);
                             break;
                           default:
-                            text = const Text('', style: style);
+                            text = Text('', style: style);
                             break;
                         }
                         return SideTitleWidget(
@@ -103,10 +115,7 @@ class DashboardActivityChart extends StatelessWidget {
                       getTitlesWidget: (value, meta) {
                         return Text(
                           value.toInt().toString(),
-                          style: const TextStyle(
-                            color: AppColors.secondaryTextColorDark,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: subTextColor, fontSize: 12),
                         );
                       },
                     ),
@@ -128,16 +137,14 @@ class DashboardActivityChart extends StatelessWidget {
                       FlSpot(6, 800),
                       FlSpot(7, 650),
                     ],
-                    isCurved: true, // Membuat garisnya melengkung elegan
+                    isCurved: true,
                     color: AppColors.primaryDark,
                     barWidth: 4,
                     isStrokeCapRound: true,
                     dotData: const FlDotData(show: false),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: AppColors.primaryDark.withValues(
-                        alpha: 0.15,
-                      ), // Efek gradient di bawah garis
+                      color: AppColors.primaryDark.withValues(alpha: 0.15),
                     ),
                   ),
                 ],
@@ -149,3 +156,4 @@ class DashboardActivityChart extends StatelessWidget {
     );
   }
 }
+ 

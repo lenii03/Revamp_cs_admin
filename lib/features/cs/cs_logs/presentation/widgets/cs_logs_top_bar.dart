@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
+import '../../../../../core/theme/theme.dart'; // Wajib ada untuk memanggil ThemeColors
 import '../bloc/cs_logs_bloc.dart';
 import '../bloc/cs_logs_event.dart';
 
@@ -45,33 +46,42 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
 
   @override
   Widget build(BuildContext context) {
+    // Variabel warna dinamis
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final containerColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.appContainerBackground;
+    final separatorColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.separatorLight;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final hintColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.unselectedLabel;
+
     return Row(
       children: [
+        // 1. Kotak Pencarian CS Login ID
         Expanded(
           flex: 2,
           child: Container(
             height: 45,
             decoration: BoxDecoration(
-              color: AppColors.systemGroupedBackgroundDark,
+              color: containerColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.separatorDark),
+              border: Border.all(color: separatorColor),
             ),
             child: TextField(
               controller: _loginIdController,
-              style: const TextStyle(
-                color: AppColors.textColorDark,
-                fontSize: 14,
-              ),
-              decoration: const InputDecoration(
+              style: TextStyle(color: textColor, fontSize: 14),
+              decoration: InputDecoration(
                 hintText: 'CS Login ID',
-                hintStyle: TextStyle(color: AppColors.secondaryTextColorDark),
-                suffixIcon: Icon(
-                  Icons.search,
-                  color: AppColors.textColorDark,
-                  size: 20,
-                ),
+                hintStyle: TextStyle(color: hintColor),
+                suffixIcon: Icon(Icons.search, color: hintColor, size: 20),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
                   vertical: 12,
                   horizontal: 16,
                 ),
@@ -81,26 +91,26 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
         ),
         const SizedBox(width: 16),
 
+        // 2. Kotak Pencarian Target ID
         Expanded(
           flex: 2,
           child: Container(
             height: 45,
             decoration: BoxDecoration(
-              color: AppColors.systemGroupedBackgroundDark,
+              color: containerColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.separatorDark),
+              border: Border.all(color: separatorColor),
             ),
             child: TextField(
               controller: _targetIdController,
-              style: const TextStyle(
-                color: AppColors.textColorDark,
-                fontSize: 14,
-              ),
-              decoration: const InputDecoration(
+              style: TextStyle(color: textColor, fontSize: 14),
+              decoration: InputDecoration(
                 hintText: 'Target ID',
-                hintStyle: TextStyle(color: AppColors.secondaryTextColorDark),
+                hintStyle: TextStyle(color: hintColor),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
                   vertical: 12,
                   horizontal: 16,
                 ),
@@ -117,24 +127,18 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
             height: 45,
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: AppColors.systemGroupedBackgroundDark,
+              color: containerColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.separatorDark),
+              border: Border.all(color: separatorColor),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
                 value: _selectedOption,
                 isExpanded: true,
                 menuMaxHeight: 400,
-                dropdownColor: AppColors.systemGroupedBackgroundDark,
-                icon: const Icon(
-                  Icons.arrow_drop_down,
-                  color: AppColors.textColorDark,
-                ),
-                style: const TextStyle(
-                  color: AppColors.textColorDark,
-                  fontSize: 14,
-                ),
+                dropdownColor: containerColor,
+                icon: Icon(Icons.arrow_drop_down, color: textColor),
+                style: TextStyle(color: textColor, fontSize: 14),
                 items: _logTypeOptions.map((String value) {
                   return DropdownMenuItem<String>(
                     value: value,
@@ -143,25 +147,14 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
                 }).toList(),
                 onChanged: (newValue) {
                   setState(() => _selectedOption = newValue!);
-                  // apabila mau dinyalakan search nya langsung terhubung dengan API
-                  // int selectedIndex = _logTypeOptions.indexOf(newValue!);
-                  // int apiLogType = selectedIndex - 1;
-
-                  // context.read<CsLogsBloc>().add(
-                  //   FetchCsLogsEvent(
-                  //     loginId: _loginIdController.text,
-                  //     targetId: _targetIdController.text,
-                  //     logType: apiLogType,
-                  //     page: 1,
-                  //     perPage: context.read<CsLogsBloc>().perPage,
-                  //   ),
-                  // );
                 },
               ),
             ),
           ),
         ),
         const SizedBox(width: 16),
+
+        // 4. Tombol Search
         ElevatedButton(
           onPressed: () {
             int selectedIndex = _logTypeOptions.indexOf(_selectedOption);
@@ -177,7 +170,7 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF2A2A36),
+            backgroundColor: AppColors.primaryColor, // Warna cyan
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -187,7 +180,7 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
             "Search",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: AppColors.textColorDark,
+              color: Colors.white, // Teks putih
             ),
           ),
         ),

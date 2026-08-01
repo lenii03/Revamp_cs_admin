@@ -90,36 +90,35 @@ class ThemePluto extends ThemeExtension<ThemePluto> {
   }
 
   static get light => ThemePluto(
-    gridBackgroundColor: AppColors.darkerGrey,
+    gridBackgroundColor: const Color(0xFFF8F9FA),
     rowColor: AppColors.white,
-    gridBorderColor: AppColors.darkerGrey,
-    borderColor: AppColors.darkerGrey,
+    gridBorderColor: AppColors.separatorLight,
+    borderColor: AppColors.separatorLight,
     menuBackgroundColor: AppColors.white,
-    inactivatedBorderColor: AppColors.darkerGrey,
-    activatedColor: AppColors.primary.withValues(alpha: 0.5),
+    inactivatedBorderColor: AppColors.separatorLight,
+    activatedColor: AppColors.primary.withValues(alpha: 0.1),
     activatedBorderColor: Colors.transparent,
-    iconColor: AppColors.backgroundDark,
+    iconColor: AppColors.black,
     cellTextStyle: const TextStyle(
       color: AppColors.black,
       fontWeight: FontWeight.w500,
-      fontSize: 12,
+      fontSize: 13,
     ),
   );
 
-  static get dark => const ThemePluto(
-    gridBackgroundColor: AppColors.lighterDark,
-    rowColor: AppColors.foregroundDark,
-    gridBorderColor: AppColors.lighterDark,
-    borderColor: AppColors.lighterDark,
-    menuBackgroundColor: AppColors.foregroundDark,
-    inactivatedBorderColor: AppColors.lighterDark,
-    activatedColor: AppColors.primary,
-    activatedBorderColor: AppColors.primary,
+  static get dark => ThemePluto(
+    gridBackgroundColor: AppColors.systemGroupedBackgroundDark,
+    rowColor: AppColors.systemGroupedBackgroundDark,
+    gridBorderColor: AppColors.separatorDark,
+    borderColor: AppColors.separatorDark,
+    menuBackgroundColor: AppColors.systemBackgroundDark,
+    inactivatedBorderColor: AppColors.separatorDark,
+    activatedColor: AppColors.primaryColor.withValues(alpha: 0.2),
+    activatedBorderColor: Colors.transparent,
     iconColor: AppColors.white,
-    cellTextStyle: TextStyle(
-      color: AppColors.white,
-      fontWeight: FontWeight.w400,
-      fontSize: 12,
+    cellTextStyle: const TextStyle(
+      color: AppColors.textColorDark,
+      fontSize: 13,
     ),
   );
 }

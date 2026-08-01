@@ -63,8 +63,6 @@ class ApprovalScreenModel {
       createdBy: parseString('createdby', '-'),
       permissions: parseString('permissions', '0'),
       approvalId: parseString('approvalid', '-'),
-
-      // 💡 Mengambil data untuk Popup
       handphoneNo: parseString('phonenumber', '-'),
       birthDate: parseString('birthdate', '-'),
     );

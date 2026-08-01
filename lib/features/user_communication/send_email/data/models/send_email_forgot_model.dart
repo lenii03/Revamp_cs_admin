@@ -3,6 +3,9 @@ class SendEmailForgotModel {
   final String loginId;
   final String email;
   final int loginType;
+  final String requestId;
+  final String source;
+  final String createdAt;
   int status;
 
   SendEmailForgotModel({
@@ -11,15 +14,21 @@ class SendEmailForgotModel {
     required this.email,
     required this.loginType,
     required this.status,
+    this.requestId = '',
+    this.source = 'legacy',
+    this.createdAt = '',
   });
 
   factory SendEmailForgotModel.fromJson(Map<String, dynamic> json) {
     return SendEmailForgotModel(
-      actionType: json['actionType'] as int,
-      loginId: json['loginId'] as String,
-      email: json['email'] as String,
-      loginType: json['loginType'] as int,
-      status: json['status'] as int,
+      actionType: int.tryParse(json['actionType']?.toString() ?? '') ?? 1,
+      loginId: json['loginId']?.toString() ?? '-',
+      email: json['email']?.toString() ?? '-',
+      loginType: int.tryParse(json['loginType']?.toString() ?? '') ?? 1,
+      status: int.tryParse(json['status']?.toString() ?? '') ?? 1,
+      requestId: json['requestId']?.toString() ?? '',
+      source: json['source']?.toString() ?? 'legacy',
+      createdAt: json['createdAt']?.toString() ?? '',
     );
   }
 
@@ -30,6 +39,9 @@ class SendEmailForgotModel {
       'email': email,
       'loginType': loginType,
       'status': status,
+      'requestId': requestId,
+      'source': source,
+      'createdAt': createdAt,
     };
   }
 }

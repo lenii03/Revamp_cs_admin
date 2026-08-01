@@ -40,21 +40,55 @@ class SendEmailForgotPage extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // TITLE HEADER
-                const Text(
-                  "Send Email Forgot PIN & Password",
-                  style: TextStyle(
-                    color: AppColors.textColorDark,
-                    fontSize: 20.0,
-                    fontWeight: FontWeight.bold,
-                  ),
+                Row(
+                  children: [
+                    Text(
+                      "Send Email Forgot PIN & Password (${state.dataList.length})",
+                      style: const TextStyle(
+                        color: AppColors.textColorDark,
+                        fontSize: 20.0,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      tooltip: 'Refresh',
+                      onPressed: () => context.read<SendEmailForgotBloc>().add(
+                        FetchSendEmailData(),
+                      ),
+                      icon: const Icon(
+                        Icons.refresh,
+                        color: AppColors.primaryColor,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 24),
                 Expanded(
-                  child:
-                      state.status == SendEmailForgotStatus.loading &&
-                          state.dataList.isEmpty
-                      ? const Center(child: CircularProgressIndicator())
-                      : SendEmailForgotTableWidget(dataList: state.dataList),
+                  child: switch (state.status) {
+                    SendEmailForgotStatus.loading when state.dataList.isEmpty =>
+                      const Center(child: CircularProgressIndicator()),
+                    SendEmailForgotStatus.failure => Center(
+                      child: Text(
+                        state.message,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          color: AppColors.destructiveRedDark,
+                        ),
+                      ),
+                    ),
+                    _ => SendEmailForgotTableWidget(
+                      key: ValueKey(
+                        state.dataList
+                            .map(
+                              (item) =>
+                                  '${item.loginId}:${item.actionType}:${item.status}',
+                            )
+                            .join('|'),
+                      ),
+                      dataList: state.dataList,
+                    ),
+                  },
                 ),
               ],
             ),

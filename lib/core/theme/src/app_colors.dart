@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 class AppColors {
   // ==========================================
-  // 1. BACKGROUNDS (Diupdate ke Navy/Teal Gelap)
+  // 1. BACKGROUNDS
   // ==========================================
   static const Color backgroundDark = Color(0xFF081017);
   static const Color systemBackgroundDark = Color(0xFF081017);

@@ -10,7 +10,16 @@ import '../../../../../core/theme/src/app_colors.dart';
 class ApprovalDetailDialog extends StatelessWidget {
   final ApprovalScreenModel data;
 
-  const ApprovalDetailDialog({super.key, required this.data});
+  // 👇 Tambahkan dua parameter callback ini
+  final VoidCallback onApprove;
+  final VoidCallback onReject;
+
+  const ApprovalDetailDialog({
+    super.key,
+    required this.data,
+    required this.onApprove, // 👈 Wajib diisi saat dialog dipanggil
+    required this.onReject, // 👈 Wajib diisi saat dialog dipanggil
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,8 +31,18 @@ class ApprovalDetailDialog extends StatelessWidget {
     bool research = (perms & 16) != 0;
     bool announcement = (perms & 32) != 0;
 
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBgColor = isDark
+        ? AppColors.systemGroupedBackgroundDark
+        : AppColors.white;
+    final textColor = isDark ? Colors.white : AppColors.black;
+    final expansionBgColor = isDark
+        ? AppColors.systemBackgroundDark
+        : AppColors.backgroundLight;
+
     return Dialog(
-      backgroundColor: AppColors.systemGroupedBackgroundDark,
+      backgroundColor: dialogBgColor,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 600,
@@ -37,10 +56,10 @@ class ApprovalDetailDialog extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
+                  Text(
                     'Approval',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: textColor,
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                     ),
@@ -57,50 +76,64 @@ class ApprovalDetailDialog extends StatelessWidget {
               const SizedBox(height: 24),
 
               // DETAILS
-              _buildInfoRow('Action', _buildActionText(data.action)),
+              _buildInfoRow(
+                'Action',
+                _buildActionText(data.action, isDark),
+                textColor,
+              ),
               _buildInfoRow(
                 'Login Id',
                 Text(
                   data.loginId,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: 13),
                 ),
+                textColor,
               ),
               _buildInfoRow(
                 'Login Type',
                 Text(
                   _getLoginTypeName(data.loginType),
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: 13),
                 ),
+                textColor,
               ),
               _buildInfoRow(
                 'Sales / Branch Id',
                 Text(
                   data.salesBranchId,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: 13),
                 ),
+                textColor,
               ),
               _buildInfoRow(
                 'Email',
                 Text(
                   data.email,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: 13),
                 ),
+                textColor,
               ),
               _buildInfoRow(
                 'Handphone No',
                 Text(
                   data.handphoneNo,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: 13),
                 ),
+                textColor,
               ),
               _buildInfoRow(
                 'Birth Date',
                 Text(
                   data.birthDate,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: 13),
                 ),
+                textColor,
               ),
-              _buildInfoRow('Status', _buildStatusBadge(data.status)),
+              _buildInfoRow(
+                'Status',
+                _buildStatusBadge(data.status),
+                textColor,
+              ),
 
               // PERMISSIONS
               _buildInfoRow(
@@ -110,10 +143,18 @@ class ApprovalDetailDialog extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildReadOnlyCheckbox('View Only', viewOnly),
+                          child: _buildReadOnlyCheckbox(
+                            'View Only',
+                            viewOnly,
+                            textColor,
+                          ),
                         ),
                         Expanded(
-                          child: _buildReadOnlyCheckbox('Syariah', syariah),
+                          child: _buildReadOnlyCheckbox(
+                            'Syariah',
+                            syariah,
+                            textColor,
+                          ),
                         ),
                       ],
                     ),
@@ -121,27 +162,39 @@ class ApprovalDetailDialog extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: _buildReadOnlyCheckbox('Delayed', delayed),
+                          child: _buildReadOnlyCheckbox(
+                            'Delayed',
+                            delayed,
+                            textColor,
+                          ),
                         ),
-                        Expanded(child: _buildReadOnlyCheckbox('VIP', vip)),
+                        Expanded(
+                          child: _buildReadOnlyCheckbox('VIP', vip, textColor),
+                        ),
                       ],
                     ),
                     const SizedBox(height: 4),
                     Row(
                       children: [
                         Expanded(
-                          child: _buildReadOnlyCheckbox('Research', research),
+                          child: _buildReadOnlyCheckbox(
+                            'Research',
+                            research,
+                            textColor,
+                          ),
                         ),
                         Expanded(
                           child: _buildReadOnlyCheckbox(
                             'Announcement',
                             announcement,
+                            textColor,
                           ),
                         ),
                       ],
                     ),
                   ],
                 ),
+                textColor,
               ),
 
               _buildInfoRow(
@@ -150,22 +203,23 @@ class ApprovalDetailDialog extends StatelessWidget {
                   data.accountExpired == ""
                       ? "Never Expired"
                       : data.accountExpired,
-                  style: const TextStyle(color: Colors.white, fontSize: 13),
+                  style: TextStyle(color: textColor, fontSize: 13),
                 ),
+                textColor,
               ),
 
               const SizedBox(height: 16),
 
               FutureBuilder<Map<String, dynamic>>(
                 future: locator<ApiDatafeedNetworkDataSource>()
-                    .fetchLinkedAccountsDetail(data.loginId),
+                    .fetchLinkedAccountsDetail(data.loginId, data.approvalId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(
                       child: Padding(
                         padding: EdgeInsets.all(16.0),
                         child: CircularProgressIndicator(
-                          color: AppColors.primaryDark,
+                          color: AppColors.primaryColor,
                         ),
                       ),
                     );
@@ -181,34 +235,32 @@ class ApprovalDetailDialog extends StatelessWidget {
 
                   return Column(
                     children: [
-                      // 1. Accordion Linked Account (Lama)
+                      // Accordion Linked Account (Lama)
                       Theme(
                         data: Theme.of(
                           context,
                         ).copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
-                          iconColor: Colors.white,
-                          collapsedIconColor: Colors.white,
+                          iconColor: textColor,
+                          collapsedIconColor: textColor,
                           tilePadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                           ),
-                          backgroundColor: AppColors.systemBackgroundDark,
-                          collapsedBackgroundColor:
-                              AppColors.systemBackgroundDark,
+                          backgroundColor: expansionBgColor,
+                          collapsedBackgroundColor: expansionBgColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                           collapsedShape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          title: const Text(
+                          title: Text(
                             'Linked Account',
-                            style: TextStyle(color: Colors.white, fontSize: 13),
+                            style: TextStyle(color: textColor, fontSize: 13),
                           ),
                           children: [
                             Container(
-                              height:
-                                  200, // Batasi tinggi area tabel agar popup tidak kepanjangan
+                              height: 200,
                               padding: const EdgeInsets.all(8),
                               child: oldLinks.isEmpty
                                   ? const Center(
@@ -271,29 +323,28 @@ class ApprovalDetailDialog extends StatelessWidget {
                       ),
                       const SizedBox(height: 12),
 
-                      // 2. Accordion New Linked Account (Baru)
+                      // Accordion New Linked Account (Baru)
                       Theme(
                         data: Theme.of(
                           context,
                         ).copyWith(dividerColor: Colors.transparent),
                         child: ExpansionTile(
-                          iconColor: Colors.white,
-                          collapsedIconColor: Colors.white,
+                          iconColor: textColor,
+                          collapsedIconColor: textColor,
                           tilePadding: const EdgeInsets.symmetric(
                             horizontal: 16,
                           ),
-                          backgroundColor: AppColors.systemBackgroundDark,
-                          collapsedBackgroundColor:
-                              AppColors.systemBackgroundDark,
+                          backgroundColor: expansionBgColor,
+                          collapsedBackgroundColor: expansionBgColor,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
                           collapsedShape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          title: const Text(
+                          title: Text(
                             'New Linked Account',
-                            style: TextStyle(color: Colors.white, fontSize: 13),
+                            style: TextStyle(color: textColor, fontSize: 13),
                           ),
                           children: [
                             Container(
@@ -313,7 +364,6 @@ class ApprovalDetailDialog extends StatelessWidget {
                                           field: 'action',
                                           type: TrinaColumnType.text(),
                                           width: 120,
-                                          // Mewarnai teks khusus kolom Action Type
                                           renderer: (ctx) => Text(
                                             ctx.cell.value.toString(),
                                             style: const TextStyle(
@@ -381,8 +431,12 @@ class ApprovalDetailDialog extends StatelessWidget {
                   OutlinedButton(
                     onPressed: () => Navigator.pop(context),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Colors.white,
-                      side: const BorderSide(color: AppColors.separatorDark),
+                      foregroundColor: textColor,
+                      side: BorderSide(
+                        color: isDark
+                            ? AppColors.separatorDark
+                            : AppColors.lighterGrey,
+                      ),
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -395,9 +449,16 @@ class ApprovalDetailDialog extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
-                    onPressed: () {}, // TODO: Action Approve
+                    onPressed: () async {
+                      if (!_isPending) {
+                        await _showStatusLockedDialog(context, 'approve');
+                        return;
+                      }
+                      onApprove();
+                      Navigator.pop(context);
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B5CF6),
+                      backgroundColor: AppColors.primaryColor,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -415,10 +476,19 @@ class ApprovalDetailDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
+
+                  // 👇 FUNGSI REJECT DIPANGGIL DI SINI
                   ElevatedButton(
-                    onPressed: () {}, // TODO: Action Reject
+                    onPressed: () async {
+                      if (!_isPending) {
+                        await _showStatusLockedDialog(context, 'reject');
+                        return;
+                      }
+                      onReject();
+                      Navigator.pop(context);
+                    },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF8B5CF6),
+                      backgroundColor: AppColors.destructiveRedLight,
                       padding: const EdgeInsets.symmetric(
                         horizontal: 24,
                         vertical: 12,
@@ -444,8 +514,90 @@ class ApprovalDetailDialog extends StatelessWidget {
     );
   }
 
-  // Helpers internal
-  Widget _buildInfoRow(String label, Widget content) {
+  bool get _isPending => data.status.toLowerCase() == 'pending';
+
+  Future<void> _showStatusLockedDialog(
+    BuildContext context,
+    String requestedAction,
+  ) {
+    final actionLabel = requestedAction == 'approve' ? 'approve' : 'reject';
+    return showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        final isDark = Theme.of(dialogContext).brightness == Brightness.dark;
+        final dialogBgColor = isDark
+            ? AppColors.systemGroupedBackgroundDark
+            : AppColors.white;
+        final textColor = isDark ? Colors.white : AppColors.black;
+        final subTextColor = isDark
+            ? AppColors.secondaryTextColorDark
+            : AppColors.secondaryTextColorLight;
+
+        return Dialog(
+          backgroundColor: dialogBgColor,
+          surfaceTintColor: Colors.transparent,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Container(
+            width: 400,
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(
+                  Icons.warning_amber_rounded,
+                  color: Colors.amber,
+                  size: 64,
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Approval Tidak Dapat Diproses',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Data sudah berstatus ${data.status} dan tidak dapat '
+                  'di-$actionLabel kembali.\n'
+                  '[Login Id : ${data.loginId}]',
+                  style: TextStyle(color: subTextColor),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primaryColor,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 28,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text(
+                    'Mengerti',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildInfoRow(String label, Widget content, Color labelColor) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
@@ -455,8 +607,8 @@ class ApprovalDetailDialog extends StatelessWidget {
             width: 150,
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: labelColor,
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
               ),
@@ -468,14 +620,16 @@ class ApprovalDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildActionText(String action) {
-    Color textColor = Colors.white;
-    if (action.toLowerCase() == 'add')
-      textColor = Colors.greenAccent;
-    else if (action.toLowerCase() == 'delete')
-      textColor = Colors.redAccent;
-    else if (action.toLowerCase() == 'edit')
-      textColor = Colors.orangeAccent;
+  Widget _buildActionText(String action, bool isDark) {
+    Color textColor = isDark ? Colors.white : Colors.black;
+    if (action.toLowerCase() == 'add') {
+      textColor = isDark ? Colors.greenAccent : const Color(0xFF4CAF50);
+    } else if (action.toLowerCase() == 'delete') {
+      textColor = isDark ? Colors.redAccent : const Color(0xFFF44336);
+    } else if (action.toLowerCase() == 'edit') {
+      textColor = isDark ? Colors.orangeAccent : const Color(0xFFFF9800);
+    }
+
     return Text(
       action,
       style: TextStyle(
@@ -488,12 +642,13 @@ class ApprovalDetailDialog extends StatelessWidget {
 
   Widget _buildStatusBadge(String status) {
     Color bgColor = Colors.grey.shade600;
-    if (status.toLowerCase() == 'approved')
+    if (status.toLowerCase() == 'approved') {
       bgColor = const Color(0xFF4CAF50);
-    else if (status.toLowerCase() == 'rejected')
+    } else if (status.toLowerCase() == 'rejected') {
       bgColor = const Color(0xFFF44336);
-    else if (status.toLowerCase() == 'pending')
+    } else if (status.toLowerCase() == 'pending') {
       bgColor = const Color(0xFFC08080);
+    }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -512,7 +667,7 @@ class ApprovalDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildReadOnlyCheckbox(String label, bool value) {
+  Widget _buildReadOnlyCheckbox(String label, bool value, Color textColor) {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -523,13 +678,13 @@ class ApprovalDetailDialog extends StatelessWidget {
             child: Checkbox(
               value: value,
               onChanged: (_) {},
-              activeColor: const Color(0xFF8B5CF6),
+              activeColor: AppColors.primaryColor,
               side: const BorderSide(color: Colors.grey),
             ),
           ),
         ),
         const SizedBox(width: 8),
-        Text(label, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+        Text(label, style: TextStyle(color: textColor, fontSize: 12)),
       ],
     );
   }

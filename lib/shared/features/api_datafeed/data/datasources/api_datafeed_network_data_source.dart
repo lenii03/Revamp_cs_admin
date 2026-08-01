@@ -24,18 +24,32 @@ abstract class ApiDatafeedNetworkDataSource {
     int? size,
   });
   Future<List<ApprovalScreenModel>> fetchApprovals();
-  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(String loginId);
+  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(
+    String loginId,
+    String approvalId,
+  );
   // Future<List<ResetPasswordReportModel>> fetchResetPasswordReports();
   Future<void> addCsUser(Map<String, dynamic> requestData);
   Future<void> deleteCsUser(String loginId);
   Future<void> editCsUser(Map<String, dynamic> requestData);
   Future<void> resetPassword(Map<String, dynamic> requestData);
-  Future<bool> sendEmailForgotPinPassword(
+  Future<void> sendEmailForgotPinPassword(
     String loginId,
     int actionType,
     String csLoginId,
   );
   Future<List<SendEmailForgotModel>> fetchSendEmailForgotList();
+  Future<List<dynamic>> fetchOpeningAccounts({int page = 1, int size = 10});
+  Future<List<dynamic>> fetchSchedulerNotifications({
+    int page = 1,
+    int size = 10,
+  });
+  Future<void> sendPushNotification(Map<String, dynamic> payload);
+  Future<void> createSchedulerNotification(Map<String, dynamic> payload);
+  Future<String> postAddOnlineUser(Map<String, dynamic> payload);
+  Future<String> resetOnlinePasswordOrPin(Map<String, dynamic> payload);
+
+  Future<void> updateApprovalStatus(Map<String, dynamic> payload) async {}
 }
 
 class CsUserModel {}
@@ -147,7 +161,10 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         .toList();
   }
 
-  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(String loginId) async {
+  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(
+    String loginId,
+    String approvalId,
+  ) async {
     final baseUrl = await ServerConfig.getBaseUrl();
     dio.options.baseUrl = baseUrl;
 
@@ -168,7 +185,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     try {
       final responseNew = await dio.get(
         Endpoint.getLinkedInfoAccountApproval,
-        queryParameters: {'loginId': loginId},
+        queryParameters: {'approvalId': approvalId},
       );
       final List<dynamic> rawNewLinks =
           responseNew.data['data'] ?? responseNew.data['List'] ?? [];
@@ -217,39 +234,189 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     await dio.put(Endpoint.putResetPw, data: requestData);
   }
 
-  Future<bool> sendEmailForgotPinPassword(
+  @override
+  Future<void> sendEmailForgotPinPassword(
     String loginId,
     int actionType,
     String csLoginId,
   ) async {
+    final baseUrl = await ServerConfig.getBaseUrl();
+    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    dio.options.baseUrl = baseUrl;
+
     try {
-      final baseUrl = await ServerConfig.getBaseUrl();
-      dio.options.baseUrl = baseUrl;
-
-      final Map<String, dynamic> payload = {
-        "LoginId": loginId,
-        "ActionType": actionType,
-        "CSLoginId": csLoginId,
-      };
-
       final response = await dio.post(
         Endpoint.sendEmailPINAndPasswordOnlineUser,
-        data: payload,
+        data: {
+          "LoginId": loginId,
+          "ActionType": actionType,
+          "CSLoginId": csLoginId,
+        },
       );
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return true;
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        final responseData = response.data;
+        throw Exception(
+          responseData is Map
+              ? responseData['message'] ?? 'Gagal mengirim email'
+              : 'Gagal mengirim email',
+        );
       }
-      return false;
-    } catch (e) {
-      print("ERROR SEND EMAIL: $e");
-      return false;
+    } on DioException catch (e) {
+      final responseData = e.response?.data;
+      final message = responseData is Map
+          ? responseData['message']?.toString()
+          : null;
+      throw Exception(message ?? e.message ?? 'Gagal mengirim email');
     }
   }
 
   @override
   Future<List<SendEmailForgotModel>> fetchSendEmailForgotList() async {
     throw UnimplementedError('API GET Send Email Forgot belum tersedia');
+  }
+
+  @override
+  Future<List<dynamic>> fetchOpeningAccounts({
+    int page = 1,
+    int size = 10,
+  }) async {
+    try {
+      final response = await dio.get(
+        '/online/get-list-opening-rekening-online-user',
+        queryParameters: {'page': page, 'size': size},
+      );
+
+      if (response.statusCode == 200) {
+        return response.data['data'] as List<dynamic>;
+      } else {
+        throw Exception(
+          response.data['message'] ?? 'Gagal memuat data Opening Accounts',
+        );
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan jaringan: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<dynamic>> fetchSchedulerNotifications({
+    int page = 1,
+    int size = 10,
+  }) async {
+    try {
+      final response = await dio.get(
+        '/cs/get-list-scheduler-notification',
+        queryParameters: {'page': page, 'size': size},
+      );
+      if (response.statusCode == 200) {
+        return response.data['data'] as List<dynamic>;
+      } else {
+        throw Exception(response.data['message'] ?? 'Gagal memuat Scheduler');
+      }
+    } catch (e) {
+      throw Exception('Terjadi kesalahan jaringan: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<void> sendPushNotification(Map<String, dynamic> payload) async {
+    final response = await dio.post('/cs/push-notification', data: payload);
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(
+        response.data['message'] ?? 'Gagal mengirim push notification',
+      );
+    }
+  }
+
+  @override
+  Future<void> createSchedulerNotification(Map<String, dynamic> payload) async {
+    final response = await dio.post(
+      '/cs/create-scheduler-notification',
+      data: payload,
+    );
+    if (response.statusCode != 200 && response.statusCode != 201) {
+      throw Exception(response.data['message'] ?? 'Gagal membuat scheduler');
+    }
+  }
+
+  @override
+  Future<String> postAddOnlineUser(Map<String, dynamic> payload) async {
+    try {
+      final baseUrl = await ServerConfig.getBaseUrl();
+      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+      dio.options.baseUrl = baseUrl;
+
+      final response = await dio.post(Endpoint.postAddOnUser, data: payload);
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        return response.data['message'] ?? "Berhasil memproses data";
+      } else {
+        throw Exception(response.data['message'] ?? "Gagal memproses data");
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['message'] ?? "Terjadi kesalahan pada server",
+      );
+    } catch (e) {
+      throw Exception(e.toString());
+    }
+  }
+
+  @override
+  Future<String> resetOnlinePasswordOrPin(Map<String, dynamic> payload) async {
+    final baseUrl = await ServerConfig.getBaseUrl();
+    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    dio.options.baseUrl = baseUrl;
+
+    try {
+      final response = await dio.post(Endpoint.resetPWDOrPIN, data: payload);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final responseData = response.data;
+        return responseData is Map
+            ? responseData['message']?.toString() ??
+                  'Reset Password/PIN berhasil'
+            : 'Reset Password/PIN berhasil';
+      }
+
+      final responseData = response.data;
+      throw Exception(
+        responseData is Map
+            ? responseData['message'] ?? 'Gagal reset Password/PIN'
+            : 'Gagal reset Password/PIN',
+      );
+    } on DioException catch (e) {
+      final responseData = e.response?.data;
+      final message = responseData is Map
+          ? responseData['message']?.toString()
+          : null;
+      throw Exception(message ?? e.message ?? 'Gagal reset Password/PIN');
+    }
+  }
+
+  @override
+  Future<void> updateApprovalStatus(Map<String, dynamic> payload) async {
+    try {
+      final baseUrl = await ServerConfig.getBaseUrl();
+      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+      dio.options.baseUrl = baseUrl;
+      final response = await dio.post(
+        Endpoint.updateStatusApprovalUser,
+        data: payload,
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        throw Exception(
+          response.data['message'] ?? "Gagal memproses data approval",
+        );
+      }
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['message'] ?? "Terjadi kesalahan pada server",
+      );
+    } catch (e) {
+      throw Exception(e.toString());
+    }
   }
 }
 
@@ -489,19 +656,22 @@ class ApiDatafeedNetworkDataSourceMockImpl
   }
 
   @override
-  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(String loginId) {
+  Future<Map<String, dynamic>> fetchLinkedAccountsDetail(
+    String loginId,
+    String approvalId,
+  ) {
+    // <-- Tambahkan parameter kedua di sini
     // TODO: implement fetchLinkedAccountsDetail
     throw UnimplementedError();
   }
 
   @override
-  Future<bool> sendEmailForgotPinPassword(
+  Future<void> sendEmailForgotPinPassword(
     String loginId,
     int actionType,
     String csLoginId,
   ) {
-    // TODO: implement sendEmailForgotPinPassword
-    throw UnimplementedError();
+    return Future.value();
   }
 
   @override
@@ -540,5 +710,49 @@ class ApiDatafeedNetworkDataSourceMockImpl
         status: 1,
       ),
     ];
+  }
+
+  @override
+  Future<List<dynamic>> fetchOpeningAccounts({int page = 1, int size = 10}) {
+    // TODO: implement fetchOpeningAccounts
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> createSchedulerNotification(Map<String, dynamic> payload) {
+    // TODO: implement createSchedulerNotification
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<dynamic>> fetchSchedulerNotifications({
+    int page = 1,
+    int size = 10,
+  }) {
+    // TODO: implement fetchSchedulerNotifications
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<void> sendPushNotification(Map<String, dynamic> payload) {
+    // TODO: implement sendPushNotification
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<String> postAddOnlineUser(Map<String, dynamic> payload) async {
+    await Future.delayed(const Duration(milliseconds: 800));
+    return "Berhasil memproses data (Mock)";
+  }
+
+  @override
+  Future<String> resetOnlinePasswordOrPin(Map<String, dynamic> payload) async {
+    return 'Reset Password/PIN berhasil (Mock)';
+  }
+
+  @override
+  Future<void> updateApprovalStatus(Map<String, dynamic> payload) {
+    // TODO: implement updateApprovalStatus
+    throw UnimplementedError();
   }
 }

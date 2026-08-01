@@ -1,102 +1,195 @@
-import 'dart:convert';
-
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/injector.dart';
-import 'package:el_csadmin/shared/features/api_datafeed/domain/repositories/api_datafeed_repository.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:el_csadmin/features/online/online_id/data/repositories/online_id_repository.dart';
+import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
+import 'package:el_csadmin/features/user_communication/send_email/data/models/send_email_forgot_model.dart';
+import 'package:el_csadmin/features/user_communication/send_email/data/repositories/send_email_queue_repository.dart';
+
 import 'online_id_event.dart';
 import 'online_id_state.dart';
 
 class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
-  final ApiDatafeedRepository repository;
+  final OnlineIdRepository repository;
+  final SendEmailQueueRepository queueRepository;
   int currentPage = 1;
   int perPage = 30;
   String currentSearch = '';
 
-  OnlineIdBloc({required this.repository}) : super(OnlineIdInitial()) {
-    on<FetchOnlineIdsEvent>((event, emit) async {
-      emit(OnlineIdLoading());
+  OnlineIdBloc({required this.repository, required this.queueRepository})
+    : super(const OnlineIdState.initial()) {
+    on<OnlineIdEvent>((event, emit) async {
+      await event.when(
+        fetchOnlineIds: () async => await _onFetchOnlineIds(emit),
+        addOnlineId: (data) async => await _onAddOnlineId(data, emit),
+        editOnlineId: (data) async => await _onEditOnlineId(data, emit),
+        deleteOnlineId: (loginId) async =>
+            await _onDeleteOnlineId(loginId, emit),
+        resetOnlineId: (loginId, resetType) async =>
+            await _onResetOnlineId(loginId, resetType, emit),
+        selectOnlineId: (selectedUser) async {
+          _onSelectOnlineId(selectedUser, emit);
+        },
 
-      final result = await repository.fetchOnlineIds(
-        search: currentSearch,
-        page: currentPage,
-        size: perPage,
-      );
-
-      result.fold(
-        (error) => emit(OnlineIdError(error)),
-        (data) => emit(OnlineIdLoaded(data: data)),
-      );
-    });
-
-    on<SelectOnlineIdEvent>((event, emit) {
-      if (state is OnlineIdLoaded) {
-        final currentState = state as OnlineIdLoaded;
-        emit(currentState.copyWith(selectedUser: event.selectedUser));
-      }
-    });
-
-    on<AddOnlineIdEvent>((event, emit) async {
-      emit(OnlineIdLoading());
-      final result = await repository.addCsUser(event.data);
-      result.fold(
-        (error) => emit(OnlineIdError(error)),
-        (_) => add(FetchOnlineIdsEvent()),
+        searchOnlineIds: (query) async => await _onSearchOnlineIds(query, emit),
       );
     });
+  }
 
-    on<ResetOnlineIdEvent>((event, emit) async {
-      emit(OnlineIdLoading());
+  Future<void> _onSearchOnlineIds(
+    String query,
+    Emitter<OnlineIdState> emit,
+  ) async {
+    currentSearch = query;
+    currentPage = 1;
+    await _onFetchOnlineIds(emit);
+  }
 
-      try {
-        String email = "-";
-        int loginType = 1;
+  Future<void> _onFetchOnlineIds(Emitter<OnlineIdState> emit) async {
+    OnlineIdModel? previousSelectedUser;
+    state.maybeMap(
+      loaded: (s) => previousSelectedUser = s.selectedUser,
+      orElse: () {},
+    );
 
-        if (state is OnlineIdLoaded) {
-          final currentUser = (state as OnlineIdLoaded).selectedUser;
-          if (currentUser != null) {
-            email = currentUser.email;
-            loginType = currentUser.loginType;
-          }
+    emit(const OnlineIdState.loading());
+    final result = await repository.fetchOnlineIds(
+      search: currentSearch,
+      page: currentPage,
+      size: perPage,
+    );
+    result.fold(
+      (error) => emit(OnlineIdState.error(error)),
+      (data) => emit(
+        OnlineIdState.loaded(data: data, selectedUser: previousSelectedUser),
+      ),
+    );
+  }
+
+  void _onSelectOnlineId(
+    OnlineIdModel selectedUser,
+    Emitter<OnlineIdState> emit,
+  ) {
+    state.maybeMap(
+      loaded: (s) {
+        emit(s.copyWith(selectedUser: selectedUser));
+      },
+      orElse: () {},
+    );
+  }
+
+  Future<void> _onAddOnlineId(
+    Map<String, dynamic> data,
+    Emitter<OnlineIdState> emit,
+  ) async {
+    emit(const OnlineIdState.loading());
+    final result = await repository.addOnlineUser1(data);
+    result.fold(
+      (error) => emit(OnlineIdState.error(error)),
+      (_) => add(const OnlineIdEvent.fetchOnlineIds()),
+    );
+  }
+
+  Future<void> _onEditOnlineId(
+    Map<String, dynamic> data,
+    Emitter<OnlineIdState> emit,
+  ) async {
+    emit(const OnlineIdState.loading());
+    final result = await repository.addOnlineUser1(data);
+    result.fold(
+      (error) => emit(OnlineIdState.error(error)),
+      (_) => add(const OnlineIdEvent.fetchOnlineIds()),
+    );
+  }
+
+  Future<void> _onDeleteOnlineId(
+    String loginId,
+    Emitter<OnlineIdState> emit,
+  ) async {
+    emit(const OnlineIdState.loading());
+    final payload = {
+      "LoginId": loginId,
+      "ActionType": 3,
+      "Status": 0,
+      "ArrayAccountLink": [],
+      "ArrayAccountUnLink": [],
+    };
+
+    final result = await repository.addOnlineUser1(payload);
+    result.fold(
+      (error) => emit(OnlineIdState.error(error)),
+      (_) => add(const OnlineIdEvent.fetchOnlineIds()),
+    );
+  }
+
+  Future<void> _onResetOnlineId(
+    String loginId,
+    String resetType,
+    Emitter<OnlineIdState> emit,
+  ) async {
+    String email = "-";
+    int loginType = 1;
+
+    state.maybeMap(
+      loaded: (s) {
+        if (s.selectedUser != null) {
+          email = s.selectedUser!.email;
+          loginType = s.selectedUser!.loginType;
         }
-        final int actionType = event.resetType == "password" ? 0 : 1;
-        final sessionService = locator<SessionService>();
-        final String rawString = sessionService.read(SessionKey.listPwdNPIN);
+      },
+      orElse: () {},
+    );
 
-        print("📝 [SENDER] DATA LAMA DI STORAGE: $rawString");
-        List<dynamic> existingList = [];
+    emit(const OnlineIdState.loading());
 
-        final oldData = sessionService.readDB(
-          SessionKey.listPwdNPIN,
-          (json) => json['ListEmailForgotPINAndPassword'] as List<dynamic>?,
+    try {
+      final int actionType = resetType == "password" ? 0 : 1;
+      final sessionService = locator<SessionService>();
+      final modifiedBy = sessionService.read(SessionKey.loginId);
+      if (modifiedBy.isEmpty) {
+        emit(
+          const OnlineIdState.error(
+            'Session LoginId CS tidak ditemukan. Silakan login ulang.',
+          ),
         );
-
-        if (oldData != null) {
-          existingList = List.from(oldData);
-        }
-        existingList.add({
-          "actionType": actionType,
-          "loginId": event.loginId,
-          "email": email,
-          "loginType": loginType,
-          "status": 1, // 1 = Pending
-        });
-
-        await sessionService.writeDB(SessionKey.listPwdNPIN, {
-          'ListEmailForgotPINAndPassword': existingList,
-        });
-
-        final jsonToSave = jsonEncode({
-          'ListEmailForgotPINAndPassword': existingList,
-        });
-        print("💾 [SENDER] MENYIMPAN DATA: $jsonToSave");
-        await sessionService.write(SessionKey.listPwdNPIN, jsonToSave);
-
-        // Refresh tabel Online ID
-        add(FetchOnlineIdsEvent());
-      } catch (e) {
-        emit(OnlineIdError("Gagal menambahkan ke antrean: ${e.toString()}"));
+        return;
       }
-    });
+
+      // Catat request lebih dahulu. Backend reset dapat mengirim email tetapi
+      // responsnya terlambat/timeout; request tetap harus terlihat di antrean.
+      final now = DateTime.now();
+      await queueRepository.enqueue(
+        SendEmailForgotModel(
+          actionType: actionType,
+          loginId: loginId,
+          email: email,
+          loginType: loginType,
+          status: 1,
+          requestId: '${now.microsecondsSinceEpoch}-$loginId-$actionType',
+          source: 'new',
+          createdAt: now.toIso8601String(),
+        ),
+      );
+
+      final resetResult = await repository.resetPasswordOrPin({
+        'LoginId': loginId,
+        'ModifiedBy': modifiedBy,
+        'ActionType': actionType,
+        'Email': email == '-' ? '' : email,
+      });
+
+      String? resetError;
+      resetResult.fold((error) => resetError = error, (_) {});
+      if (resetError != null) {
+        emit(OnlineIdState.error('Gagal reset Password/PIN: $resetError'));
+        return;
+      }
+
+      add(const OnlineIdEvent.fetchOnlineIds());
+    } catch (e) {
+      emit(
+        OnlineIdState.error("Gagal menambahkan ke antrean: ${e.toString()}"),
+      );
+    }
   }
 }

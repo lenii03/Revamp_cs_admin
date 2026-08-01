@@ -1,3 +1,4 @@
+import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -18,6 +19,17 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
   @override
   Widget build(BuildContext context) {
     final bloc = context.watch<ManageCsBloc>();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final subTextColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.unselectedLabel;
+    final containerColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.appContainerBackground;
+    final separatorColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.separatorLight;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
@@ -26,32 +38,23 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
         children: [
           Row(
             children: [
-              const Text(
-                "Show",
-                style: TextStyle(
-                  color: AppColors.secondaryTextColorDark,
-                  fontSize: 13,
-                ),
-              ),
+              Text("Show", style: TextStyle(color: subTextColor, fontSize: 13)),
               const SizedBox(width: 8),
               Container(
                 height: 36,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.systemGroupedBackgroundDark,
+                  color: containerColor,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.separatorDark),
+                  border: Border.all(color: separatorColor),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
                     value: bloc.perPage,
-                    dropdownColor: AppColors.systemGroupedBackgroundDark,
-                    icon: const Icon(
-                      Icons.arrow_drop_down,
-                      color: Colors.white,
-                    ),
-                    style: const TextStyle(
-                      color: Colors.white,
+                    dropdownColor: containerColor,
+                    icon: Icon(Icons.arrow_drop_down, color: textColor),
+                    style: TextStyle(
+                      color: textColor,
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                     ),
@@ -153,25 +156,33 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
     required bool isEnabled,
     required VoidCallback onTap,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enabledBgColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.appContainerBackground;
+    final disabledBgColor = isDark
+        ? AppColors.systemBackgroundDark.withOpacity(0.3)
+        : AppColors.lighterGrey.withOpacity(0.5);
+    final borderColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.separatorLight;
+    final iconColor = isEnabled
+        ? Theme.of(context).iconTheme.color
+        : (isDark ? Colors.grey.withOpacity(0.5) : Colors.grey);
+
     return InkWell(
       onTap: isEnabled ? onTap : null,
       borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isEnabled
-              ? AppColors.systemGroupedBackgroundDark
-              : AppColors.systemBackgroundDark.withOpacity(0.3),
+          color: isEnabled ? enabledBgColor : disabledBgColor,
           borderRadius: BorderRadius.circular(6),
           border: Border.all(
-            color: isEnabled ? AppColors.separatorDark : Colors.transparent,
+            color: isEnabled ? borderColor : Colors.transparent,
           ),
         ),
-        child: Icon(
-          icon,
-          color: isEnabled ? Colors.white : Colors.grey.withOpacity(0.5),
-          size: 18,
-        ),
+        child: Icon(icon, color: iconColor, size: 18),
       ),
     );
   }

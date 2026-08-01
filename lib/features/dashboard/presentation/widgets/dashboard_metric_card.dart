@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/src/app_colors.dart';
+import '../../../../core/theme/theme.dart';
 
 class DashboardMetricCard extends StatelessWidget {
   final String title;
@@ -20,19 +21,23 @@ class DashboardMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bool hasGradient = gradient != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(20.0),
         decoration: BoxDecoration(
           gradient: gradient,
-          color: hasGradient ? null : AppColors.systemGroupedBackgroundDark,
+          color: hasGradient
+              ? null
+              : Theme.of(
+                  context,
+                ).extension<ThemeColors>()?.appContainerBackground,
           borderRadius: BorderRadius.circular(16),
-          // Beri border tipis transparan jika pakai gradasi
           border: Border.all(
             color: hasGradient
                 ? Colors.white.withValues(alpha: 0.1)
-                : AppColors.separatorDark,
+                : (isDark ? AppColors.separatorDark : AppColors.separatorLight),
             width: 1,
           ),
           boxShadow: hasGradient
@@ -50,7 +55,6 @@ class DashboardMetricCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                // Jika pakai gradasi, background icon jadi putih transparan
                 color: hasGradient
                     ? Colors.white.withValues(alpha: 0.2)
                     : iconColor.withValues(alpha: 0.1),
@@ -58,14 +62,11 @@ class DashboardMetricCard extends StatelessWidget {
               ),
               child: Icon(
                 icon,
-                // Ikon menjadi putih jika backgroundnya gradasi
                 color: hasGradient ? Colors.white : iconColor,
                 size: 28,
               ),
             ),
             const SizedBox(width: 16),
-
-            // Teks Info
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,10 +74,11 @@ class DashboardMetricCard extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      // Teks title agak redup sedikit
                       color: hasGradient
                           ? Colors.white.withValues(alpha: 0.8)
-                          : AppColors.secondaryTextColorDark,
+                          : Theme.of(
+                              context,
+                            ).extension<ThemeColors>()?.unselectedLabel,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -85,10 +87,9 @@ class DashboardMetricCard extends StatelessWidget {
                   Text(
                     value,
                     style: TextStyle(
-                      // Teks value putih tebal
                       color: hasGradient
                           ? Colors.white
-                          : AppColors.textColorDark,
+                          : Theme.of(context).textTheme.bodyLarge?.color,
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
                     ),

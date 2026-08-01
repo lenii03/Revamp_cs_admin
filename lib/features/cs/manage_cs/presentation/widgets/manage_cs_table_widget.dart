@@ -1,3 +1,4 @@
+import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:el_csadmin/features/cs/manage_cs/presentation/bloc/manage_cs_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,9 +17,15 @@ class ManageCsTableWidget extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.systemGroupedBackgroundDark,
+        color: Theme.of(
+          context,
+        ).extension<ThemeColors>()?.appContainerBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.separatorDark),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.separatorDark
+              : AppColors.separatorLight,
+        ),
       ),
       child: BlocBuilder<ManageCsBloc, ManageCsState>(
         builder: (context, state) {
@@ -197,8 +204,13 @@ class ManageCsTableWidget extends StatelessWidget {
           final loginIdStr =
               rendererContext.row.cells['loginId']?.value.toString() ?? '';
           return PopupMenuButton<String>(
-            icon: const Icon(Icons.more_vert, color: Colors.white),
-            color: AppColors.systemGroupedBackgroundDark,
+            icon: Icon(
+              Icons.more_vert,
+              color: Theme.of(context).iconTheme.color,
+            ),
+            color: Theme.of(
+              context,
+            ).extension<ThemeColors>()?.appContainerBackground,
             onSelected: (String result) {
               if (result == 'Edit') {
                 final userObject = dataList.firstWhere(

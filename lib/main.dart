@@ -1,7 +1,7 @@
-
+import 'package:el_csadmin/core/theme/theme.dart';
+import 'package:el_csadmin/core/theme/theme_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'core/theme/src/app_colors.dart';
 import 'features/authentication/presentation/pages/login_page.dart';
 import 'features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'injector.dart';
@@ -17,19 +17,23 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'CS Admin',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.primaryColor,
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
-      home: BlocProvider(
-        create: (context) => locator<AuthenticationBloc>(),
-        child: const LoginPage(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (context) => locator<AuthenticationBloc>()),
+        BlocProvider(create: (context) => ThemeCubit()),
+      ],
+      child: BlocBuilder<ThemeCubit, ThemeMode>(
+        builder: (context, themeMode) {
+          return MaterialApp(
+            title: 'CS Admin',
+            debugShowCheckedModeBanner: false,
+            theme: lightTheme(),
+            darkTheme: darkTheme(),
+            themeMode: themeMode,
+
+            home: const LoginPage(),
+          );
+        },
       ),
     );
   }

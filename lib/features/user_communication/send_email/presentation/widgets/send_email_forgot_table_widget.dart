@@ -31,15 +31,15 @@ class SendEmailForgotTableWidget extends StatelessWidget {
   }
 
   void _showConfirmationDialog(
-    BuildContext context,
+    BuildContext pageContext,
     SendEmailForgotModel data,
   ) {
     if (data.status == 2) return;
     final actionName = data.actionType.toString() == '1' ? "PIN" : "Password";
 
     showDialog(
-      context: context,
-      builder: (BuildContext context) {
+      context: pageContext,
+      builder: (BuildContext dialogContext) {
         return AlertDialog(
           backgroundColor: AppColors.systemGroupedBackgroundDark,
           shape: RoundedRectangleBorder(
@@ -90,7 +90,7 @@ class SendEmailForgotTableWidget extends StatelessWidget {
                 children: [
                   // Tombol Cancel
                   OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
+                    onPressed: () => Navigator.pop(dialogContext),
                     style: OutlinedButton.styleFrom(
                       side: const BorderSide(color: AppColors.primaryDark),
                       shape: RoundedRectangleBorder(
@@ -110,9 +110,9 @@ class SendEmailForgotTableWidget extends StatelessWidget {
 
                   ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context);
+                      Navigator.pop(dialogContext);
                       final index = dataList.indexOf(data);
-                      context.read<SendEmailForgotBloc>().add(
+                      pageContext.read<SendEmailForgotBloc>().add(
                         SubmitSendEmail(data: data, index: index),
                       );
                     },
@@ -205,7 +205,15 @@ class SendEmailForgotTableWidget extends StatelessWidget {
     // 3. Renderer Login Type
     Widget loginTypeRenderer(TrinaColumnRendererContext renderContext) {
       final type = int.tryParse(renderContext.cell.value.toString()) ?? 9;
-      String text = type == 1 ? 'Client' : 'Tipe Lain ($type)';
+      final text = switch (type) {
+        0 => 'Demo Account',
+        1 => 'Client',
+        2 => 'Sales',
+        3 => 'Branch',
+        4 => 'CS View All Account',
+        5 => 'CS Branch',
+        _ => 'Tipe Lain ($type)',
+      };
       return Text(
         text,
         style: const TextStyle(color: Colors.white, fontSize: 13),
@@ -261,6 +269,11 @@ class SendEmailForgotTableWidget extends StatelessWidget {
     }).toList();
 
     return AppDataGrid(
+      key: ValueKey(
+        data
+            .map((item) => '${item.loginId}:${item.actionType}:${item.status}')
+            .join('|'),
+      ),
       columns: columns,
       rows: rows,
       onRowDoubleTap: (index) {

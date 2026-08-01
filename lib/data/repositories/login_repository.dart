@@ -128,10 +128,10 @@ class LoginRepository extends DioApiBase<LoginUserModel> {
 
       print("cs/login M: $message");
       String token = data['Token'];
-      sessionService.write(SessionKey.token, token);
-      sessionService.read(SessionKey.token);
+      await sessionService.write(SessionKey.token, token);
       if (data.isNotEmpty) {
         final LoginUserModel loginUser = LoginUserModel.fromMap(data);
+        await sessionService.write(SessionKey.loginId, loginUser.loginId);
         return loginUser;
       } else {
         throw Exception("No data available in response");

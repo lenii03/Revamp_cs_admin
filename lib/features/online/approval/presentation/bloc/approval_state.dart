@@ -1,31 +1,15 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import '../../data/models/approval_screen_model.dart';
 
-abstract class ApprovalScreenState extends Equatable {
-  const ApprovalScreenState();
+part 'approval_state.freezed.dart';
+
+@freezed
+class ApprovalScreenState with _$ApprovalScreenState {
+  const factory ApprovalScreenState.initial() = _Initial;
   
-  @override
-  List<Object> get props => [];
-}
-
-class ApprovalScreenInitial extends ApprovalScreenState {}
-
-class ApprovalScreenLoading extends ApprovalScreenState {}
-
-class ApprovalScreenLoaded extends ApprovalScreenState {
-  final List<ApprovalScreenModel> data;
-
-  const ApprovalScreenLoaded(this.data);
-
-  @override
-  List<Object> get props => [data];
-}
-
-class ApprovalScreenError extends ApprovalScreenState {
-  final String message;
-
-  const ApprovalScreenError(this.message);
-
-  @override
-  List<Object> get props => [message];
+  const factory ApprovalScreenState.loading() = _Loading;
+  
+  const factory ApprovalScreenState.loaded(List<ApprovalScreenModel> data) = _Loaded;
+  
+  const factory ApprovalScreenState.error(String message) = _Error;
 }

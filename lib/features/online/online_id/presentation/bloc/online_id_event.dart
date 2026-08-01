@@ -1,48 +1,26 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
-import 'package:equatable/equatable.dart';
 
-abstract class OnlineIdEvent extends Equatable {
-  const OnlineIdEvent();
+part 'online_id_event.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
-}
+@freezed
+class OnlineIdEvent with _$OnlineIdEvent {
+  const factory OnlineIdEvent.fetchOnlineIds() = _FetchOnlineIds;
 
-class FetchOnlineIdsEvent extends OnlineIdEvent {}
+  const factory OnlineIdEvent.addOnlineId(Map<String, dynamic> data) =
+      _AddOnlineId;
 
-class AddOnlineIdEvent extends OnlineIdEvent {
-  final Map<String, dynamic> data;
-  const AddOnlineIdEvent(this.data);
-  @override
-  List<Object> get props => [data];
-}
+  const factory OnlineIdEvent.editOnlineId(Map<String, dynamic> data) =
+      _EditOnlineId;
 
-class EditOnlineIdEvent extends OnlineIdEvent {
-  final Map<String, dynamic> data;
-  const EditOnlineIdEvent(this.data);
-  @override
-  List<Object> get props => [data];
-}
+  const factory OnlineIdEvent.deleteOnlineId(String loginId) = _DeleteOnlineId;
 
-class DeleteOnlineIdEvent extends OnlineIdEvent {
-  final String loginId;
-  const DeleteOnlineIdEvent(this.loginId);
-  @override
-  List<Object> get props => [loginId];
-}
+  const factory OnlineIdEvent.resetOnlineId({
+    required String loginId,
+    required String resetType,
+  }) = _ResetOnlineId;
 
-class ResetOnlineIdEvent extends OnlineIdEvent {
-  final String loginId;
-  final String resetType;
-  const ResetOnlineIdEvent({required this.loginId, required this.resetType});
-  @override
-  List<Object> get props => [loginId, resetType];
-}
-
-class SelectOnlineIdEvent extends OnlineIdEvent {
-  final OnlineIdModel selectedUser;
-  const SelectOnlineIdEvent(this.selectedUser);
-  
-  @override
-  List<Object> get props => [selectedUser];
+  const factory OnlineIdEvent.selectOnlineId(OnlineIdModel selectedUser) =
+      _SelectOnlineId;
+  const factory OnlineIdEvent.searchOnlineIds(String query) = _SearchOnlineIds;
 }

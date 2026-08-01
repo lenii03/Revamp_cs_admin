@@ -101,7 +101,7 @@ class ThemeColors extends ThemeExtension<ThemeColors> {
     appContainerBackground: AppColors.backgroundDark,
     appContainerShadow: AppColors.darkerGrey.withValues(alpha: 0.2),
     selectedLabel: AppColors.darkestGrey,
-    unselectedLabel: AppColors.darkestGrey.withValues(alpha: 0.7),
+    unselectedLabel: AppColors.secondaryTextColorDark,
     cursorColor: AppColors.primary,
     micIcon: AppColors.white,
     hintColor: AppColors.lighterGrey,

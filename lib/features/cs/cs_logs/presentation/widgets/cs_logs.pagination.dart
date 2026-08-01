@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
+import '../../../../../core/theme/theme.dart'; // Wajib ada untuk memanggil ThemeColors
 import '../bloc/cs_logs_bloc.dart';
 import '../bloc/cs_logs_event.dart';
 
@@ -18,6 +19,19 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
   Widget build(BuildContext context) {
     final bloc = context.watch<CsLogsBloc>();
 
+    // Variabel warna dinamis
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final subTextColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.unselectedLabel;
+    final containerColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.appContainerBackground;
+    final separatorColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.separatorLight;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 8.0),
       child: Row(
@@ -25,24 +39,31 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
         children: [
           Row(
             children: [
-              const Text("Show", style: TextStyle(color: AppColors.secondaryTextColorDark, fontSize: 13)),
+              Text("Show", style: TextStyle(color: subTextColor, fontSize: 13)),
               const SizedBox(width: 8),
               Container(
                 height: 36,
                 padding: const EdgeInsets.symmetric(horizontal: 10),
                 decoration: BoxDecoration(
-                  color: AppColors.systemGroupedBackgroundDark,
+                  color: containerColor,
                   borderRadius: BorderRadius.circular(6),
-                  border: Border.all(color: AppColors.separatorDark),
+                  border: Border.all(color: separatorColor),
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
                     value: bloc.perPage,
-                    dropdownColor: AppColors.systemGroupedBackgroundDark,
-                    icon: const Icon(Icons.arrow_drop_down, color: Colors.white),
-                    style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold),
+                    dropdownColor: containerColor,
+                    icon: Icon(Icons.arrow_drop_down, color: textColor),
+                    style: TextStyle(
+                      color: textColor,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                    ),
                     items: _perPageOptions.map((int value) {
-                      return DropdownMenuItem<int>(value: value, child: Text("$value"));
+                      return DropdownMenuItem<int>(
+                        value: value,
+                        child: Text("$value"),
+                      );
                     }).toList(),
                     onChanged: (newValue) {
                       if (newValue != null) {
@@ -57,7 +78,10 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
                 ),
               ),
               const SizedBox(width: 12),
-              const Text("Data entries", style: TextStyle(color: AppColors.secondaryTextColorDark, fontSize: 13)),
+              Text(
+                "Data entries",
+                style: TextStyle(color: subTextColor, fontSize: 13),
+              ),
             ],
           ),
           Row(
@@ -81,17 +105,27 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
               ),
               const SizedBox(width: 8),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF06B6D4),
+                  color: AppColors.primaryColor, // Warna cyan
                   borderRadius: BorderRadius.circular(6),
                 ),
-                child: Text("${bloc.currentPage}", style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.bold)),
+                child: Text(
+                  "${bloc.currentPage}",
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
               const SizedBox(width: 8),
               _buildNavButton(
                 icon: Icons.keyboard_arrow_right_rounded,
-                isEnabled: true, 
+                isEnabled: true,
                 onTap: () {
                   setState(() => bloc.currentPage++);
                   bloc.add(const FetchCsLogsEvent());
@@ -104,18 +138,38 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
     );
   }
 
-  Widget _buildNavButton({required IconData icon, required bool isEnabled, required VoidCallback onTap}) {
+  Widget _buildNavButton({
+    required IconData icon,
+    required bool isEnabled,
+    required VoidCallback onTap,
+  }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final enabledBgColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.appContainerBackground;
+    final disabledBgColor = isDark
+        ? AppColors.systemBackgroundDark.withValues(alpha: 0.3)
+        : AppColors.lighterGrey.withValues(alpha: 0.5);
+    final borderColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.separatorLight;
+    final iconColor = isEnabled
+        ? Theme.of(context).iconTheme.color
+        : (isDark ? Colors.grey.withValues(alpha: 0.5) : Colors.grey);
+
     return InkWell(
       onTap: isEnabled ? onTap : null,
       borderRadius: BorderRadius.circular(6),
       child: Container(
         padding: const EdgeInsets.all(8),
         decoration: BoxDecoration(
-          color: isEnabled ? AppColors.systemGroupedBackgroundDark : AppColors.systemBackgroundDark.withOpacity(0.3),
+          color: isEnabled ? enabledBgColor : disabledBgColor,
           borderRadius: BorderRadius.circular(6),
-          border: Border.all(color: isEnabled ? AppColors.separatorDark : Colors.transparent),
+          border: Border.all(
+            color: isEnabled ? borderColor : Colors.transparent,
+          ),
         ),
-        child: Icon(icon, color: isEnabled ? Colors.white : Colors.grey.withOpacity(0.5), size: 18),
+        child: Icon(icon, color: iconColor, size: 18),
       ),
     );
   }

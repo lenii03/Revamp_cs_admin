@@ -1,6 +1,6 @@
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_event.dart';
-import 'package:el_csadmin/features/online/approval/presentation/widgets/aproval_id_action_buttons_widget.dart';
+import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_bloc.dart'; 
 import 'package:el_csadmin/features/online/approval/presentation/widgets/aproval_table_widgets.dart';
 import 'package:el_csadmin/features/online/approval/presentation/widgets/aproval_top_bar_widgets.dart';
 import 'package:el_csadmin/injector.dart';
@@ -12,20 +12,27 @@ class ApprovalScreenPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) =>
-          locator<ApprovalScreenBloc>()..add(FetchApprovalsEvent()),
-      child: const Padding(
-        padding: EdgeInsets.all(32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            ApprovalTopBarWidget(),
-            SizedBox(height: 24),
-            Expanded(child: ApprovalTableWidget()),
-            SizedBox(height: 24),
-            ApprovalActionButtonsWidget(),
-          ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) =>
+              locator<ApprovalScreenBloc>()
+                ..add(const ApprovalScreenEvent.fetchApprovals()),
+        ),
+        BlocProvider(create: (context) => locator<OnlineIdBloc>()),
+      ],
+      child: Material(
+        color: Theme.of(context).scaffoldBackgroundColor,
+        child: const Padding(
+          padding: EdgeInsets.all(32.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ApprovalTopBarWidget(),
+              SizedBox(height: 24),
+              Expanded(child: ApprovalTableWidget()),
+            ],
+          ),
         ),
       ),
     );

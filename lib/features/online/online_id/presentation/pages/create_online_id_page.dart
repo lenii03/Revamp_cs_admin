@@ -13,7 +13,8 @@ class CreateOnlineIdPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => locator<OnlineIdBloc>()..add(FetchOnlineIdsEvent()),
+      create: (context) =>
+          locator<OnlineIdBloc>()..add(const OnlineIdEvent.fetchOnlineIds()),
       child: const Padding(
         padding: EdgeInsets.all(32.0),
         child: Column(
@@ -21,9 +22,7 @@ class CreateOnlineIdPage extends StatelessWidget {
           children: [
             OnlineIdTopBarWidget(),
             SizedBox(height: 24),
-            Expanded(
-              child: OnlineIdTableWidget(),
-            ),
+            Expanded(child: OnlineIdTableWidget()),
             SizedBox(height: 24),
             OnlineIdActionButtonsWidget(),
           ],

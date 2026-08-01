@@ -1,3 +1,4 @@
+import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -13,32 +14,45 @@ class ManageCsTopBar extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // --- SEARCH BAR ---
         Container(
           width: 300,
           height: 45,
           decoration: BoxDecoration(
-            color: AppColors.systemGroupedBackgroundDark,
+            color: Theme.of(
+              context,
+            ).extension<ThemeColors>()?.appContainerBackground,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: AppColors.separatorDark),
+            border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppColors.separatorDark
+                  : AppColors.separatorLight,
+            ),
           ),
           child: TextField(
-            style: const TextStyle(
-              color: AppColors.textColorDark,
+            style: TextStyle(
+              color: Theme.of(context).textTheme.bodyLarge?.color,
               fontSize: 14,
             ),
             onChanged: (value) =>
                 context.read<ManageCsBloc>().add(SearchCsUser(value)),
-            decoration: const InputDecoration(
+            decoration: InputDecoration(
               hintText: 'Search',
-              hintStyle: TextStyle(color: AppColors.secondaryTextColorDark),
+              hintStyle: TextStyle(
+                color: Theme.of(
+                  context,
+                ).extension<ThemeColors>()?.unselectedLabel,
+              ),
               prefixIcon: Icon(
                 Icons.search,
-                color: AppColors.secondaryTextColorDark,
+                color: Theme.of(
+                  context,
+                ).extension<ThemeColors>()?.unselectedLabel,
                 size: 20,
               ),
               border: InputBorder.none,
-              contentPadding: EdgeInsets.symmetric(vertical: 12),
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: const EdgeInsets.symmetric(vertical: 12),
             ),
           ),
         ),
@@ -58,16 +72,13 @@ class ManageCsTopBar extends StatelessWidget {
               },
             );
           },
-          icon: const Icon(Icons.add, color: AppColors.textColorDark, size: 20),
+          icon: const Icon(Icons.add, color: Colors.white, size: 20),
           label: const Text(
             "Add New User",
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              color: AppColors.textColorDark,
-            ),
+            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF7C3AED),
+            backgroundColor: AppColors.primaryColor,
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),

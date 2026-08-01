@@ -1,3 +1,4 @@
+import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 
@@ -6,30 +7,45 @@ class ApprovalTopBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final containerColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.appContainerBackground;
+    final separatorColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.separatorLight;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final hintColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.unselectedLabel;
+
     return Row(
       children: [
-        // 1. Kotak Search
+        IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back, color: textColor),
+          tooltip: 'Kembali',
+        ),
+        const SizedBox(width: 8),
         Expanded(
           flex: 4,
           child: Container(
             height: 40,
             decoration: BoxDecoration(
-              color: AppColors.systemGroupedBackgroundDark,
+              color: containerColor,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.separatorDark),
+              border: Border.all(color: separatorColor),
             ),
-            child: const TextField(
-              style: TextStyle(color: AppColors.textColorDark, fontSize: 13),
+            child: TextField(
+              style: TextStyle(color: textColor, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Search...',
-                hintStyle: TextStyle(color: AppColors.secondaryTextColorDark),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: AppColors.textColorDark,
-                  size: 18,
-                ),
+                hintStyle: TextStyle(color: hintColor),
+                prefixIcon: Icon(Icons.search, color: hintColor, size: 18),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 12),
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 12),
               ),
             ),
           ),
@@ -37,66 +53,68 @@ class ApprovalTopBarWidget extends StatelessWidget {
         const SizedBox(width: 16),
 
         // 2. Dropdown Action
-        const Text(
-          'Action',
-          style: TextStyle(
-            color: AppColors.secondaryTextColorDark,
-            fontSize: 13,
-          ),
-        ),
+        Text('Action', style: TextStyle(color: hintColor, fontSize: 13)),
         const SizedBox(width: 8),
         Expanded(
           flex: 2,
-          child: _buildFilterDropdown(['Show All', 'Add', 'Edit', 'Delete']),
+          child: _buildFilterDropdown(
+            context,
+            ['Show All', 'Add', 'Edit', 'Delete'],
+            containerColor,
+            separatorColor,
+            textColor,
+          ),
         ),
         const SizedBox(width: 16),
 
         // 3. Dropdown Status
-        const Text(
-          'Status',
-          style: TextStyle(
-            color: AppColors.secondaryTextColorDark,
-            fontSize: 13,
-          ),
-        ),
+        Text('Status', style: TextStyle(color: hintColor, fontSize: 13)),
         const SizedBox(width: 8),
         Expanded(
           flex: 2,
-          child: _buildFilterDropdown([
-            'Show All',
-            'Pending',
-            'Approved',
-            'Rejected',
-          ]),
+          child: _buildFilterDropdown(
+            context,
+            ['Show All', 'Pending', 'Approved', 'Rejected'],
+            containerColor,
+            separatorColor,
+            textColor,
+          ),
         ),
 
-        const Spacer(flex: 1), // Sisa ruang kosong
+        const Spacer(flex: 1),
+
         // 4. Tombol Print
         IconButton(
           onPressed: () {},
-          icon: const Icon(Icons.print, color: AppColors.textColorDark),
+          icon: Icon(Icons.print, color: Theme.of(context).iconTheme.color),
           tooltip: 'Print Data',
         ),
       ],
     );
   }
 
-  Widget _buildFilterDropdown(List<String> items) {
+  Widget _buildFilterDropdown(
+    BuildContext context,
+    List<String> items,
+    Color? bgColor,
+    Color borderColor,
+    Color? textColor,
+  ) {
     return Container(
       height: 40,
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.systemGroupedBackgroundDark,
+        color: bgColor,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.separatorDark),
+        border: Border.all(color: borderColor),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: items.first,
           isExpanded: true,
-          dropdownColor: AppColors.systemGroupedBackgroundDark,
-          icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-          style: const TextStyle(color: Colors.white, fontSize: 13),
+          dropdownColor: bgColor,
+          icon: Icon(Icons.arrow_drop_down, color: textColor),
+          style: TextStyle(color: textColor, fontSize: 13),
           onChanged: (String? newValue) {}, // Nanti dihubungkan dengan BLoC
           items: items.map((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));

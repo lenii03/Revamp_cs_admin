@@ -1,11 +1,36 @@
+import 'dart:async'; // 👈 Tambahan import untuk Timer debouncer
+import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
+import '../bloc/online_id_bloc.dart';
+import '../bloc/online_id_event.dart';
 
-class OnlineIdTopBarWidget extends StatelessWidget {
+class OnlineIdTopBarWidget extends StatefulWidget {
   const OnlineIdTopBarWidget({super.key});
 
   @override
+  State<OnlineIdTopBarWidget> createState() => _OnlineIdTopBarWidgetState();
+}
+
+class _OnlineIdTopBarWidgetState extends State<OnlineIdTopBarWidget> {
+  Timer? _debounce;
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+    final hintColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.unselectedLabel;
+    final iconColor = Theme.of(context).iconTheme.color;
+
     return Row(
       children: [
         Expanded(
@@ -13,18 +38,39 @@ class OnlineIdTopBarWidget extends StatelessWidget {
           child: Container(
             height: 45,
             decoration: BoxDecoration(
-              color: AppColors.systemGroupedBackgroundDark,
+              color: Theme.of(
+                context,
+              ).extension<ThemeColors>()?.appContainerBackground,
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: AppColors.separatorDark),
+              border: Border.all(
+                color: isDark
+                    ? AppColors.separatorDark
+                    : AppColors.separatorLight,
+              ),
             ),
-            child: const TextField(
-              style: TextStyle(color: AppColors.textColorDark, fontSize: 14),
+            child: TextField(
+              style: TextStyle(color: textColor, fontSize: 14),
+              onChanged: (value) {
+                if (_debounce?.isActive ?? false) {
+                  _debounce!.cancel();
+                }
+                _debounce = Timer(const Duration(milliseconds: 500), () {
+                  context.read<OnlineIdBloc>().add(
+                    OnlineIdEvent.searchOnlineIds(value),
+                  );
+                });
+              },
               decoration: InputDecoration(
                 hintText: 'Search Login ID / Email...',
-                hintStyle: TextStyle(color: AppColors.secondaryTextColorDark),
-                suffixIcon: Icon(Icons.search, color: AppColors.textColorDark, size: 20),
+                hintStyle: TextStyle(color: hintColor),
+                suffixIcon: Icon(Icons.search, color: hintColor, size: 20),
                 border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                enabledBorder: InputBorder.none,
+                focusedBorder: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(
+                  vertical: 12,
+                  horizontal: 16,
+                ),
               ),
             ),
           ),
@@ -32,7 +78,7 @@ class OnlineIdTopBarWidget extends StatelessWidget {
         const Spacer(flex: 5),
         IconButton(
           onPressed: () {},
-          icon: const Icon(Icons.print, color: AppColors.textColorDark),
+          icon: Icon(Icons.print, color: iconColor),
           tooltip: 'Print Data',
         ),
       ],

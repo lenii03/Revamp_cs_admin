@@ -64,8 +64,16 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
 
   @override
   Widget build(BuildContext context) {
+    // 👇 Menangkap status tema saat ini (Dark atau Light)
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textColor = isDark ? Colors.white : AppColors.black;
+    final dialogBgColor = isDark
+        ? AppColors.systemBackgroundDark
+        : AppColors.white;
+
     return Dialog(
-      backgroundColor: AppColors.systemBackgroundDark,
+      // 👇 Gunakan warna dinamis
+      backgroundColor: dialogBgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 700,
@@ -78,12 +86,12 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const SizedBox(width: 24),
-                const Text(
+                Text(
                   "Add new user",
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: textColor, // 👇 Teks dinamis
                   ),
                 ),
                 IconButton(
@@ -105,22 +113,30 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                     children: [
                       _buildFormRow(
                         "Login Id",
-                        _buildTextField(cLoginId, "Insert Login Id"),
+                        _buildTextField(cLoginId, "Insert Login Id", isDark),
+                        textColor,
                       ),
                       const SizedBox(height: 12),
                       _buildFormRow(
                         "Employee Id",
-                        _buildTextField(cEmployeeId, "Insert Employee Id"),
+                        _buildTextField(
+                          cEmployeeId,
+                          "Insert Employee Id",
+                          isDark,
+                        ),
+                        textColor,
                       ),
                       const SizedBox(height: 12),
                       _buildFormRow(
                         "Email",
-                        _buildTextField(cEmail, "Insert Email"),
+                        _buildTextField(cEmail, "Insert Email", isDark),
+                        textColor,
                       ),
                       const SizedBox(height: 12),
                       _buildFormRow(
                         "Retype Email",
-                        _buildTextField(cRetypeEmail, "Retype Email"),
+                        _buildTextField(cRetypeEmail, "Retype Email", isDark),
+                        textColor,
                       ),
                       const SizedBox(height: 16),
 
@@ -137,6 +153,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                               child: _buildCompactCheckbox(
                                 label: permissionLabels[index],
                                 value: checksPermission[index],
+                                textColor: textColor,
                                 onChanged: (val) {
                                   setState(() {
                                     checksPermission[index] = val ?? false;
@@ -146,6 +163,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                             ),
                           ),
                         ),
+                        textColor,
                       ),
                       const SizedBox(height: 12),
                       _buildFormRow(
@@ -153,12 +171,14 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                         _buildCompactCheckbox(
                           label: 'Suspended',
                           value: isSuspended,
+                          textColor: textColor,
                           onChanged: (val) {
                             setState(() {
                               isSuspended = val ?? false;
                             });
                           },
                         ),
+                        textColor,
                       ),
                     ],
                   ),
@@ -172,7 +192,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                 OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: Colors.white,
+                    foregroundColor: textColor, // 👇 Teks tombol dinamis
                     side: const BorderSide(color: Colors.grey),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -226,7 +246,9 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                   ),
                   child: const Text(
                     "Save",
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                    ), // Save button tetap putih (karena background cyan)
                   ),
                 ),
               ],
@@ -237,7 +259,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
     );
   }
 
-  Widget _buildFormRow(String label, Widget child) {
+  Widget _buildFormRow(String label, Widget child, Color textColor) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -247,8 +269,8 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
             padding: const EdgeInsets.only(top: 10.0),
             child: Text(
               label,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: textColor, // 👇 Dinamis
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -263,6 +285,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
   Widget _buildCompactCheckbox({
     required String label,
     required bool value,
+    required Color textColor,
     required Function(bool?) onChanged,
   }) {
     return Row(
@@ -282,34 +305,46 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
         Expanded(
           child: Text(
             label,
-            style: const TextStyle(color: Colors.white, fontSize: 12),
+            style: TextStyle(color: textColor, fontSize: 12), // 👇 Dinamis
           ),
         ),
       ],
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String hint) {
+  Widget _buildTextField(
+    TextEditingController controller,
+    String hint,
+    bool isDark,
+  ) {
+    final textColor = isDark ? Colors.white : AppColors.black;
+    final fillColor = isDark
+        ? AppColors.systemBackgroundDark
+        : AppColors.backgroundLight;
+    final borderColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.lighterGrey;
+
     return TextFormField(
       controller: controller,
-      style: const TextStyle(color: Colors.white, fontSize: 13),
+      style: TextStyle(color: textColor, fontSize: 13), // 👇 Dinamis
       decoration: InputDecoration(
         isDense: true,
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
         filled: true,
-        fillColor: AppColors.systemBackgroundDark,
+        fillColor: fillColor, // 👇 Dinamis
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.separatorDark),
+          borderSide: BorderSide(color: borderColor), // 👇 Dinamis
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: const BorderSide(color: AppColors.separatorDark),
+          borderSide: BorderSide(color: borderColor), // 👇 Dinamis
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

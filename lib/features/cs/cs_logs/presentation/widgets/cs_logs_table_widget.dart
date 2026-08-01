@@ -1,3 +1,4 @@
+import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -16,9 +17,15 @@ class CsLogsTableWidget extends StatelessWidget {
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.systemGroupedBackgroundDark,
+        color: Theme.of(
+          context,
+        ).extension<ThemeColors>()?.appContainerBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.separatorDark),
+        border: Border.all(
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppColors.separatorDark
+              : AppColors.separatorLight,
+        ),
       ),
       child: BlocBuilder<CsLogsBloc, CsLogsState>(
         builder: (context, state) {
@@ -73,36 +80,42 @@ class CsLogsTableWidget extends StatelessWidget {
         field: 'csLoginId',
         type: TrinaColumnType.text(),
         width: wLoginId,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Online Login Id',
         field: 'onlineLoginId',
         type: TrinaColumnType.text(),
         width: wOnlineId,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Log Time',
         field: 'logTime',
         type: TrinaColumnType.text(),
         width: wLogTime,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Approval Id',
         field: 'approvalId',
         type: TrinaColumnType.text(),
         width: wApprovalId,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Log Type',
         field: 'logType',
         type: TrinaColumnType.text(),
         width: wLogType,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Descriptions',
         field: 'descriptions',
         type: TrinaColumnType.text(),
         width: wDescriptions,
+        readOnly: true,
       ),
     ];
 

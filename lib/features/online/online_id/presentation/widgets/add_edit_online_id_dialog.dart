@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../../../../../core/theme/src/app_colors.dart';
-import 'package:intl/intl.dart';
 
 class AddEditOnlineIdDialog extends StatefulWidget {
   final bool isEdit;
@@ -50,9 +49,9 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     _emailCtrl = TextEditingController(
       text: widget.initialData?['email']?.toString() ?? '',
     );
-    _retypeEmailCtrl = TextEditingController(
-      text: widget.initialData?['email']?.toString() ?? '',
-    );
+    // Retype Email sengaja selalu kosong, termasuk saat Edit. Pengguna harus
+    // mengonfirmasi ulang alamat email seperti pada aplikasi CS Admin lama.
+    _retypeEmailCtrl = TextEditingController();
     _handphoneCtrl = TextEditingController(
       text: widget.initialData?['handphoneNo']?.toString() ?? '',
     );
@@ -67,22 +66,21 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
       text: _neverExpired ? '' : expDate,
     );
 
-    // Parsing tipe login dengan aman (mendukung angka maupun teks)
     if (widget.initialData?['loginType'] != null) {
       final val = widget.initialData!['loginType'].toString();
-      if (val == 'Client')
+      if (val == 'Client') {
         _loginType = 1;
-      else if (val == 'Sales')
+      } else if (val == 'Sales') {
         _loginType = 2;
-      else if (val == 'Branch')
+      } else if (val == 'Branch') {
         _loginType = 3;
-      else if (val == 'Demo Account')
+      } else if (val == 'Demo Account') {
         _loginType = 0;
-      else
+      } else {
         _loginType = int.tryParse(val) ?? 0;
+      }
     }
 
-    // Parsing bitmask permissions saat edit
     if (widget.initialData?['permissions'] != null) {
       int perms =
           int.tryParse(widget.initialData!['permissions'].toString()) ?? 0;
@@ -115,31 +113,27 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
       initialDate: DateTime.now(),
       firstDate: DateTime(1900),
       lastDate: DateTime(2100),
-      builder: (context, child) {
-        return Theme(
-          data: Theme.of(context).copyWith(
-            colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF8B5CF6),
-              onPrimary: Colors.white,
-              surface: AppColors.systemGroupedBackgroundDark,
-              onSurface: Colors.white,
-            ),
-          ),
-          child: child!,
-        );
-      },
     );
     if (picked != null) {
       setState(() {
-        controller.text = DateFormat('yyyy-MM-dd').format(picked);
+        final month = picked.month.toString().padLeft(2, '0');
+        final day = picked.day.toString().padLeft(2, '0');
+        controller.text = '${picked.year}-$month-$day';
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final dialogBgColor = isDark
+        ? AppColors.systemGroupedBackgroundDark
+        : AppColors.white;
+    final textColor = isDark ? Colors.white : AppColors.black;
+
     return Dialog(
-      backgroundColor: AppColors.systemGroupedBackgroundDark,
+      backgroundColor: dialogBgColor,
+      surfaceTintColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 650,
@@ -151,14 +145,13 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // HEADER
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
                       widget.isEdit ? 'Edit Online User' : 'Create Online User',
-                      style: const TextStyle(
-                        color: Colors.white,
+                      style: TextStyle(
+                        color: textColor,
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                       ),
@@ -174,24 +167,29 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                 ),
                 const SizedBox(height: 24),
 
-                // FORM FIELDS
                 _buildFormRow(
                   'Login Id',
+                  textColor,
                   _buildTextField(
                     controller: _loginIdCtrl,
                     hint: 'Insert Login Id',
                     enabled: !widget.isEdit,
+                    isDark: isDark,
                     validator: (val) => val!.isEmpty ? 'Required' : null,
                   ),
                 ),
-                _buildFormRow('Login Type', _buildDropdown()),
+                _buildFormRow('Login Type', textColor, _buildDropdown(isDark)),
                 _buildFormRow(
                   'Email',
+                  textColor,
                   _buildTextField(
                     controller: _emailCtrl,
                     hint: 'Insert Email',
+                    isDark: isDark,
                     validator: (val) {
-                      if (val == null || val.isEmpty) return 'Required';
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Email is required';
+                      }
                       if (!val.contains('@')) return 'Invalid email format';
                       return null;
                     },
@@ -199,31 +197,48 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                 ),
                 _buildFormRow(
                   'Retype Email',
+                  textColor,
                   _buildTextField(
                     controller: _retypeEmailCtrl,
                     hint: 'Retype Email',
-                    validator: (val) =>
-                        val != _emailCtrl.text ? 'Emails do not match' : null,
+                    isDark: isDark,
+                    validator: (val) {
+                      if (val == null || val.trim().isEmpty) {
+                        return 'Re-enter email is required';
+                      }
+                      if (val.trim() != _emailCtrl.text.trim()) {
+                        return 'Emails do not match';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 _buildFormRow(
                   'Handphone No',
+                  textColor,
                   _buildTextField(
                     controller: _handphoneCtrl,
                     hint: 'Handphone No',
+                    isDark: isDark,
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'Handphone No is required'
+                        : null,
                   ),
                 ),
                 _buildFormRow(
                   'Birth Date',
+                  textColor,
                   _buildTextField(
                     controller: _birthDateCtrl,
                     hint: 'Insert Birth Date',
                     readOnly: true,
+                    isDark: isDark,
                     onTap: () => _selectDate(context, _birthDateCtrl),
                   ),
                 ),
                 _buildFormRow(
                   'Expired Date',
+                  textColor,
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -232,25 +247,31 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                         hint: 'Insert Expired Date',
                         readOnly: true,
                         enabled: !_neverExpired,
+                        isDark: isDark,
                         onTap: () {
-                          if (!_neverExpired)
+                          if (!_neverExpired) {
                             _selectDate(context, _expiredDateCtrl);
+                          }
                         },
                       ),
                       const SizedBox(height: 8),
-                      _buildCheckboxRow('Never Expired', _neverExpired, (val) {
-                        setState(() {
-                          _neverExpired = val!;
-                          if (_neverExpired) _expiredDateCtrl.clear();
-                        });
-                      }),
+                      _buildCheckboxRow(
+                        'Never Expired',
+                        _neverExpired,
+                        textColor,
+                        (val) {
+                          setState(() {
+                            _neverExpired = val!;
+                            if (_neverExpired) _expiredDateCtrl.clear();
+                          });
+                        },
+                      ),
                     ],
                   ),
                 ),
-
-                // PERMISSIONS
                 _buildFormRow(
                   'Permissions',
+                  textColor,
                   Column(
                     children: [
                       Row(
@@ -259,6 +280,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                             child: _buildCheckboxRow(
                               'View Only',
                               _viewOnly,
+                              textColor,
                               (val) => setState(() => _viewOnly = val!),
                             ),
                           ),
@@ -266,6 +288,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                             child: _buildCheckboxRow(
                               'Syariah',
                               _syariah,
+                              textColor,
                               (val) => setState(() => _syariah = val!),
                             ),
                           ),
@@ -278,6 +301,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                             child: _buildCheckboxRow(
                               'Delayed',
                               _delayed,
+                              textColor,
                               (val) => setState(() => _delayed = val!),
                             ),
                           ),
@@ -285,6 +309,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                             child: _buildCheckboxRow(
                               'VIP',
                               _vip,
+                              textColor,
                               (val) => setState(() => _vip = val!),
                             ),
                           ),
@@ -297,6 +322,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                             child: _buildCheckboxRow(
                               'Research',
                               _research,
+                              textColor,
                               (val) => setState(() => _research = val!),
                             ),
                           ),
@@ -304,6 +330,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                             child: _buildCheckboxRow(
                               'Announcement',
                               _announcement,
+                              textColor,
                               (val) => setState(() => _announcement = val!),
                             ),
                           ),
@@ -312,18 +339,19 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     ],
                   ),
                 ),
-
                 const SizedBox(height: 32),
-
-                // ACTION BUTTONS
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     OutlinedButton(
                       onPressed: () => Navigator.pop(context),
                       style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.textColorDark,
-                        side: const BorderSide(color: AppColors.separatorDark),
+                        foregroundColor: textColor,
+                        side: BorderSide(
+                          color: isDark
+                              ? AppColors.separatorDark
+                              : AppColors.lighterGrey,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -346,27 +374,39 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                           if (_research) permissions += 16;
                           if (_announcement) permissions += 32;
 
-                          final payload = {
+                          // 👇 PERBAIKAN: Payload Dibuat Secara Dinamis
+                          final Map<String, dynamic> payload = {
                             "LoginId": _loginIdCtrl.text,
-                            "Email": _emailCtrl.text,
+                            "Email": _emailCtrl.text.trim(),
                             "LoginType": _loginType,
-                            "PhoneNumber": _handphoneCtrl.text,
-                            "BirthDate": _birthDateCtrl.text.isEmpty
-                                ? null
-                                : _birthDateCtrl.text,
-                            "AccountExpired": _neverExpired
-                                ? ""
-                                : _expiredDateCtrl.text,
+                            "PhoneNumber": _handphoneCtrl.text.trim(),
                             "Permissions": permissions,
                             "Status": 1,
                             "CreatedBy": "admin",
+                            "ActionType": widget.isEdit
+                                ? 2
+                                : 1, // 👈 2 = Edit, 1 = Add
+                            "ArrayAccountLink": [], // 👈 Array Wajib
+                            "ArrayAccountUnLink": [], // 👈 Array Wajib
                           };
+
+                          // 👇 Hanya kirim BirthDate jika tidak kosong (mencegah null crash)
+                          if (_birthDateCtrl.text.isNotEmpty) {
+                            payload["BirthDate"] = _birthDateCtrl.text;
+                          }
+
+                          if (_neverExpired || _expiredDateCtrl.text.isEmpty) {
+                            payload["AccountExpired"] = "";
+                          } else {
+                            payload["AccountExpired"] = _expiredDateCtrl.text;
+                          }
+
                           widget.onSave(payload);
                           Navigator.pop(context);
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF8B5CF6),
+                        backgroundColor: AppColors.primaryColor,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(8),
                         ),
@@ -393,7 +433,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     );
   }
 
-  Widget _buildFormRow(String label, Widget content) {
+  Widget _buildFormRow(String label, Color textColor, Widget content) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
       child: Row(
@@ -405,8 +445,8 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
               width: 140,
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: textColor,
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
                 ),
@@ -422,16 +462,26 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
   Widget _buildTextField({
     required TextEditingController controller,
     required String hint,
+    required bool isDark,
     bool enabled = true,
     bool readOnly = false,
     VoidCallback? onTap,
     String? Function(String?)? validator,
   }) {
+    final bgColor = isDark
+        ? AppColors.systemBackgroundDark
+        : AppColors.backgroundLight;
+    final disabledBgColor = isDark
+        ? AppColors.separatorDark.withValues(alpha: 0.3)
+        : AppColors.lighterGrey.withValues(alpha: 0.5);
+    final borderColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.lighterGrey;
+    final textColor = isDark ? Colors.white : AppColors.black;
+
     return Container(
       decoration: BoxDecoration(
-        color: enabled
-            ? AppColors.systemBackgroundDark
-            : AppColors.separatorDark.withValues(alpha: 0.3),
+        color: enabled ? bgColor : disabledBgColor,
         borderRadius: BorderRadius.circular(6),
       ),
       child: TextFormField(
@@ -440,7 +490,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
         readOnly: readOnly,
         onTap: onTap,
         validator: validator,
-        style: const TextStyle(color: Colors.white, fontSize: 13),
+        style: TextStyle(color: textColor, fontSize: 13),
         decoration: InputDecoration(
           isDense: true,
           hintText: hint,
@@ -449,14 +499,14 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
             horizontal: 12,
             vertical: 12,
           ),
-          border: const OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.separatorDark),
+          border: OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor),
           ),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.separatorDark),
+          enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor),
           ),
-          disabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: AppColors.separatorDark),
+          disabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: borderColor),
           ),
           errorStyle: const TextStyle(
             color: AppColors.destructiveRedDark,
@@ -467,22 +517,32 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     );
   }
 
-  // 💡 PERBAIKAN 1: Menambahkan tipe <int> secara eksplisit ke DropdownMenuItem
-  Widget _buildDropdown() {
+  Widget _buildDropdown(bool isDark) {
+    final bgColor = isDark
+        ? AppColors.systemBackgroundDark
+        : AppColors.backgroundLight;
+    final borderColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.lighterGrey;
+    final textColor = isDark ? Colors.white : AppColors.black;
+    final dropdownBgColor = isDark
+        ? AppColors.systemGroupedBackgroundDark
+        : AppColors.white;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: AppColors.systemBackgroundDark,
+        color: bgColor,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: AppColors.separatorDark),
+        border: Border.all(color: borderColor),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<int>(
           value: _loginType,
           isExpanded: true,
-          dropdownColor: AppColors.systemGroupedBackgroundDark,
+          dropdownColor: dropdownBgColor,
           icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
-          style: const TextStyle(color: Colors.white, fontSize: 13),
+          style: TextStyle(color: textColor, fontSize: 13),
           onChanged: (int? newValue) {
             setState(() {
               _loginType = newValue ?? 0;
@@ -501,10 +561,10 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     );
   }
 
-  // 💡 PERBAIKAN 2: Menggunakan ValueChanged<bool?> agar tipe functionnya akurat
   Widget _buildCheckboxRow(
     String label,
     bool value,
+    Color textColor,
     ValueChanged<bool?> onChanged,
   ) {
     return Row(
@@ -516,13 +576,13 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
           child: Checkbox(
             value: value,
             onChanged: onChanged,
-            activeColor: const Color(0xFF8B5CF6),
+            activeColor: AppColors.primaryColor,
             checkColor: Colors.white,
             side: const BorderSide(color: Colors.grey),
           ),
         ),
         const SizedBox(width: 10),
-        Text(label, style: const TextStyle(color: Colors.white, fontSize: 13)),
+        Text(label, style: TextStyle(color: textColor, fontSize: 13)),
       ],
     );
   }
