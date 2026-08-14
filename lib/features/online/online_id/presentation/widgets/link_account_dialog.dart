@@ -122,9 +122,9 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
     ];
     if (missingFields.isNotEmpty) {
       _showNotice(
-        'Lengkapi ${missingFields.join(' dan ')} melalui menu Edit sebelum '
-        'mengubah linked account.',
-        title: 'Data user belum lengkap',
+        'Complete ${missingFields.join(' and ')} from the Edit menu before '
+        'changing linked accounts.',
+        title: 'Incomplete user data',
       );
       return;
     }
@@ -168,7 +168,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
 
   Future<void> _showNotice(
     String message, {
-    String title = 'Pemberitahuan',
+    String title = 'Notice',
   }) async {
     await showDialog<void>(
       context: context,
@@ -312,7 +312,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                         const SizedBox(height: 10),
                         TextButton(
                           onPressed: _loadData,
-                          child: const Text('Coba Lagi'),
+                          child: const Text('Try Again'),
                         ),
                       ],
                     ),
@@ -328,7 +328,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                           onChanged: (value) => setState(() => _query = value),
                           style: TextStyle(color: textColor),
                           decoration: InputDecoration(
-                            hintText: 'Cari Account ID atau nama',
+                            hintText: 'Search Account ID or name',
                             prefixIcon: const Icon(Icons.search),
                             filled: true,
                             fillColor: panel,
@@ -340,7 +340,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                         if (_query.trim().isNotEmpty)
                           _accountPanel(
                             accounts: _filteredCandidates,
-                            emptyText: 'Account tidak ditemukan',
+                            emptyText: 'Account not found',
                             border: border,
                             textColor: textColor,
                             selectedId: _selectedCandidate?.custId,
@@ -382,7 +382,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                         _section(
                           title: 'Linked Account saat ini',
                           accounts: _activeExisting.toList(),
-                          emptyText: 'Belum ada linked account',
+                          emptyText: 'No linked accounts yet',
                           border: border,
                           textColor: textColor,
                           trailing: (account) => TextButton.icon(
@@ -398,7 +398,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                         ),
                         if (_toLink.isNotEmpty)
                           _section(
-                            title: 'Account baru (${_toLink.length})',
+                            title: 'New Accounts (${_toLink.length})',
                             accounts: _toLink,
                             emptyText: '',
                             border: border,
@@ -423,7 +423,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                               onPressed: () =>
                                   setState(() => _toUnlink.remove(account)),
                               icon: const Icon(Icons.undo, size: 17),
-                              label: const Text('Batalkan'),
+                              label: const Text('Cancel'),
                             ),
                           ),
                       ],

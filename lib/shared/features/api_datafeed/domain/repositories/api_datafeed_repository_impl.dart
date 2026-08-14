@@ -20,7 +20,7 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
       final result = await _networkDataSource.fetchCsList();
       return Right(result.cast<ManageCsUsersModel>());
     } on DioException catch (e) {
-      return Left("Gagal mengambil data. Status: ${e.response?.statusCode}");
+      return Left("Failed to retrieve data. Status: ${e.response?.statusCode}");
     } catch (e) {
       return Left(e.toString());
     }
@@ -219,7 +219,7 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   ) async {
     try {
       await _networkDataSource.sendPushNotification(payload);
-      return const Right("Push Notification berhasil dikirim");
+      return const Right("Push notification sent successfully");
     } catch (e) {
       return Left(e.toString());
     }
@@ -231,7 +231,7 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   ) async {
     try {
       await _networkDataSource.createSchedulerNotification(payload);
-      return const Right("Scheduler berhasil dibuat");
+      return const Right("Scheduler created successfully");
     } catch (e) {
       return Left(e.toString());
     }
@@ -243,7 +243,7 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   ) async {
     try {
       await _networkDataSource.updateApprovalStatus(payload);
-      return const Right("Status approval berhasil diubah");
+      return const Right("Approval status updated successfully");
     } catch (e) {
       return Left(e.toString());
     }

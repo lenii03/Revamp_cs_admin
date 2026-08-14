@@ -50,7 +50,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
     result.fold(
       (error) => ScaffoldMessenger.of(
         context,
-      ).showSnackBar(SnackBar(content: Text('Gagal memuat account: $error'))),
+      ).showSnackBar(SnackBar(content: Text('Failed to load accounts: $error'))),
       (data) => setState(() {
         _filteredResults = data;
         _selectedAccount = data.isNotEmpty ? data.first : null;
@@ -365,7 +365,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                     if (selected == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text("Silakan pilih akun terlebih dahulu"),
+                          content: Text("Please select an account first"),
                         ),
                       );
                       return;
@@ -375,7 +375,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text(
-                            "Login ID dan Account ID tersebut sudah ditambahkan",
+                            "This Login ID and Account ID have already been added",
                           ),
                         ),
                       );
@@ -386,7 +386,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(
-                          "${selected.loginId} - ${selected.custId} berhasil ditambahkan",
+                          "${selected.loginId} - ${selected.custId} added successfully",
                         ),
                         backgroundColor: Colors.green,
                       ),

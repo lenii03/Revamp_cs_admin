@@ -34,7 +34,7 @@ class SendEmailForgotBloc
       emit(
         state.copyWith(
           status: SendEmailForgotStatus.failure,
-          message: "Gagal memuat data lokal: ${e.toString()}",
+          message: "Failed to load local data: ${e.toString()}",
         ),
       );
     }

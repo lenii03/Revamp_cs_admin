@@ -40,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _runUpdateSimulation() async {
     _setSimulatedState(
-      AutoUpdateLoading('Memeriksa pembaruan simulasi...'),
+      AutoUpdateLoading('Checking simulated update...'),
     );
     await Future<void>.delayed(const Duration(milliseconds: 900));
 
@@ -278,7 +278,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 padding: const EdgeInsets.symmetric(vertical: 15),
               ),
               child: const Text(
-                'Coba Lagi',
+                'Try Again',
                 style: TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
@@ -386,33 +386,33 @@ class _UpdateViewData {
   factory _UpdateViewData.fromState(AutoUpdateState state) {
     if (state is AutoUpdateDownloading) {
       return const _UpdateViewData(
-        title: 'Mengunduh pembaruan',
-        description: 'Kami sedang menyiapkan versi terbaru untuk Anda.',
+        title: 'Downloading update',
+        description: 'We are preparing the latest version for you.',
       );
     }
     if (state is AutoUpdateReadyToInstall) {
       return const _UpdateViewData(
-        title: 'Menerapkan pembaruan',
-        description: 'Aplikasi akan dimulai ulang secara otomatis.',
+        title: 'Applying update',
+        description: 'The application will restart automatically.',
       );
     }
     if (state is AutoUpdateFailure) {
       return _UpdateViewData(
-        title: 'Pembaruan belum berhasil',
+        title: 'Update was not completed',
         description: state.message,
         animate: false,
       );
     }
     if (state is AutoUpdateSuccess) {
       return const _UpdateViewData(
-        title: 'Memulai ulang aplikasi',
-        description: 'Pembaruan selesai. Aplikasi akan segera dibuka kembali.',
+        title: 'Restarting application',
+        description: 'The update is complete. The application will reopen shortly.',
       );
     }
     return const _UpdateViewData(
       title: 'Menyiapkan CS Admin',
       description:
-          'Memeriksa pembaruan terbaru agar aplikasi tetap aman dan optimal.',
+          'Checking for the latest updates to keep the application secure and optimized.',
     );
   }
 }

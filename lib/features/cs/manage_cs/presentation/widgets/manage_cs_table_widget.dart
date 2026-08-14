@@ -1,6 +1,7 @@
 import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:el_csadmin/features/cs/manage_cs/presentation/bloc/manage_cs_event.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -44,7 +45,7 @@ class ManageCsTableWidget extends StatelessWidget {
             if (state.csUsers.isEmpty) {
               return const Center(
                 child: Text(
-                  "Data Kosong",
+                  "No Data",
                   style: TextStyle(color: AppColors.secondaryTextColorDark),
                 ),
               );
@@ -375,6 +376,7 @@ class ManageCsTableWidget extends StatelessWidget {
   void _showEditUserDialog(BuildContext context, ManageCsUsersModel user) {
     final cEmployeeId = TextEditingController(text: user.employeeId);
     final cEmail = TextEditingController(text: user.email);
+    final cRetypeEmail = TextEditingController();
     final formKey = GlobalKey<FormState>();
     final manageCsBloc = context.read<ManageCsBloc>();
 
@@ -442,20 +444,47 @@ class ManageCsTableWidget extends StatelessWidget {
                       // 👇 2. Pasang controller ke text field 👇
                       _buildFormRow(
                         'Employee Id',
-                        _buildTextField('', controller: cEmployeeId),
+                        _buildTextField(
+                          '',
+                          controller: cEmployeeId,
+                          maxLength: 32,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9._-]'),
+                            ),
+                          ],
+                          validator: (value) => _validateRequired(
+                            value,
+                            fieldName: 'Employee Id',
+                            maxLength: 32,
+                          ),
+                        ),
                       ),
                       _buildFormRow(
                         'Email',
-                        _buildTextField('', controller: cEmail),
+                        _buildTextField(
+                          '',
+                          controller: cEmail,
+                          maxLength: 100,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _validateEmail,
+                        ),
                       ),
                       _buildFormRow(
                         'Retype Email',
                         _buildTextField(
                           '',
+                          controller: cRetypeEmail,
                           hint: 'Retype Email',
-                          validator: (val) => val != cEmail.text
-                              ? 'Re-enter email is required'
-                              : null,
+                          maxLength: 100,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            final error = _validateEmail(value);
+                            if (error != null) return error;
+                            return value!.trim() != cEmail.text.trim()
+                                ? 'Emails do not match'
+                                : null;
+                          },
                         ),
                       ),
 
@@ -537,8 +566,8 @@ class ManageCsTableWidget extends StatelessWidget {
                                 if (createCsLogin) newPermissions += 1;
                                 final payload = {
                                   "LoginId": user.loginId,
-                                  "EmployeeId": cEmployeeId.text,
-                                  "Email": cEmail.text,
+                                  "EmployeeId": cEmployeeId.text.trim(),
+                                  "Email": cEmail.text.trim(),
                                   "Permissions": newPermissions,
                                   "Status": suspended ? 1 : 0,
                                   "ModifiedBy": "admin",
@@ -611,6 +640,9 @@ class ManageCsTableWidget extends StatelessWidget {
     String? hint,
     bool isPassword = false,
     String? Function(String?)? validator,
+    int? maxLength,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType? keyboardType,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -622,12 +654,16 @@ class ManageCsTableWidget extends StatelessWidget {
         initialValue: controller == null ? initialValue : null,
         obscureText: isPassword,
         validator: validator,
+        maxLength: maxLength,
+        inputFormatters: inputFormatters,
+        keyboardType: keyboardType,
         style: const TextStyle(color: Colors.white, fontSize: 13),
         textAlignVertical: TextAlignVertical.center,
         autovalidateMode: AutovalidateMode.onUserInteraction,
         decoration: InputDecoration(
           isDense: true,
           hintText: hint,
+          counterText: '',
           hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
@@ -671,6 +707,29 @@ class ManageCsTableWidget extends StatelessWidget {
         Text(label, style: const TextStyle(color: Colors.white, fontSize: 13)),
       ],
     );
+  }
+
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return 'Email is required';
+    if (email.length > 100) return 'Email must be at most 100 characters';
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      return 'Invalid email format';
+    }
+    return null;
+  }
+
+  String? _validateRequired(
+    String? value, {
+    String fieldName = 'Field',
+    int? maxLength,
+  }) {
+    final normalized = value?.trim() ?? '';
+    if (normalized.isEmpty) return '$fieldName is required';
+    if (maxLength != null && normalized.length > maxLength) {
+      return '$fieldName must be at most $maxLength characters';
+    }
+    return null;
   }
 
   void _showResetPasswordDialog(BuildContext context, ManageCsUsersModel user) {
@@ -753,6 +812,8 @@ class ManageCsTableWidget extends StatelessWidget {
                         '',
                         controller: cRetypeEmail,
                         hint: 'Retype Email',
+                        maxLength: 100,
+                        keyboardType: TextInputType.emailAddress,
                         validator: (val) =>
                             val != user.email ? 'Email does not match' : null,
                       ),
@@ -765,6 +826,7 @@ class ManageCsTableWidget extends StatelessWidget {
                         controller: cNewPassword,
                         hint: 'Insert Password',
                         isPassword: true,
+                        maxLength: 64,
                         validator: (val) {
                           if (val == null || val.length < 6)
                             return 'Password must be at least 6 characters';
@@ -785,6 +847,7 @@ class ManageCsTableWidget extends StatelessWidget {
                         controller: cRetypePassword,
                         hint: 'Insert Password',
                         isPassword: true,
+                        maxLength: 64,
                         validator: (val) => val != cNewPassword.text
                             ? 'Password does not match'
                             : null,

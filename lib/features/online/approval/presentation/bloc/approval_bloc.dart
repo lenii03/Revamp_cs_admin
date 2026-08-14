@@ -56,7 +56,7 @@ class ApprovalScreenBloc
     await _updateApproval(
       data,
       status: 2,
-      actionName: 'menyetujui',
+      actionName: 'approve',
       emit: emit,
     );
   }
@@ -65,7 +65,7 @@ class ApprovalScreenBloc
     ApprovalScreenModel data,
     Emitter<ApprovalScreenState> emit,
   ) async {
-    await _updateApproval(data, status: 0, actionName: 'menolak', emit: emit);
+    await _updateApproval(data, status: 0, actionName: 'reject', emit: emit);
   }
 
   Future<void> _updateApproval(
@@ -79,7 +79,7 @@ class ApprovalScreenBloc
     if (approvalId == null) {
       emit(
         ApprovalScreenState.error(
-          'Gagal $actionName: ApprovalId tidak valid (${data.approvalId})',
+          'Failed to $actionName: invalid ApprovalId (${data.approvalId})',
         ),
       );
       return;
@@ -103,7 +103,7 @@ class ApprovalScreenBloc
 
     await result.fold(
       (error) async {
-        emit(ApprovalScreenState.error('Gagal $actionName: $error'));
+        emit(ApprovalScreenState.error('Failed to $actionName: $error'));
       },
       (_) async {
         await _onFetchApprovals(emit);

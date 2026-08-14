@@ -20,7 +20,7 @@ class SendEmailQueueRepository {
     } else {
       final decoded = jsonDecode(raw);
       if (decoded is! Map) {
-        throw const FormatException('Format antrean Send Email tidak valid.');
+        throw const FormatException('Invalid Send Email queue format.');
       }
 
       final rawList = decoded['ListEmailForgotPINAndPassword'];
@@ -256,7 +256,7 @@ class SendEmailQueueRepository {
         await file.writeAsString(jsonEncode(rawStorage), flush: true);
       } catch (error) {
         throw FileSystemException(
-          'Gagal menyinkronkan antrean ke CS Admin lama: $error',
+          'Failed to synchronize the queue with the legacy CS Admin: $error',
           file.path,
         );
       }

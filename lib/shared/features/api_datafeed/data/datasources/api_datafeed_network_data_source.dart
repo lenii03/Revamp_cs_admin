@@ -78,7 +78,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   @override
   Future<List<ManageCsUsersModel>> fetchCsList() async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
 
     final response = await dio.get(
@@ -100,7 +100,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     int? size,
   }) async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
 
     final queryParams = <String, dynamic>{
@@ -136,7 +136,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     int? size,
   }) async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
 
     final queryParams = <String, dynamic>{
@@ -181,7 +181,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     int size = 30,
   }) async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
     final query = <String, dynamic>{"page": page, "size": size};
     if (actionType != null) query['actionType'] = actionType;
@@ -254,11 +254,11 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   @override
   Future<void> addCsUser(Map<String, dynamic> requestData) async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
     final response = await dio.post(Endpoint.postAddCs, data: requestData);
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(response.data['message'] ?? 'Gagal menambahkan CS');
+      throw Exception(response.data['message'] ?? 'Failed to add CS user');
     }
   }
 
@@ -287,7 +287,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     String csLoginId,
   ) async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
 
     try {
@@ -304,8 +304,8 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         final responseData = response.data;
         throw Exception(
           responseData is Map
-              ? responseData['message'] ?? 'Gagal mengirim email'
-              : 'Gagal mengirim email',
+              ? responseData['message'] ?? 'Failed to send email'
+              : 'Failed to send email',
         );
       }
     } on DioException catch (e) {
@@ -313,13 +313,13 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       final message = responseData is Map
           ? responseData['message']?.toString()
           : null;
-      throw Exception(message ?? e.message ?? 'Gagal mengirim email');
+      throw Exception(message ?? e.message ?? 'Failed to send email');
     }
   }
 
   @override
   Future<List<SendEmailForgotModel>> fetchSendEmailForgotList() async {
-    throw UnimplementedError('API GET Send Email Forgot belum tersedia');
+    throw UnimplementedError('Send Email Forgot GET API is unavailable');
   }
 
   @override
@@ -331,7 +331,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   }) async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
       final response = await dio.get(
         Endpoint.getListOpeningAccount,
@@ -347,18 +347,18 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         return response.data['data'] as List<dynamic>;
       } else {
         throw Exception(
-          response.data['message'] ?? 'Gagal memuat data Opening Accounts',
+          response.data['message'] ?? 'Failed to load Opening Account data',
         );
       }
     } catch (e) {
-      throw Exception('Terjadi kesalahan jaringan: ${e.toString()}');
+      throw Exception('A network error occurred: ${e.toString()}');
     }
   }
 
   @override
   Future<List<dynamic>> fetchOpeningAccountSuggestions() async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
     final response = await dio.get(
       Endpoint.getListOpeningAccountSuggestion,
@@ -370,7 +370,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   @override
   Future<void> sendEmailOpeningAccount(Map<String, dynamic> payload) async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
 
     try {
@@ -382,16 +382,16 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         final data = response.data;
         throw Exception(
           data is Map
-              ? data['message'] ?? 'Gagal mengirim email'
-              : 'Gagal mengirim email',
+              ? data['message'] ?? 'Failed to send email'
+              : 'Failed to send email',
         );
       }
     } on DioException catch (e) {
       final data = e.response?.data;
       throw Exception(
         data is Map
-            ? data['message']?.toString() ?? e.message ?? 'Gagal mengirim email'
-            : e.message ?? 'Gagal mengirim email',
+            ? data['message']?.toString() ?? e.message ?? 'Failed to send email'
+            : e.message ?? 'Failed to send email',
       );
     }
   }
@@ -409,10 +409,10 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       if (response.statusCode == 200) {
         return response.data['data'] as List<dynamic>;
       } else {
-        throw Exception(response.data['message'] ?? 'Gagal memuat Scheduler');
+        throw Exception(response.data['message'] ?? 'Failed to load scheduler data');
       }
     } catch (e) {
-      throw Exception('Terjadi kesalahan jaringan: ${e.toString()}');
+      throw Exception('A network error occurred: ${e.toString()}');
     }
   }
 
@@ -421,7 +421,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     final response = await dio.post('/cs/push-notification', data: payload);
     if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception(
-        response.data['message'] ?? 'Gagal mengirim push notification',
+        response.data['message'] ?? 'Failed to send push notification',
       );
     }
   }
@@ -433,7 +433,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       data: payload,
     );
     if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(response.data['message'] ?? 'Gagal membuat scheduler');
+      throw Exception(response.data['message'] ?? 'Failed to create scheduler');
     }
   }
 
@@ -441,19 +441,19 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<String> postAddOnlineUser(Map<String, dynamic> payload) async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
 
       final response = await dio.post(Endpoint.postAddOnUser, data: payload);
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return response.data['message'] ?? "Berhasil memproses data";
+        return response.data['message'] ?? "Data processed successfully";
       } else {
-        throw Exception(response.data['message'] ?? "Gagal memproses data");
+        throw Exception(response.data['message'] ?? "Failed to process data");
       }
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data['message'] ?? "Terjadi kesalahan pada server",
+        e.response?.data['message'] ?? "A server error occurred",
       );
     } catch (e) {
       throw Exception(e.toString());
@@ -464,7 +464,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<List<AccountLinkModel>> fetchAccountLinks() async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
 
       final response = await dio.get(Endpoint.getAccountLink);
@@ -484,7 +484,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     } on DioException catch (e) {
       final body = e.response?.data;
       final message = body is Map ? body['message']?.toString() : null;
-      throw Exception(message ?? 'Gagal mengambil daftar account');
+      throw Exception(message ?? 'Failed to retrieve the account list');
     }
   }
 
@@ -492,7 +492,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<List<AccountLinkModel>> fetchLinkedAccounts(String loginId) async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+      if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
 
       final response = await dio.get(
@@ -514,14 +514,14 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     } on DioException catch (e) {
       final body = e.response?.data;
       final message = body is Map ? body['message']?.toString() : null;
-      throw Exception(message ?? 'Gagal mengambil linked account');
+      throw Exception(message ?? 'Failed to retrieve linked accounts');
     }
   }
 
   @override
   Future<String> resetOnlinePasswordOrPin(Map<String, dynamic> payload) async {
     final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
     dio.options.baseUrl = baseUrl;
 
     try {
@@ -530,22 +530,22 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         final responseData = response.data;
         return responseData is Map
             ? responseData['message']?.toString() ??
-                  'Reset Password/PIN berhasil'
-            : 'Reset Password/PIN berhasil';
+                  'Password/PIN reset successfully'
+            : 'Password/PIN reset successfully';
       }
 
       final responseData = response.data;
       throw Exception(
         responseData is Map
-            ? responseData['message'] ?? 'Gagal reset Password/PIN'
-            : 'Gagal reset Password/PIN',
+            ? responseData['message'] ?? 'Failed to reset Password/PIN'
+            : 'Failed to reset Password/PIN',
       );
     } on DioException catch (e) {
       final responseData = e.response?.data;
       final message = responseData is Map
           ? responseData['message']?.toString()
           : null;
-      throw Exception(message ?? e.message ?? 'Gagal reset Password/PIN');
+      throw Exception(message ?? e.message ?? 'Failed to reset Password/PIN');
     }
   }
 
@@ -553,7 +553,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<void> updateApprovalStatus(Map<String, dynamic> payload) async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+      if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
       final response = await dio.post(
         Endpoint.updateStatusApprovalUser,
@@ -562,12 +562,12 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
 
       if (response.statusCode != 200 && response.statusCode != 201) {
         throw Exception(
-          response.data['message'] ?? "Gagal memproses data approval",
+          response.data['message'] ?? "Failed to process approval data",
         );
       }
     } on DioException catch (e) {
       throw Exception(
-        e.response?.data['message'] ?? "Terjadi kesalahan pada server",
+        e.response?.data['message'] ?? "A server error occurred",
       );
     } catch (e) {
       throw Exception(e.toString());
@@ -916,7 +916,7 @@ class ApiDatafeedNetworkDataSourceMockImpl
   @override
   Future<String> postAddOnlineUser(Map<String, dynamic> payload) async {
     await Future.delayed(const Duration(milliseconds: 800));
-    return "Berhasil memproses data (Mock)";
+    return "Data processed successfully (Mock)";
   }
 
   @override
@@ -928,7 +928,7 @@ class ApiDatafeedNetworkDataSourceMockImpl
 
   @override
   Future<String> resetOnlinePasswordOrPin(Map<String, dynamic> payload) async {
-    return 'Reset Password/PIN berhasil (Mock)';
+    return 'Password/PIN reset successfully (Mock)';
   }
 
   @override

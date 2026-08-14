@@ -175,8 +175,8 @@ class ApproveOpeningActionWidget extends StatelessWidget {
 
     if (title == "Clear") {
       if (data.isEmpty) {
-        _showValidationPopup(context, 'Data sudah kosong');
-      } else if (await _confirm(context, 'Hapus semua data yang dipilih?')) {
+        _showValidationPopup(context, 'There is no data to remove');
+      } else if (await _confirm(context, 'Remove all selected data?')) {
         bloc.add(ClearStaging());
       }
       return;
@@ -188,7 +188,7 @@ class ApproveOpeningActionWidget extends StatelessWidget {
         _showValidationPopup(context, 'Please select a Login Id first!');
       } else if (await _confirm(
         context,
-        'Kirim email untuk Account ID ${selected.custId} ke ${selected.email}?',
+        'Send an email for Account ID ${selected.custId} to ${selected.email}?',
       )) {
         bloc.add(
           SendEmailOpeningAccount(
@@ -202,10 +202,10 @@ class ApproveOpeningActionWidget extends StatelessWidget {
 
     if (title == "Send Email To All") {
       if (data.isEmpty) {
-        _showValidationPopup(context, 'Tidak ada data untuk dikirim');
+        _showValidationPopup(context, 'No data available to send');
       } else if (await _confirm(
         context,
-        'Kirim email untuk ${data.length > 10 ? 10 : data.length} data? Maksimal 10 data per proses.',
+        'Send emails for ${data.length > 10 ? 10 : data.length} records? A maximum of 10 records is allowed per process.',
       )) {
         bloc.add(SendEmailOpeningAccountToAll());
       }

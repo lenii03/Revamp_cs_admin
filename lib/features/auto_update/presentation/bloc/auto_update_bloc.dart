@@ -39,7 +39,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
           localHashes.add({"fileName": normalizedPath, "fileHash": fileHash});
         }
       } catch (error) {
-        emit(AutoUpdateFailure("Gagal membaca file lokal: $error"));
+        emit(AutoUpdateFailure("Failed to read local files: $error"));
         return;
       }
 
@@ -55,7 +55,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         return;
       }
 
-      emit(AutoUpdateLoading("Membandingkan file lokal dengan server..."));
+      emit(AutoUpdateLoading("Comparing local files with the server..."));
       for (final serverFile in serverHashes) {
         final localFile = localHashes.firstWhere(
           (local) =>
@@ -73,7 +73,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         return;
       }
 
-      emit(AutoUpdateLoading("Memeriksa file pembaruan di folder temp..."));
+      emit(AutoUpdateLoading("Checking update files in the temporary folder..."));
       try {
         for (final file in filesToUpdate) {
           final tempFile = File(_resolveTempPath(file.fileName));
@@ -88,7 +88,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
           }
         }
       } catch (error) {
-        emit(AutoUpdateFailure("Gagal memeriksa folder temp: $error"));
+        emit(AutoUpdateFailure("Failed to inspect the temporary folder: $error"));
         return;
       }
 
@@ -141,12 +141,12 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
           },
         );
         if (result.isLeft()) {
-          String errorMessage = 'Terjadi kesalahan';
+          String errorMessage = 'An error occurred';
           result.fold((l) => errorMessage = l.toString(), (r) => null);
 
           emit(
             AutoUpdateFailure(
-              'Gagal mengunduh ${file.fileName}: $errorMessage',
+              'Failed to download ${file.fileName}: $errorMessage',
             ),
           );
           return;
@@ -156,7 +156,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         if (!await downloadedFile.exists()) {
           emit(
             AutoUpdateFailure(
-              'File ${file.fileName} tidak ditemukan setelah download.',
+              'File ${file.fileName} was not found after download.',
             ),
           );
           return;
@@ -167,7 +167,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
           await downloadedFile.delete();
           emit(
             AutoUpdateFailure(
-              'Hash ${file.fileName} tidak sesuai dengan server. Silakan coba lagi.',
+              'The ${file.fileName} hash does not match the server. Please try again.',
             ),
           );
           return;
@@ -178,7 +178,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
     });
     on<InstallUpdateStarted>((event, emit) async {
       emit(
-        AutoUpdateLoading("Menjalankan updater dan memulai ulang aplikasi..."),
+        AutoUpdateLoading("Running the updater and restarting the application..."),
       );
       try {
         final exePath = Platform.resolvedExecutable;
@@ -192,7 +192,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         if (!await updaterFile.exists()) {
           emit(
             AutoUpdateFailure(
-              'update.exe tidak ditemukan. Jalankan pemeriksaan kembali.',
+              'update.exe was not found. Run the update check again.',
             ),
           );
           return;
@@ -208,7 +208,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         await Future<void>.delayed(const Duration(milliseconds: 500));
         exit(0);
       } catch (error) {
-        emit(AutoUpdateFailure("Gagal menjalankan update.exe: $error"));
+        emit(AutoUpdateFailure("Failed to run update.exe: $error"));
       }
     });
     on<AutoUpdateUpdateProgress>((event, emit) {
@@ -229,7 +229,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
     final candidate = p.normalize(p.join(tempRoot, normalizedName));
     if (p.isAbsolute(normalizedName) ||
         (candidate != tempRoot && !p.isWithin(tempRoot, candidate))) {
-      throw FormatException('Path file update tidak valid: $fileName');
+      throw FormatException('Invalid update file path: $fileName');
     }
     return candidate;
   }

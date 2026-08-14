@@ -265,7 +265,7 @@ class ApprovalDetailDialog extends StatelessWidget {
                               child: oldLinks.isEmpty
                                   ? const Center(
                                       child: Text(
-                                        'Tidak ada Linked Account',
+                                        'No Linked Accounts',
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                     )
@@ -353,7 +353,7 @@ class ApprovalDetailDialog extends StatelessWidget {
                               child: newLinks.isEmpty
                                   ? const Center(
                                       child: Text(
-                                        'Tidak ada New Linked Account',
+                                        'No New Linked Accounts',
                                         style: TextStyle(color: Colors.grey),
                                       ),
                                     )
@@ -553,7 +553,7 @@ class ApprovalDetailDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Approval Tidak Dapat Diproses',
+                  'Approval Cannot Be Processed',
                   style: TextStyle(
                     color: textColor,
                     fontSize: 18,
@@ -563,8 +563,8 @@ class ApprovalDetailDialog extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Data sudah berstatus ${data.status} dan tidak dapat '
-                  'di-$actionLabel kembali.\n'
+                  'This request is already ${data.status} and cannot be '
+                  '$actionLabel again.\n'
                   '[Login Id : ${data.loginId}]',
                   style: TextStyle(color: subTextColor),
                   textAlign: TextAlign.center,

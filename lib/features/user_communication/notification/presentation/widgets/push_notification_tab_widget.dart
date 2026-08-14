@@ -34,7 +34,7 @@ class PushNotificationTabWidget extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Kirim Notifikasi Baru",
+              "Send New Notification",
               style: TextStyle(
                 color: textColor, // 👈 Dinamis
                 fontSize: 18,
@@ -47,7 +47,7 @@ class PushNotificationTabWidget extends StatelessWidget {
             const SizedBox(height: 8),
             _buildTextField(
               context,
-              hint: "Masukkan judul notifikasi",
+              hint: "Enter notification title",
               isDark: isDark,
               textColor: textColor,
             ),
@@ -58,7 +58,7 @@ class PushNotificationTabWidget extends StatelessWidget {
             const SizedBox(height: 8),
             _buildTextField(
               context,
-              hint: "Masukkan sub judul notifikasi",
+              hint: "Enter notification subtitle",
               maxLines: 3,
               isDark: isDark,
               textColor: textColor,

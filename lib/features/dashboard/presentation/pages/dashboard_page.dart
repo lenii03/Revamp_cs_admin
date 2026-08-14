@@ -35,7 +35,7 @@ class DashboardPage extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              "Ringkasan Sistem",
+              "System Summary",
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.bold,

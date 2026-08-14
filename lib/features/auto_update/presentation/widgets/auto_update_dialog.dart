@@ -12,20 +12,20 @@ class AutoUpdateDialog extends StatelessWidget {
     return BlocBuilder<AutoUpdateBloc, AutoUpdateState>(
       builder: (context, state) {
         double progressValue = 0.0;
-        String statusText = "Menyiapkan pembaruan...";
+        String statusText = "Preparing update...";
         String detailText = "";
 
         if (state is AutoUpdateDownloading) {
           progressValue = state.progress;
-          statusText = "Mengunduh pembaruan...";
+          statusText = "Downloading update...";
           detailText =
               "File ${state.currentFileIndex} dari ${state.totalFiles} (${(progressValue * 100).toStringAsFixed(1)}%)";
         } else if (state is AutoUpdateSuccess) {
           progressValue = 1.0;
-          statusText = "Pembaruan Selesai!";
-          detailText = "Siap menerapkan versi terbaru.";
+          statusText = "Update Complete!";
+          detailText = "Ready to apply the latest version.";
         } else if (state is AutoUpdateFailure) {
-          statusText = "Pembaruan Gagal";
+          statusText = "Update Failed";
           detailText = state.message;
         }
 
@@ -85,7 +85,7 @@ class AutoUpdateDialog extends StatelessWidget {
                       backgroundColor: AppColors.errorRed,
                     ),
                     child: const Text(
-                      "Tutup",
+                      "Close",
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,

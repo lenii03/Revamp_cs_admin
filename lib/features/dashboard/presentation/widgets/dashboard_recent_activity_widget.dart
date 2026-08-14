@@ -40,7 +40,7 @@ class DashboardRecentActivityWidget extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.all(20.0),
               child: Text(
-                "Log Aktivitas CS Terbaru",
+                "Recent CS Activity",
                 style: TextStyle(
                   color: textColor,
                   fontSize: 16,
@@ -62,7 +62,7 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                   } else if (state is CsLogsError) {
                     return Center(
                       child: Text(
-                        "Gagal memuat log:\n${state.message}",
+                        "Failed to load logs:\n${state.message}",
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: AppColors.destructiveRedDark,
@@ -84,7 +84,7 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                     if (recentLogs.isEmpty) {
                       return Center(
                         child: Text(
-                          "Belum ada aktivitas CS",
+                          "No CS activity yet",
                           style: TextStyle(color: subTextColor),
                         ),
                       );
@@ -128,7 +128,7 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                                 ? logData.logTime.substring(0, 10)
                                 : logData.logTime.isNotEmpty
                                 ? logData.logTime
-                                : "Baru saja",
+                                : "Just now",
                             style: TextStyle(color: subTextColor, fontSize: 12),
                           ),
                         );

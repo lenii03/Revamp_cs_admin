@@ -101,7 +101,7 @@ class DashboardMetricCard extends StatelessWidget {
                       if (errorMessage != null) ...[
                         const SizedBox(width: 8),
                         Tooltip(
-                          message: 'Data gagal dimuat: $errorMessage',
+                          message: 'Failed to load data: $errorMessage',
                           child: Icon(
                             Icons.error_outline,
                             size: 18,

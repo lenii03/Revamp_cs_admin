@@ -75,7 +75,7 @@ class _ApprovalTopBarWidgetState extends State<ApprovalTopBarWidget> {
           IconButton(
             onPressed: () => Navigator.pop(context),
             icon: Icon(Icons.arrow_back, color: textColor),
-            tooltip: 'Kembali ke Dashboard',
+            tooltip: 'Back to Dashboard',
           ),
           const SizedBox(width: 8),
         ],

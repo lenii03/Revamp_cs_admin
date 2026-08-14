@@ -274,7 +274,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                       if (val.length < 3)
                         return 'Login Id must be at least 3 characters';
                       final validPattern = RegExp(
-                        r'^(?!.*[._]{2,})(?![._])[a-zA-Z0-9._]{1,64}$',
+                        r'^(?!.*[._]{2,})(?![._])[a-zA-Z0-9._]{3,32}(?<![._])$',
                       );
                       if (!validPattern.hasMatch(val)) {
                         return 'Invalid pattern. No consecutive underscores/dots allowed.';
@@ -296,7 +296,11 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                       if (val == null || val.trim().isEmpty) {
                         return 'Email is required';
                       }
-                      if (!val.contains('@')) return 'Invalid email format';
+                      if (!RegExp(
+                        r'^[^\s@]+@[^\s@]+\.[^\s@]+$',
+                      ).hasMatch(val.trim())) {
+                        return 'Invalid email format';
+                      }
                       return null;
                     },
                   ),
@@ -308,6 +312,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     controller: _retypeEmailCtrl,
                     hint: 'Retype Email',
                     isDark: isDark,
+                    maxLength: 100,
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
                         return 'Re-enter email is required';
@@ -513,7 +518,10 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                             "LoginId": _loginIdCtrl.text,
                             "Email": _emailCtrl.text.trim(),
                             "LoginType": _loginType,
-                            "HandphoneNo": _handphoneCtrl.text.trim(),
+                            "HandphoneNo": _handphoneCtrl.text.replaceAll(
+                              RegExp(r'[^0-9]'),
+                              '',
+                            ),
                             "Permissions": permissions,
                             "LoginStatus": widget.isEdit
                                 ? (widget.initialData?['status'] ?? 1)
@@ -628,7 +636,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                   const SizedBox(height: 8),
                   TextButton(
                     onPressed: _loadAccountLinks,
-                    child: const Text('Coba Lagi'),
+                    child: const Text('Try Again'),
                   ),
                 ],
               ),
@@ -639,7 +647,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
               onChanged: (value) => setState(() => _accountSearch = value),
               style: TextStyle(color: textColor, fontSize: 13),
               decoration: InputDecoration(
-                hintText: 'Cari Account ID atau nama',
+                hintText: 'Search Account ID or name',
                 hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
                 prefixIcon: const Icon(Icons.search, size: 20),
                 isDense: true,
@@ -661,7 +669,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                         padding: EdgeInsets.all(16),
                         child: Center(
                           child: Text(
-                            'Account tidak ditemukan',
+                            'Account not found',
                             style: TextStyle(color: Colors.grey, fontSize: 12),
                           ),
                         ),
@@ -781,7 +789,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     onPressed: () =>
                         setState(() => _unlinkedAccountLinks.remove(account)),
                     icon: const Icon(Icons.undo, size: 17),
-                    label: const Text('Batalkan'),
+                    label: const Text('Cancel'),
                   ),
                 ),
               ),
@@ -792,8 +800,8 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                 alignment: Alignment.centerLeft,
                 child: Text(
                   widget.isEdit
-                      ? 'Account baru (${_selectedAccountLinks.length})'
-                      : 'Account dipilih (${_selectedAccountLinks.length})',
+                      ? 'New Accounts (${_selectedAccountLinks.length})'
+                      : 'Selected accounts (${_selectedAccountLinks.length})',
                   style: TextStyle(
                     color: textColor,
                     fontSize: 12,
@@ -815,7 +823,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     style: const TextStyle(color: Colors.grey, fontSize: 12),
                   ),
                   trailing: IconButton(
-                    tooltip: 'Hapus account',
+                    tooltip: 'Remove account',
                     onPressed: () =>
                         setState(() => _selectedAccountLinks.remove(account)),
                     icon: const Icon(

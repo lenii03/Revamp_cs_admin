@@ -18,7 +18,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
   ) async {
     emit(DashboardLoading());
     if (dataSource is! ApiDatafeedNetworkDataSourceImpl) {
-      emit(DashboardError('Datasource dashboard tidak valid.'));
+      emit(DashboardError('Invalid dashboard data source.'));
       return;
     }
 
@@ -63,7 +63,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       final response = await request;
       final total = _extractTotalItems(response.data);
       if (total == null) {
-        return (value: null, error: 'Metadata total_items tidak tersedia.');
+        return (value: null, error: 'total_items metadata is unavailable.');
       }
       return (value: total, error: null);
     } catch (error) {

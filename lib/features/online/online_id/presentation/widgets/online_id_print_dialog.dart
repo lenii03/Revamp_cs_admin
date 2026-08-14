@@ -73,7 +73,7 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
         setState(() => _isPrinting = false);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Gagal mengambil data cetak: $error'),
+            content: Text('Failed to retrieve print data: $error'),
             backgroundColor: AppColors.destructiveRedDark,
           ),
         );
@@ -82,7 +82,7 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
         if (data.isEmpty) {
           setState(() => _isPrinting = false);
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Tidak ada data untuk dicetak.')),
+            const SnackBar(content: Text('No data available to print.')),
           );
           return;
         }
@@ -105,7 +105,7 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
           setState(() => _isPrinting = false);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Gagal membuat preview PDF: $error'),
+              content: Text('Failed to create PDF preview: $error'),
               backgroundColor: AppColors.destructiveRedDark,
             ),
           );

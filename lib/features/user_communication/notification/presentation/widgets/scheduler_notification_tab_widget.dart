@@ -51,7 +51,7 @@ class SchedulerNotificationTabWidget extends StatelessWidget {
             ),
             child: Center(
               child: Text(
-                "Tabel Scheduler (TrinaGrid) akan muncul di sini",
+                "The Scheduler table (TrinaGrid) will appear here",
                 style: TextStyle(color: labelColor), // 👈 Dinamis
               ),
             ),

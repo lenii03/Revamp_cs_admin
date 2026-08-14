@@ -2,6 +2,7 @@ import 'package:el_csadmin/core/theme/src/app_colors.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AddCsUserDialog extends StatefulWidget {
   final Function(Map<String, dynamic>) onSubmit;
@@ -113,7 +114,18 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                     children: [
                       _buildFormRow(
                         "Login Id",
-                        _buildTextField(cLoginId, "Insert Login Id", isDark),
+                        _buildTextField(
+                          cLoginId,
+                          "Insert Login Id",
+                          isDark,
+                          maxLength: 32,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9._]'),
+                            ),
+                          ],
+                          validator: _validateLoginId,
+                        ),
                         textColor,
                       ),
                       const SizedBox(height: 12),
@@ -123,19 +135,51 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                           cEmployeeId,
                           "Insert Employee Id",
                           isDark,
+                          maxLength: 32,
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9._-]'),
+                            ),
+                          ],
+                          validator: (value) => _validateRequired(
+                            value,
+                            fieldName: 'Employee Id',
+                            maxLength: 32,
+                          ),
                         ),
                         textColor,
                       ),
                       const SizedBox(height: 12),
                       _buildFormRow(
                         "Email",
-                        _buildTextField(cEmail, "Insert Email", isDark),
+                        _buildTextField(
+                          cEmail,
+                          "Insert Email",
+                          isDark,
+                          maxLength: 100,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: _validateEmail,
+                        ),
                         textColor,
                       ),
                       const SizedBox(height: 12),
                       _buildFormRow(
                         "Retype Email",
-                        _buildTextField(cRetypeEmail, "Retype Email", isDark),
+                        _buildTextField(
+                          cRetypeEmail,
+                          "Retype Email",
+                          isDark,
+                          maxLength: 100,
+                          keyboardType: TextInputType.emailAddress,
+                          validator: (value) {
+                            final error = _validateEmail(value);
+                            if (error != null) return error;
+                            if (value!.trim() != cEmail.text.trim()) {
+                              return 'Emails do not match';
+                            }
+                            return null;
+                          },
+                        ),
                         textColor,
                       ),
                       const SizedBox(height: 16),
@@ -223,10 +267,10 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                       );
 
                       final requestPayload = {
-                        "LoginId": cLoginId.text,
+                        "LoginId": cLoginId.text.trim(),
                         "Password": tempPass,
-                        "EmployeeId": cEmployeeId.text,
-                        "Email": cEmail.text,
+                        "EmployeeId": cEmployeeId.text.trim(),
+                        "Email": cEmail.text.trim(),
                         "Permissions": _calculatePermissionsValue(),
                         "Status": isSuspended ? 1 : 0,
                         "CreatedBy": currentUser,
@@ -315,8 +359,12 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
   Widget _buildTextField(
     TextEditingController controller,
     String hint,
-    bool isDark,
-  ) {
+    bool isDark, {
+    int? maxLength,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
     final textColor = isDark ? Colors.white : AppColors.black;
     final fillColor = isDark
         ? AppColors.systemBackgroundDark
@@ -327,11 +375,16 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
 
     return TextFormField(
       controller: controller,
+      maxLength: maxLength,
+      inputFormatters: inputFormatters,
+      keyboardType: keyboardType,
+      autovalidateMode: AutovalidateMode.onUserInteraction,
       style: TextStyle(color: textColor, fontSize: 13), // 👇 Dinamis
       decoration: InputDecoration(
         isDense: true,
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+        counterText: '',
         filled: true,
         fillColor: fillColor, // 👇 Dinamis
         contentPadding: const EdgeInsets.symmetric(
@@ -351,12 +404,44 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
           borderSide: const BorderSide(color: Color(0xFF06B6D4)),
         ),
       ),
-      validator: (value) {
-        if (value == null || value.isEmpty) {
-          return 'Required';
-        }
-        return null;
-      },
+      validator: validator ?? (value) => _validateRequired(value),
     );
+  }
+
+  String? _validateLoginId(String? value) {
+    final loginId = value?.trim() ?? '';
+    if (loginId.isEmpty) return 'Login Id cannot be empty';
+    if (loginId.length < 3) return 'Login Id must be at least 3 characters';
+    if (loginId.length > 32) return 'Login Id must be at most 32 characters';
+    final validPattern = RegExp(
+      r'^(?!.*[._]{2,})(?![._])[a-zA-Z0-9._]{3,32}(?<![._])$',
+    );
+    if (!validPattern.hasMatch(loginId)) {
+      return 'Only letters, numbers, underscores, and dots are allowed';
+    }
+    return null;
+  }
+
+  String? _validateEmail(String? value) {
+    final email = value?.trim() ?? '';
+    if (email.isEmpty) return 'Email is required';
+    if (email.length > 100) return 'Email must be at most 100 characters';
+    if (!RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$').hasMatch(email)) {
+      return 'Invalid email format';
+    }
+    return null;
+  }
+
+  String? _validateRequired(
+    String? value, {
+    String fieldName = 'Field',
+    int? maxLength,
+  }) {
+    final normalized = value?.trim() ?? '';
+    if (normalized.isEmpty) return '$fieldName is required';
+    if (maxLength != null && normalized.length > maxLength) {
+      return '$fieldName must be at most $maxLength characters';
+    }
+    return null;
   }
 }

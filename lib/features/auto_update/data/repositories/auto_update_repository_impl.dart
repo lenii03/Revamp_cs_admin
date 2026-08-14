@@ -90,7 +90,7 @@ class AutoUpdateRepositoryImpl implements AutoUpdateRepository {
           },
         );
       } else {
-        return Left('Gagal mengunduh file: ${response.statusCode}');
+        return Left('Failed to download file: ${response.statusCode}');
       }
       return Right(savePath);
     } on DioException catch (e) {

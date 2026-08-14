@@ -39,7 +39,7 @@ class ApprovalTableWidget extends StatelessWidget {
             ),
             error: (message) => Center(
               child: Text(
-                'Terjadi Kesalahan:\n$message',
+                'An Error Occurred:\n$message',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.destructiveRedDark),
               ),
@@ -48,7 +48,7 @@ class ApprovalTableWidget extends StatelessWidget {
               if (data.isEmpty) {
                 return Center(
                   child: Text(
-                    "Tidak ada data pengguna yang ditemukan.",
+                    "No user data found.",
                     style: TextStyle(
                       color: Theme.of(
                         context,
@@ -61,7 +61,7 @@ class ApprovalTableWidget extends StatelessWidget {
             },
             orElse: () => Center(
               child: Text(
-                "Memuat data tabel...",
+                "Loading table data...",
                 style: TextStyle(
                   color: Theme.of(
                     context,

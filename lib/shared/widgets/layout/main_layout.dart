@@ -60,7 +60,7 @@ class _MainLayoutState extends State<MainLayout> {
       setState(() => _appVersion = packageInfo.version);
     } catch (_) {
       if (!mounted) return;
-      setState(() => _appVersion = 'Tidak tersedia');
+      setState(() => _appVersion = 'Unavailable');
     }
   }
 
@@ -145,11 +145,11 @@ class _MainLayoutState extends State<MainLayout> {
                 child: _buildHeaderBadge(
                   context,
                   label: _serverUrl.isEmpty
-                      ? 'Server belum dikonfigurasi'
+                      ? 'Server not configured'
                       : _serverUrl,
                   tooltip: _serverUrl.isEmpty
-                      ? 'Alamat server belum dikonfigurasi'
-                      : 'Server aktif: $_serverUrl',
+                      ? 'Server address is not configured'
+                      : 'Active server: $_serverUrl',
                 ),
               ),
             ],
@@ -216,7 +216,7 @@ class _MainLayoutState extends State<MainLayout> {
               _pages[_selectedRoute] ??
               const Center(
                 child: Text(
-                  'Halaman sedang dalam pengembangan',
+                  'This page is under development',
                   style: TextStyle(color: AppColors.secondaryTextColorDark),
                 ),
               );

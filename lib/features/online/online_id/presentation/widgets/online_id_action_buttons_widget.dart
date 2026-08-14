@@ -117,7 +117,7 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
         if (title != "Add" && selectedUser == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("Silakan pilih user di tabel terlebih dahulu!"),
+              content: Text("Please select a user from the table first."),
               backgroundColor: Colors.orange,
             ),
           );
@@ -431,7 +431,7 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
     if (user.loginType != 1) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Link Account hanya tersedia untuk akun Client.'),
+          content: Text('Link Account is only available for Client accounts.'),
           backgroundColor: Colors.orange,
         ),
       );

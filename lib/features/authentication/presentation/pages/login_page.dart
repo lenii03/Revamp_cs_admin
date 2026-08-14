@@ -1,6 +1,7 @@
 import 'package:el_csadmin/data/remote/dio_client.dart';
 import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../core/network/server_config.dart';
@@ -71,7 +72,7 @@ class _LoginPageState extends State<LoginPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           backgroundColor: AppColors.errorRed,
-          content: Text('ID Pengguna dan Kata Sandi tidak boleh kosong'),
+          content: Text('Username and password are required.'),
         ),
       );
       return;
@@ -100,7 +101,7 @@ class _LoginPageState extends State<LoginPage> {
                 SnackBar(
                   backgroundColor: AppColors.errorRed,
                   content: Text(
-                    'Reset kata sandi gagal: ${state.errorMessage}',
+                    'Password reset failed: ${state.errorMessage}',
                   ),
                 ),
               );
@@ -111,7 +112,7 @@ class _LoginPageState extends State<LoginPage> {
                   backgroundColor: AppColors.successGreen,
                   content: Text(
                     state.message.isEmpty
-                        ? 'Reset kata sandi berhasil.'
+                        ? 'Password reset request completed successfully.'
                         : state.message,
                   ),
                 ),
@@ -159,7 +160,7 @@ class _LoginPageState extends State<LoginPage> {
                           const SizedBox(width: 16),
                           const Expanded(
                             child: Text(
-                              'Reset Kata Sandi',
+                              'Reset Password',
                               style: TextStyle(
                                 color: AppColors.textWhite,
                                 fontSize: 20,
@@ -173,7 +174,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       // Deskripsi
                       const Text(
-                        'Masukkan ID Pengguna Anda. Kata sandi baru akan dikirimkan sesuai dengan konfigurasi email akun yang terdaftar.',
+                        'Enter your username. A new password will be sent to the email address registered to your account.',
                         style: TextStyle(
                           color: AppColors.textGrey,
                           fontSize: 14,
@@ -185,7 +186,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       // Label Form
                       const Text(
-                        "ID PENGGUNA",
+                        "USERNAME",
                         style: TextStyle(
                           color: AppColors.textGrey,
                           fontSize: 12,
@@ -197,6 +198,12 @@ class _LoginPageState extends State<LoginPage> {
                       // Input Field
                       TextFormField(
                         controller: _resetPasswordController,
+                        maxLength: 32,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(
+                            RegExp(r'[a-zA-Z0-9._]'),
+                          ),
+                        ],
                         autofocus: true,
                         enabled: !isSubmitting,
                         textInputAction: TextInputAction.done,
@@ -205,6 +212,7 @@ class _LoginPageState extends State<LoginPage> {
                           fontSize: 14,
                         ),
                         decoration: InputDecoration(
+                          counterText: '',
                           hintText: "username",
                           hintStyle: TextStyle(
                             color: AppColors.textGrey.withValues(alpha: 0.5),
@@ -235,7 +243,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         validator: (value) =>
                             value == null || value.trim().isEmpty
-                            ? 'ID Pengguna wajib diisi'
+                            ? 'Username is required'
                             : null,
                         onFieldSubmitted: (_) => _resetPassword(
                           context,
@@ -263,7 +271,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             child: const Text(
-                              'Batal',
+                              'Cancel',
                               style: TextStyle(
                                 color: AppColors.textGrey,
                                 fontWeight: FontWeight.bold,
@@ -300,7 +308,7 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   )
                                 : const Text(
-                                    'Kirim Permintaan',
+                                    'Send Request',
                                     style: TextStyle(
                                       color: AppColors.backgroundDark,
                                       fontWeight: FontWeight.bold,
@@ -338,7 +346,7 @@ class _LoginPageState extends State<LoginPage> {
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.cardDark,
         title: const Text(
-          "Konfigurasi Server IP",
+          "Server Configuration",
           style: TextStyle(color: AppColors.textWhite),
         ),
         content: SizedBox(
@@ -353,9 +361,10 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               CustomTextField(
-                hintText: "Contoh: 192.168.1.100",
+                hintText: "Example: 192.168.1.100",
                 controller: _hostController,
                 prefixIcon: Icons.dns_outlined,
+                maxLength: 253,
               ),
               const SizedBox(height: 16),
               const Text(
@@ -364,9 +373,12 @@ class _LoginPageState extends State<LoginPage> {
               ),
               const SizedBox(height: 8),
               CustomTextField(
-                hintText: "Contoh: 8080",
+                hintText: "Example: 8080",
                 controller: _portController,
                 prefixIcon: Icons.numbers_outlined,
+                maxLength: 5,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               ),
             ],
           ),
@@ -375,7 +387,7 @@ class _LoginPageState extends State<LoginPage> {
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text(
-              "Batal",
+              "Cancel",
               style: TextStyle(color: AppColors.textGrey),
             ),
           ),
@@ -395,13 +407,13 @@ class _LoginPageState extends State<LoginPage> {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                     backgroundColor: AppColors.successGreen,
-                    content: Text("Konfigurasi Server berhasil disimpan!"),
+                    content: Text("Server configuration saved successfully."),
                   ),
                 );
               }
             },
             child: const Text(
-              "Simpan",
+              "Save",
               style: TextStyle(
                 color: AppColors.backgroundDark,
                 fontWeight: FontWeight.bold,
@@ -454,7 +466,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 24),
                         const Text(
-                          "Manage with Precision.\nKuasai Kendali Sistem.",
+                          "Manage with Precision.\nStay in Control.",
                           style: TextStyle(
                             color: AppColors.textWhite,
                             fontSize: 42,
@@ -464,7 +476,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          "Platform manajemen CS terpadu yang dirancang untuk kecepatan, akurasi, dan kemudahan operasional.",
+                          "A unified CS management platform designed for speed, accuracy, and operational efficiency.",
                           style: TextStyle(
                             color: AppColors.textGrey,
                             fontSize: 16,
@@ -507,7 +519,7 @@ class _LoginPageState extends State<LoginPage> {
                           ),
                           onPressed: _showIpConfigDialog,
                           icon: const Icon(Icons.settings_ethernet, size: 18),
-                          label: const Text("Konfigurasi IP"),
+                          label: const Text("Server Settings"),
                         ),
                       ),
 
@@ -518,7 +530,7 @@ class _LoginPageState extends State<LoginPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              "Masuk ke Akun Anda",
+                              "Login Screen",
                               style: TextStyle(
                                 color: AppColors.textWhite,
                                 fontSize: 28,
@@ -527,7 +539,7 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 8),
                             const Text(
-                              "Silakan masukkan detail login Anda di bawah ini.",
+                              "Enter your credentials to continue.",
                               style: TextStyle(
                                 color: AppColors.textGrey,
                                 fontSize: 14,
@@ -536,7 +548,7 @@ class _LoginPageState extends State<LoginPage> {
                             const SizedBox(height: 32),
 
                             const Text(
-                              "ID PENGGUNA",
+                              "USERNAME",
                               style: TextStyle(
                                 color: AppColors.textGrey,
                                 fontSize: 12,
@@ -545,11 +557,17 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 8),
                             CustomTextField(
-                              hintText: "Contoh: admin_leni",
+                              hintText: "Username",
                               controller: _usernameController,
                               prefixIcon: Icons.person_outline,
                               focusNode: _usernameFocus,
                               autofocus: true,
+                              maxLength: 32,
+                              inputFormatters: [
+                                FilteringTextInputFormatter.allow(
+                                  RegExp(r'[a-zA-Z0-9._]'),
+                                ),
+                              ],
                               textInputAction: TextInputAction.next,
                               onSubmitted: (_) => _passwordFocus.requestFocus(),
                             ),
@@ -559,7 +577,7 @@ class _LoginPageState extends State<LoginPage> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 const Text(
-                                  "KATA SANDI",
+                                  "PASSWORD",
                                   style: TextStyle(
                                     color: AppColors.textGrey,
                                     fontSize: 12,
@@ -574,6 +592,7 @@ class _LoginPageState extends State<LoginPage> {
                               isPassword: true,
                               prefixIcon: Icons.lock_outline,
                               focusNode: _passwordFocus,
+                              maxLength: 64,
                               textInputAction: TextInputAction.done,
                               onSubmitted: (_) => _submitLogin(),
                             ),
@@ -600,7 +619,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                                 const SizedBox(width: 8),
                                 const Text(
-                                  "Ingat saya di perangkat ini",
+                                  "Remember me",
                                   style: TextStyle(
                                     color: AppColors.textGrey,
                                     fontSize: 14,
@@ -610,7 +629,7 @@ class _LoginPageState extends State<LoginPage> {
                                 TextButton(
                                   onPressed: _showForgotPasswordDialog,
                                   child: const Text(
-                                    "Lupa Kata Sandi?",
+                                    "Forgot Password? Reset here.",
                                     style: TextStyle(
                                       color: AppColors.primaryColor,
                                       fontSize: 12,
@@ -648,7 +667,7 @@ class _LoginPageState extends State<LoginPage> {
                               },
                               builder: (context, state) {
                                 return CustomButton(
-                                  text: "Masuk Sekarang",
+                                  text: "Login",
                                   isLoading: state is AuthLoading,
                                   onPressed: _submitLogin,
                                 );

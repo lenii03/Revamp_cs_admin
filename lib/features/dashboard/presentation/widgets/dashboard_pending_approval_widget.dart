@@ -96,7 +96,7 @@ class _DashboardPendingApprovalWidgetState
                     );
                   },
                   child: const Text(
-                    "Lihat Semua",
+                    "View All",
                     style: TextStyle(
                       color: AppColors.primaryDark,
                       fontSize: 13,
@@ -124,7 +124,7 @@ class _DashboardPendingApprovalWidgetState
                   ),
                   error: (message) => Center(
                     child: Text(
-                      "Gagal memuat data:\n$message",
+                      "Failed to load data:\n$message",
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: AppColors.destructiveRedDark,
@@ -139,7 +139,7 @@ class _DashboardPendingApprovalWidgetState
                     if (pendingList.isEmpty) {
                       return Center(
                         child: Text(
-                          "Tidak ada nasabah yang menunggu persetujuan 🎉",
+                          "No customers are awaiting approval 🎉",
                           style: TextStyle(
                             color: Theme.of(
                               context,
@@ -242,7 +242,7 @@ class _DashboardPendingApprovalWidgetState
                                   ),
                                 ),
                                 child: const Text(
-                                  "Menunggu",
+                                  "Pending",
                                   style: TextStyle(
                                     color: Colors.orangeAccent,
                                     fontSize: 12,

@@ -39,7 +39,7 @@ class ManageCsBloc extends Bloc<ManageCsEvent, ManageCsState> {
       emit(ManageCsLoading());
       final result = await repository.addCsUser(event.requestData);
       result.fold(
-        (error) => emit(ManageCsError("Gagal menyimpan data: $error")),
+        (error) => emit(ManageCsError("Failed to save data: $error")),
         (_) => add(FetchCsList()),
       );
     });
@@ -47,7 +47,7 @@ class ManageCsBloc extends Bloc<ManageCsEvent, ManageCsState> {
       emit(ManageCsLoading());
       final result = await repository.editCsUser(event.requestData);
       result.fold(
-        (error) => emit(ManageCsError("Gagal mengedit data: $error")),
+        (error) => emit(ManageCsError("Failed to update data: $error")),
         (_) => add(FetchCsList()),
       );
     });
@@ -56,7 +56,7 @@ class ManageCsBloc extends Bloc<ManageCsEvent, ManageCsState> {
       emit(ManageCsLoading());
       final result = await repository.deleteCsUser(event.loginId);
       result.fold(
-        (error) => emit(ManageCsError("Gagal menghapus data: $error")),
+        (error) => emit(ManageCsError("Failed to delete data: $error")),
         (_) => add(FetchCsList()),
       );
     });
@@ -65,7 +65,7 @@ class ManageCsBloc extends Bloc<ManageCsEvent, ManageCsState> {
       emit(ManageCsLoading());
       final result = await repository.resetPassword(event.requestData);
       result.fold(
-        (error) => emit(ManageCsError("Gagal mereset password: $error")),
+        (error) => emit(ManageCsError("Failed to reset password: $error")),
         (_) => add(FetchCsList()),
       );
     });

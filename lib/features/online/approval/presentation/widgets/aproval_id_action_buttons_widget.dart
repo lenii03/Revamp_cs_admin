@@ -102,7 +102,7 @@ class ApprovalActionButtonsWidget extends StatelessWidget {
         if (title != "Add" && selectedUser == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
-              content: Text("Silakan pilih user di tabel terlebih dahulu!"),
+              content: Text("Please select a user from the table first."),
               backgroundColor: Colors.orange,
             ),
           );

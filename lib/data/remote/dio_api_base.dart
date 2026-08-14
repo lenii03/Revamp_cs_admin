@@ -14,7 +14,7 @@ class DioApiBase<T> {
       if (respons is Map<String, dynamic>) {
         return respons["message"] ?? fallbackMessage;
       } else if (respons is String) {
-        return 'Terjadi gangguan pada server. Silakan coba beberapa saat lagi.';
+        return 'The server is temporarily unavailable. Please try again later.';
       }
     }
     return fallbackMessage;

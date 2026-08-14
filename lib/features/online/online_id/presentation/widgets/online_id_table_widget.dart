@@ -57,7 +57,7 @@ class OnlineIdTableWidget extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           const Text(
-                            'Pemberitahuan',
+                            'Notice',
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.bold,
@@ -91,7 +91,7 @@ class OnlineIdTableWidget extends StatelessWidget {
                               Navigator.of(context).pop();
                             },
                             child: const Text(
-                              'Tutup',
+                              'Close',
                               style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 15,
@@ -113,17 +113,17 @@ class OnlineIdTableWidget extends StatelessWidget {
             loading: () => const Center(
               child: CircularProgressIndicator(color: AppColors.primaryColor),
             ),
-            error: (_) => _buildEmptyState(context, "Gagal memuat data."),
+            error: (_) => _buildEmptyState(context, "Failed to load data."),
             loaded: (dataList, selectedUser) {
               if (dataList.isEmpty) {
                 return _buildEmptyState(
                   context,
-                  "Tidak ada data pengguna yang ditemukan.",
+                  "No user data found.",
                 );
               }
               return _buildTable(context, dataList);
             },
-            orElse: () => _buildEmptyState(context, "Memuat data tabel..."),
+            orElse: () => _buildEmptyState(context, "Loading table data..."),
           );
         },
       ),

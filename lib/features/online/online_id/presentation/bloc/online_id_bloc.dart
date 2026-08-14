@@ -149,7 +149,7 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
       if (modifiedBy.isEmpty) {
         emit(
           const OnlineIdState.error(
-            'Session LoginId CS tidak ditemukan. Silakan login ulang.',
+            'CS LoginId session was not found. Please log in again.',
           ),
         );
         return;
@@ -181,14 +181,14 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
       String? resetError;
       resetResult.fold((error) => resetError = error, (_) {});
       if (resetError != null) {
-        emit(OnlineIdState.error('Gagal reset Password/PIN: $resetError'));
+        emit(OnlineIdState.error('Failed to reset Password/PIN: $resetError'));
         return;
       }
 
       add(const OnlineIdEvent.fetchOnlineIds());
     } catch (e) {
       emit(
-        OnlineIdState.error("Gagal menambahkan ke antrean: ${e.toString()}"),
+        OnlineIdState.error("Failed to add request to queue: ${e.toString()}"),
       );
     }
   }

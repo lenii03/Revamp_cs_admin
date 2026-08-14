@@ -44,7 +44,7 @@ class CsLogsTableWidget extends StatelessWidget {
             if (state.logs.isEmpty) {
               return const Center(
                 child: Text(
-                  "Data Kosong",
+                  "No Data",
                   style: TextStyle(color: AppColors.secondaryTextColorDark),
                 ),
               );

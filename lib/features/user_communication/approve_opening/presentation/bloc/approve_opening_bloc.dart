@@ -75,7 +75,7 @@ class ApproveOpeningBloc
       result.fold(
         (error) => _emitLoaded(
           emit,
-          notification: 'Gagal mengirim email: $error',
+          notification: 'Failed to send email: $error',
           notificationIsError: true,
         ),
         (_) {
@@ -84,7 +84,7 @@ class ApproveOpeningBloc
             _selectedAccount = null;
           }
 
-          _emitLoaded(emit, notification: 'Email berhasil dikirim');
+          _emitLoaded(emit, notification: 'Email sent successfully');
         },
       );
     });
@@ -105,8 +105,8 @@ class ApproveOpeningBloc
       _emitLoaded(
         emit,
         notification: errors.isEmpty
-            ? '${sent.length} email berhasil dikirim'
-            : '${sent.length} berhasil, ${errors.length} gagal dikirim',
+            ? '${sent.length} emails sent successfully'
+            : '${sent.length} succeeded, ${errors.length} failed',
         notificationIsError: errors.isNotEmpty,
       );
     });
@@ -141,7 +141,7 @@ class ApproveOpeningBloc
   Future<void> _loadApiDataInBackground() async {
     final result = await repository.fetchOpeningAccounts(size: 30);
     result.fold(
-      (error) => debugPrint("Gagal pre-fetch data: $error"),
+      (error) => debugPrint("Failed to pre-fetch data: $error"),
       (data) => apiAccountsList = data,
     );
   }

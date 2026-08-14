@@ -31,7 +31,7 @@ class DashboardActivityChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Tren Aktivitas Log (7 Hari Terakhir)",
+            "Log Activity Trend (Last 7 Days)",
             style: TextStyle(
               color: textColor,
               fontSize: 16,

@@ -34,7 +34,7 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                "Report Reset Password dan PIN code",
+                "Password and PIN Reset Report",
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 20,

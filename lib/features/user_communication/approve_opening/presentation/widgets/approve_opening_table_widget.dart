@@ -41,7 +41,7 @@ class ApproveOpeningTableWidget extends StatelessWidget {
           } else if (state is ApproveOpeningError) {
             return Center(
               child: Text(
-                'Terjadi Kesalahan:\n${state.message}',
+                'An Error Occurred:\n${state.message}',
                 textAlign: TextAlign.center,
                 style: const TextStyle(color: AppColors.destructiveRedDark),
               ),
@@ -51,7 +51,7 @@ class ApproveOpeningTableWidget extends StatelessWidget {
           }
           return Center(
             child: Text(
-              "Memuat data tabel...",
+              "Loading table data...",
               style: TextStyle(color: labelColor),
             ),
           );
