@@ -20,5 +20,18 @@ class AuthenticationBloc
         },
       );
     });
+
+    on<ForgotPasswordSubmitted>((event, emit) async {
+      emit(ForgotPasswordLoading());
+      final result = await authRepository.resetPassword(event.loginId);
+      result.fold(
+        (errorMessage) {
+          emit(ForgotPasswordFailure(errorMessage));
+        },
+        (successMessage) {
+          emit(ForgotPasswordSuccess(successMessage));
+        },
+      );
+    });
   }
 }

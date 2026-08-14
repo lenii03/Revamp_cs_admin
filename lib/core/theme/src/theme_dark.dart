@@ -2,6 +2,7 @@ part of '../theme.dart';
 
 ThemeData darkTheme() {
   return ThemeData(
+    useMaterial3: true,
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: AppColors.white),
       bodyLarge: TextStyle(color: AppColors.white),
@@ -15,7 +16,13 @@ ThemeData darkTheme() {
     colorScheme: const ColorScheme.dark(
       primary: AppColors.primary,
       onPrimary: Colors.white,
-      onSurface: AppColors.white,
+      surface: AppColors.systemGroupedBackgroundDark,
+      onSurface: AppColors.textColorDark,
+      onSurfaceVariant: AppColors.secondaryTextColorDark,
+      outline: Color(0xFF334155),
+      outlineVariant: AppColors.separatorDark,
+      surfaceContainer: Color(0xFF162231),
+      surfaceContainerLow: AppColors.systemGroupedBackgroundDark,
     ),
 
     extensions: <ThemeExtension<dynamic>>[
@@ -25,6 +32,10 @@ ThemeData darkTheme() {
     ],
     appBarTheme: AppBarTheme(
       color: AppColors.lighterDark,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
       iconTheme: const IconThemeData(color: AppColors.lightGrey),
       titleTextStyle: headline1.copyWith(
         color: AppColors.grey,
@@ -37,11 +48,11 @@ ThemeData darkTheme() {
       surfaceTintColor: AppColors.backgroundDark,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
       titleTextStyle: headline1.copyWith(
-        color: AppColors.darkestGrey,
+        color: AppColors.textColorDark,
         fontSize: 20,
         fontWeight: FontWeight.w500,
       ),
-      contentTextStyle: headline1.copyWith(color: AppColors.darkestGrey),
+      contentTextStyle: headline1.copyWith(color: AppColors.textColorDark),
     ),
     popupMenuTheme: PopupMenuThemeData(
       color: AppColors.lighterDark,

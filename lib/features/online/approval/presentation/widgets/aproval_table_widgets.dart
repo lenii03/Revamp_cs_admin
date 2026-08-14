@@ -76,6 +76,15 @@ class ApprovalTableWidget extends StatelessWidget {
   }
 
   Widget _buildTable(BuildContext context, List<ApprovalScreenModel> dataList) {
+    String normalizeStatus(String status) {
+      if (status == '1' || status.toLowerCase() == 'pending') return 'Pending';
+      if (status == '2' || status.toLowerCase() == 'approved')
+        return 'Approved';
+      if (status == '0' || status == '3' || status.toLowerCase() == 'rejected')
+        return 'Rejected';
+      return status;
+    }
+
     Widget actionRenderer(TrinaColumnRendererContext renderContext) {
       final action = renderContext.cell.value.toString();
       final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -243,7 +252,7 @@ class ApprovalTableWidget extends StatelessWidget {
           'loginType': TrinaCell(
             value: _getLoginTypeName(int.tryParse(data.loginType) ?? -1),
           ),
-          'status': TrinaCell(value: data.status),
+          'status': TrinaCell(value: normalizeStatus(data.status)),
           'accountExpired': TrinaCell(
             value: data.accountExpired == ""
                 ? "Never Expired"

@@ -31,7 +31,7 @@ class DashboardActivityChart extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            "Tren Aktivitas Log (7 Hari Terakhir)",            
+            "Tren Aktivitas Log (7 Hari Terakhir)",
             style: TextStyle(
               color: textColor,
               fontSize: 16,
@@ -69,7 +69,7 @@ class DashboardActivityChart extends StatelessWidget {
                       interval: 1,
                       getTitlesWidget: (value, meta) {
                         final style = TextStyle(
-                          color: subTextColor, 
+                          color: subTextColor,
                           fontSize: 12,
                         );
                         Widget text;
@@ -156,4 +156,3 @@ class DashboardActivityChart extends StatelessWidget {
     );
   }
 }
- 

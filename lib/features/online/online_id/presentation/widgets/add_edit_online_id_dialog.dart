@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:el_csadmin/data/local/session_service.dart';
+import 'package:el_csadmin/features/online/online_id/data/models/account_link_model.dart';
+import 'package:el_csadmin/features/online/online_id/data/repositories/online_id_repository.dart';
+import 'package:el_csadmin/injector.dart';
+import 'package:flutter/services.dart';
+import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 
 class AddEditOnlineIdDialog extends StatefulWidget {
@@ -27,6 +33,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
   late TextEditingController _handphoneCtrl;
   late TextEditingController _birthDateCtrl;
   late TextEditingController _expiredDateCtrl;
+  late TextEditingController _accountSearchCtrl;
 
   // State Variables
   int _loginType = 0; // 0: Demo, 1: Client, 2: Sales, 3: Branch
@@ -39,6 +46,14 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
   bool _vip = false;
   bool _research = false;
   bool _announcement = false;
+  final List<AccountLinkModel> _accountLinks = [];
+  final List<AccountLinkModel> _existingAccountLinks = [];
+  final List<AccountLinkModel> _selectedAccountLinks = [];
+  final List<AccountLinkModel> _unlinkedAccountLinks = [];
+  bool _accountLinksLoading = false;
+  bool _accountLinksLoaded = false;
+  String? _accountLinksError;
+  String _accountSearch = '';
 
   @override
   void initState() {
@@ -49,8 +64,6 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     _emailCtrl = TextEditingController(
       text: widget.initialData?['email']?.toString() ?? '',
     );
-    // Retype Email sengaja selalu kosong, termasuk saat Edit. Pengguna harus
-    // mengonfirmasi ulang alamat email seperti pada aplikasi CS Admin lama.
     _retypeEmailCtrl = TextEditingController();
     _handphoneCtrl = TextEditingController(
       text: widget.initialData?['handphoneNo']?.toString() ?? '',
@@ -65,6 +78,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     _expiredDateCtrl = TextEditingController(
       text: _neverExpired ? '' : expDate,
     );
+    _accountSearchCtrl = TextEditingController();
 
     if (widget.initialData?['loginType'] != null) {
       final val = widget.initialData!['loginType'].toString();
@@ -91,6 +105,9 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
       _research = (perms & 16) != 0;
       _announcement = (perms & 32) != 0;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _loadAccountLinks();
+    });
   }
 
   @override
@@ -101,7 +118,77 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     _handphoneCtrl.dispose();
     _birthDateCtrl.dispose();
     _expiredDateCtrl.dispose();
+    _accountSearchCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _loadAccountLinks() async {
+    if (_accountLinksLoading || _accountLinksLoaded) return;
+    setState(() {
+      _accountLinksLoading = true;
+      _accountLinksError = null;
+    });
+
+    final repository = locator<OnlineIdRepository>();
+    final candidateResult = await repository.fetchAccountLinks();
+    final linkedResult = widget.isEdit
+        ? await repository.fetchLinkedAccounts(_loginIdCtrl.text.trim())
+        : null;
+    if (!mounted) return;
+
+    String? error;
+    List<AccountLinkModel> candidates = const [];
+    List<AccountLinkModel> existing = const [];
+    candidateResult.fold(
+      (value) => error = value,
+      (value) => candidates = value,
+    );
+    linkedResult?.fold((value) => error ??= value, (value) => existing = value);
+
+    setState(() {
+      _accountLinks
+        ..clear()
+        ..addAll(candidates);
+      _existingAccountLinks
+        ..clear()
+        ..addAll(existing);
+      _accountLinksLoading = false;
+      _accountLinksError = error;
+      _accountLinksLoaded = error == null;
+    });
+  }
+
+  List<AccountLinkModel> get _filteredAccountLinks {
+    final query = _accountSearch.trim().toLowerCase();
+    return _accountLinks
+        .where((account) {
+          if (_selectedAccountLinks.any(
+            (item) => item.custId == account.custId,
+          )) {
+            return false;
+          }
+          if (_existingAccountLinks.any(
+            (item) => item.custId == account.custId,
+          )) {
+            return false;
+          }
+          return query.isEmpty ||
+              account.custId.toLowerCase().contains(query) ||
+              account.name.toLowerCase().contains(query);
+        })
+        .take(30)
+        .toList();
+  }
+
+  void _selectAccount(AccountLinkModel account) {
+    if (_selectedAccountLinks.any((item) => item.custId == account.custId)) {
+      return;
+    }
+    setState(() {
+      _selectedAccountLinks.add(account);
+      _accountSearchCtrl.clear();
+      _accountSearch = '';
+    });
   }
 
   Future<void> _selectDate(
@@ -175,7 +262,25 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     hint: 'Insert Login Id',
                     enabled: !widget.isEdit,
                     isDark: isDark,
-                    validator: (val) => val!.isEmpty ? 'Required' : null,
+                    maxLength: 32,
+                    inputFormatters: [
+                      FilteringTextInputFormatter.allow(
+                        RegExp(r'[a-zA-Z0-9._]'),
+                      ),
+                    ],
+                    validator: (val) {
+                      if (val == null || val.isEmpty)
+                        return 'Login Id cannot be empty';
+                      if (val.length < 3)
+                        return 'Login Id must be at least 3 characters';
+                      final validPattern = RegExp(
+                        r'^(?!.*[._]{2,})(?![._])[a-zA-Z0-9._]{1,64}$',
+                      );
+                      if (!validPattern.hasMatch(val)) {
+                        return 'Invalid pattern. No consecutive underscores/dots allowed.';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 _buildFormRow('Login Type', textColor, _buildDropdown(isDark)),
@@ -186,6 +291,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     controller: _emailCtrl,
                     hint: 'Insert Email',
                     isDark: isDark,
+                    maxLength: 100,
                     validator: (val) {
                       if (val == null || val.trim().isEmpty) {
                         return 'Email is required';
@@ -218,11 +324,33 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                   textColor,
                   _buildTextField(
                     controller: _handphoneCtrl,
-                    hint: 'Handphone No',
+                    hint: '08xx-xxxx-xxxxx',
                     isDark: isDark,
-                    validator: (val) => val == null || val.trim().isEmpty
-                        ? 'Handphone No is required'
-                        : null,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [
+                      MaskTextInputFormatter(
+                        mask: '####-####-#####',
+                        filter: {"#": RegExp(r'[0-9]')},
+                        type: MaskAutoCompletionType.lazy,
+                      ),
+                      LengthLimitingTextInputFormatter(17),
+                    ],
+                    validator: (val) {
+                      final digitsOnly =
+                          val?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+                      if (digitsOnly.isEmpty) return 'Handphone No is required';
+                      if (digitsOnly.length < 10)
+                        return 'Phone number is too short';
+                      if (digitsOnly.length > 15)
+                        return 'Phone number is too long';
+
+                      // Wajib diawali 08
+                      final regex = RegExp(r'^08\d{8,13}$');
+                      if (!regex.hasMatch(digitsOnly)) {
+                        return 'Must start with 08 and be a valid number';
+                      }
+                      return null;
+                    },
                   ),
                 ),
                 _buildFormRow(
@@ -234,6 +362,9 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     readOnly: true,
                     isDark: isDark,
                     onTap: () => _selectDate(context, _birthDateCtrl),
+                    validator: (val) => val == null || val.trim().isEmpty
+                        ? 'Birth Date is required'
+                        : null,
                   ),
                 ),
                 _buildFormRow(
@@ -339,6 +470,10 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     ],
                   ),
                 ),
+                if (_loginType == 1) ...[
+                  const SizedBox(height: 4),
+                  _buildNewLinkedAccount(isDark, textColor),
+                ],
                 const SizedBox(height: 32),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
@@ -374,23 +509,32 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                           if (_research) permissions += 16;
                           if (_announcement) permissions += 32;
 
-                          // 👇 PERBAIKAN: Payload Dibuat Secara Dinamis
                           final Map<String, dynamic> payload = {
                             "LoginId": _loginIdCtrl.text,
                             "Email": _emailCtrl.text.trim(),
                             "LoginType": _loginType,
-                            "PhoneNumber": _handphoneCtrl.text.trim(),
+                            "HandphoneNo": _handphoneCtrl.text.trim(),
                             "Permissions": permissions,
-                            "Status": 1,
-                            "CreatedBy": "admin",
+                            "LoginStatus": widget.isEdit
+                                ? (widget.initialData?['status'] ?? 1)
+                                : 1,
+                            "SalesId":
+                                widget.initialData?['salesId']?.toString() ??
+                                '',
+                            "CreatedBy": locator<SessionService>().read(
+                              SessionKey.loginId,
+                            ),
                             "ActionType": widget.isEdit
                                 ? 2
                                 : 1, // 👈 2 = Edit, 1 = Add
-                            "ArrayAccountLink": [], // 👈 Array Wajib
-                            "ArrayAccountUnLink": [], // 👈 Array Wajib
+                            "ArrayAccountLink": _selectedAccountLinks
+                                .map((account) => account.custId)
+                                .toList(),
+                            "ArrayAccountUnLink": _unlinkedAccountLinks
+                                .map((account) => account.custId)
+                                .toList(),
                           };
 
-                          // 👇 Hanya kirim BirthDate jika tidak kosong (mencegah null crash)
                           if (_birthDateCtrl.text.isNotEmpty) {
                             payload["BirthDate"] = _birthDateCtrl.text;
                           }
@@ -433,6 +577,262 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     );
   }
 
+  Widget _buildNewLinkedAccount(bool isDark, Color textColor) {
+    final borderColor = isDark
+        ? AppColors.separatorDark
+        : AppColors.lighterGrey;
+    final panelColor = isDark
+        ? AppColors.systemBackgroundDark
+        : AppColors.backgroundLight;
+
+    return Container(
+      decoration: BoxDecoration(
+        color: panelColor,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: borderColor),
+      ),
+      child: ExpansionTile(
+        onExpansionChanged: (expanded) {
+          if (expanded) _loadAccountLinks();
+        },
+        iconColor: AppColors.primaryColor,
+        collapsedIconColor: textColor,
+        title: Text(
+          'New Linked Account',
+          style: TextStyle(
+            color: textColor,
+            fontSize: 13,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        childrenPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+        children: [
+          if (_accountLinksLoading)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 12),
+              child: LinearProgressIndicator(minHeight: 2),
+            )
+          else if (_accountLinksError != null)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              child: Column(
+                children: [
+                  Text(
+                    _accountLinksError!,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: AppColors.destructiveRedDark,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextButton(
+                    onPressed: _loadAccountLinks,
+                    child: const Text('Coba Lagi'),
+                  ),
+                ],
+              ),
+            )
+          else ...[
+            TextField(
+              controller: _accountSearchCtrl,
+              onChanged: (value) => setState(() => _accountSearch = value),
+              style: TextStyle(color: textColor, fontSize: 13),
+              decoration: InputDecoration(
+                hintText: 'Cari Account ID atau nama',
+                hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
+                prefixIcon: const Icon(Icons.search, size: 20),
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(7),
+                ),
+              ),
+            ),
+            if (_accountSearch.trim().isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Container(
+                constraints: const BoxConstraints(maxHeight: 180),
+                decoration: BoxDecoration(
+                  border: Border.all(color: borderColor),
+                  borderRadius: BorderRadius.circular(7),
+                ),
+                child: _filteredAccountLinks.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(
+                          child: Text(
+                            'Account tidak ditemukan',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: _filteredAccountLinks.length,
+                        separatorBuilder: (_, _) =>
+                            Divider(height: 1, color: borderColor),
+                        itemBuilder: (context, index) {
+                          final account = _filteredAccountLinks[index];
+                          return ListTile(
+                            dense: true,
+                            title: Text(
+                              account.custId,
+                              style: TextStyle(
+                                color: textColor,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
+                            ),
+                            subtitle: Text(
+                              account.name,
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontSize: 12,
+                              ),
+                            ),
+                            trailing: const Icon(
+                              Icons.add_circle_outline,
+                              color: AppColors.primaryColor,
+                              size: 20,
+                            ),
+                            onTap: () => _selectAccount(account),
+                          );
+                        },
+                      ),
+              ),
+            ],
+            if (widget.isEdit &&
+                _existingAccountLinks.any(
+                  (account) => !_unlinkedAccountLinks.any(
+                    (item) => item.custId == account.custId,
+                  ),
+                )) ...[
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Linked Account saat ini',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              ..._existingAccountLinks
+                  .where(
+                    (account) => !_unlinkedAccountLinks.any(
+                      (item) => item.custId == account.custId,
+                    ),
+                  )
+                  .map(
+                    (account) => ListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(
+                        account.custId,
+                        style: TextStyle(color: textColor, fontSize: 12),
+                      ),
+                      subtitle: Text(
+                        account.name,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
+                      ),
+                      trailing: TextButton.icon(
+                        onPressed: () =>
+                            setState(() => _unlinkedAccountLinks.add(account)),
+                        icon: const Icon(Icons.link_off, size: 17),
+                        label: const Text('Unlink'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.destructiveRedDark,
+                        ),
+                      ),
+                    ),
+                  ),
+            ],
+            if (_unlinkedAccountLinks.isNotEmpty) ...[
+              const SizedBox(height: 10),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  'Akan dilepas (${_unlinkedAccountLinks.length})',
+                  style: const TextStyle(
+                    color: AppColors.destructiveRedDark,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              ..._unlinkedAccountLinks.map(
+                (account) => ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    account.custId,
+                    style: TextStyle(color: textColor, fontSize: 12),
+                  ),
+                  subtitle: Text(
+                    account.name,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  trailing: TextButton.icon(
+                    onPressed: () =>
+                        setState(() => _unlinkedAccountLinks.remove(account)),
+                    icon: const Icon(Icons.undo, size: 17),
+                    label: const Text('Batalkan'),
+                  ),
+                ),
+              ),
+            ],
+            if (_selectedAccountLinks.isNotEmpty) ...[
+              const SizedBox(height: 14),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  widget.isEdit
+                      ? 'Account baru (${_selectedAccountLinks.length})'
+                      : 'Account dipilih (${_selectedAccountLinks.length})',
+                  style: TextStyle(
+                    color: textColor,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 6),
+              ..._selectedAccountLinks.map(
+                (account) => ListTile(
+                  dense: true,
+                  contentPadding: EdgeInsets.zero,
+                  title: Text(
+                    account.custId,
+                    style: TextStyle(color: textColor, fontSize: 12),
+                  ),
+                  subtitle: Text(
+                    account.name,
+                    style: const TextStyle(color: Colors.grey, fontSize: 12),
+                  ),
+                  trailing: IconButton(
+                    tooltip: 'Hapus account',
+                    onPressed: () =>
+                        setState(() => _selectedAccountLinks.remove(account)),
+                    icon: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.destructiveRedDark,
+                      size: 20,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
   Widget _buildFormRow(String label, Color textColor, Widget content) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16.0),
@@ -467,6 +867,9 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
     bool readOnly = false,
     VoidCallback? onTap,
     String? Function(String?)? validator,
+    List<TextInputFormatter>? inputFormatters,
+    TextInputType? keyboardType,
+    int? maxLength,
   }) {
     final bgColor = isDark
         ? AppColors.systemBackgroundDark
@@ -490,10 +893,14 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
         readOnly: readOnly,
         onTap: onTap,
         validator: validator,
+        inputFormatters: inputFormatters,
+        keyboardType: keyboardType,
+        maxLength: maxLength,
         style: TextStyle(color: textColor, fontSize: 13),
         decoration: InputDecoration(
           isDense: true,
           hintText: hint,
+          counterText: '',
           hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 12,
@@ -546,6 +953,12 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
           onChanged: (int? newValue) {
             setState(() {
               _loginType = newValue ?? 0;
+              if (_loginType != 1) {
+                _selectedAccountLinks.clear();
+                _unlinkedAccountLinks.clear();
+                _accountSearchCtrl.clear();
+                _accountSearch = '';
+              }
             });
           },
           items: const [

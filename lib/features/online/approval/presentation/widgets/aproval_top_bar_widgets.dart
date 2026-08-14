@@ -1,9 +1,59 @@
+import 'dart:async';
+
 import 'package:el_csadmin/core/theme/theme.dart';
+import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 
-class ApprovalTopBarWidget extends StatelessWidget {
-  const ApprovalTopBarWidget({super.key});
+class ApprovalTopBarWidget extends StatefulWidget {
+  final bool showBackButton;
+
+  const ApprovalTopBarWidget({super.key, this.showBackButton = false});
+
+  @override
+  State<ApprovalTopBarWidget> createState() => _ApprovalTopBarWidgetState();
+}
+
+class _ApprovalTopBarWidgetState extends State<ApprovalTopBarWidget> {
+  final _searchController = TextEditingController();
+  Timer? _debounce;
+  String _action = 'Show All';
+  String _status = 'Show All';
+
+  int? get _actionType => switch (_action) {
+    'Add' => 1,
+    'Edit' => 2,
+    'Delete' => 3,
+    _ => null,
+  };
+
+  int? get _statusType => switch (_status) {
+    'Rejected' => 0,
+    'Pending' => 1,
+    'Approved' => 2,
+    _ => null,
+  };
+
+  @override
+  void dispose() {
+    _debounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _applyFilters() {
+    context.read<ApprovalScreenBloc>().applyFilters(
+      search: _searchController.text,
+      actionType: _actionType,
+      status: _statusType,
+    );
+  }
+
+  void _onSearchChanged(String _) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 450), _applyFilters);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -21,12 +71,14 @@ class ApprovalTopBarWidget extends StatelessWidget {
 
     return Row(
       children: [
-        IconButton(
-          onPressed: () => Navigator.pop(context),
-          icon: Icon(Icons.arrow_back, color: textColor),
-          tooltip: 'Kembali',
-        ),
-        const SizedBox(width: 8),
+        if (widget.showBackButton) ...[
+          IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.arrow_back, color: textColor),
+            tooltip: 'Kembali ke Dashboard',
+          ),
+          const SizedBox(width: 8),
+        ],
         Expanded(
           flex: 4,
           child: Container(
@@ -37,6 +89,9 @@ class ApprovalTopBarWidget extends StatelessWidget {
               border: Border.all(color: separatorColor),
             ),
             child: TextField(
+              controller: _searchController,
+              onChanged: _onSearchChanged,
+              onSubmitted: (_) => _applyFilters(),
               style: TextStyle(color: textColor, fontSize: 13),
               decoration: InputDecoration(
                 hintText: 'Search...',
@@ -63,6 +118,11 @@ class ApprovalTopBarWidget extends StatelessWidget {
             containerColor,
             separatorColor,
             textColor,
+            _action,
+            (value) {
+              setState(() => _action = value);
+              _applyFilters();
+            },
           ),
         ),
         const SizedBox(width: 16),
@@ -78,17 +138,15 @@ class ApprovalTopBarWidget extends StatelessWidget {
             containerColor,
             separatorColor,
             textColor,
+            _status,
+            (value) {
+              setState(() => _status = value);
+              _applyFilters();
+            },
           ),
         ),
 
         const Spacer(flex: 1),
-
-        // 4. Tombol Print
-        IconButton(
-          onPressed: () {},
-          icon: Icon(Icons.print, color: Theme.of(context).iconTheme.color),
-          tooltip: 'Print Data',
-        ),
       ],
     );
   }
@@ -99,6 +157,8 @@ class ApprovalTopBarWidget extends StatelessWidget {
     Color? bgColor,
     Color borderColor,
     Color? textColor,
+    String value,
+    ValueChanged<String> onChanged,
   ) {
     return Container(
       height: 40,
@@ -110,12 +170,14 @@ class ApprovalTopBarWidget extends StatelessWidget {
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
-          value: items.first,
+          value: value,
           isExpanded: true,
           dropdownColor: bgColor,
           icon: Icon(Icons.arrow_drop_down, color: textColor),
           style: TextStyle(color: textColor, fontSize: 13),
-          onChanged: (String? newValue) {}, // Nanti dihubungkan dengan BLoC
+          onChanged: (newValue) {
+            if (newValue != null) onChanged(newValue);
+          },
           items: items.map((String value) {
             return DropdownMenuItem<String>(value: value, child: Text(value));
           }).toList(),

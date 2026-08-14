@@ -3,6 +3,7 @@ import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id
 import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_event.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/bloc/online_id_state.dart';
 import 'package:el_csadmin/features/online/online_id/presentation/widgets/add_edit_online_id_dialog.dart';
+import 'package:el_csadmin/features/online/online_id/presentation/widgets/link_account_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -19,58 +20,73 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
           orElse: () => null,
         );
 
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Wrap(
-                spacing: 12.0,
-                runSpacing: 12.0,
-                children: [
-                  _buildActionButton(
-                    context,
-                    "Add",
-                    Icons.add,
-                    isPrimary: true,
-                    selectedUser: selectedUser,
-                  ),
-                  _buildActionButton(
-                    context,
-                    "Edit",
-                    Icons.edit,
-                    selectedUser: selectedUser,
-                  ),
-                  _buildActionButton(
-                    context,
-                    "Delete",
-                    Icons.delete,
-                    isDestructive: true,
-                    selectedUser: selectedUser,
-                  ),
-                  _buildActionButton(
-                    context,
-                    "Reset Password",
-                    Icons.lock_reset,
-                    selectedUser: selectedUser,
-                  ),
-                  _buildActionButton(
-                    context,
-                    "Reset PIN",
-                    Icons.pin,
-                    selectedUser: selectedUser,
-                  ),
-                ],
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final primaryActions = <Widget>[
+              _buildActionButton(
+                context,
+                "Add",
+                Icons.add,
+                isPrimary: true,
+                selectedUser: selectedUser,
               ),
-            ),
-            const SizedBox(width: 12),
-            _buildActionButton(
+              _buildActionButton(
+                context,
+                "Edit",
+                Icons.edit,
+                selectedUser: selectedUser,
+              ),
+              _buildActionButton(
+                context,
+                "Delete",
+                Icons.delete,
+                isDestructive: true,
+                selectedUser: selectedUser,
+              ),
+              _buildActionButton(
+                context,
+                "Reset Password",
+                Icons.lock_reset,
+                selectedUser: selectedUser,
+              ),
+              _buildActionButton(
+                context,
+                "Reset PIN",
+                Icons.pin,
+                selectedUser: selectedUser,
+              ),
+            ];
+            final linkAccount = _buildActionButton(
               context,
               "Link Account",
               Icons.link,
               isPrimary: true,
               selectedUser: selectedUser,
-            ),
-          ],
+            );
+
+            if (constraints.maxWidth < 700) {
+              return Wrap(
+                spacing: 12.0,
+                runSpacing: 12.0,
+                children: [...primaryActions, linkAccount],
+              );
+            }
+
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Wrap(
+                    spacing: 12,
+                    runSpacing: 12,
+                    children: primaryActions,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                linkAccount,
+              ],
+            );
+          },
         );
       },
     );
@@ -141,6 +157,10 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
                     : selectedUser.birthDate,
                 "accountExpired": selectedUser.accountExpired,
                 "permissions": selectedUser.permissions,
+                "status": selectedUser.status,
+                "salesId": selectedUser.salesId == '-'
+                    ? ''
+                    : selectedUser.salesId,
               },
               onSave: (data) => context.read<OnlineIdBloc>().add(
                 OnlineIdEvent.editOnlineId(data),
@@ -152,7 +172,7 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
         } else if (title == "Reset Password" || title == "Reset PIN") {
           _showResetDialog(context, title, loginId);
         } else if (title == "Link Account") {
-          _showLinkAccountDialog(context, loginId);
+          _showLinkAccountDialog(context, selectedUser!);
         }
       },
       icon: Icon(icon, color: textColor, size: 18),
@@ -407,20 +427,24 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
     );
   }
 
-  void _showLinkAccountDialog(BuildContext context, String loginId) {
+  void _showLinkAccountDialog(BuildContext context, OnlineIdModel user) {
+    if (user.loginType != 1) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Link Account hanya tersedia untuk akun Client.'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+      return;
+    }
     showDialog(
       context: context,
-      builder: (ctx) => AlertDialog(
-        title: const Text("Link Account"),
-        content: Text(
-          "Fitur Link Account untuk ID: $loginId belum memiliki UI spesifik. Tambahkan dialog/halamannya di sini.",
+      barrierDismissible: false,
+      builder: (ctx) => LinkAccountDialog(
+        user: user,
+        onSave: (payload) => context.read<OnlineIdBloc>().add(
+          OnlineIdEvent.editOnlineId(payload),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(ctx),
-            child: const Text("Tutup"),
-          ),
-        ],
       ),
     );
   }

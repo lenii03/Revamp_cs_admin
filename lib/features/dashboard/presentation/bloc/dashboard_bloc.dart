@@ -1,5 +1,6 @@
 import 'package:el_csadmin/core/constants/endpoint.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+
 import '../../../../../shared/features/api_datafeed/data/datasources/api_datafeed_network_data_source.dart';
 import 'dashboard_event.dart';
 import 'dashboard_state.dart';
@@ -16,63 +17,72 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     Emitter<DashboardState> emit,
   ) async {
     emit(DashboardLoading());
+    if (dataSource is! ApiDatafeedNetworkDataSourceImpl) {
+      emit(DashboardError('Datasource dashboard tidak valid.'));
+      return;
+    }
 
+    final dio = (dataSource as ApiDatafeedNetworkDataSourceImpl).dio;
+    final results = await Future.wait([
+      _fetchTotal(
+        dio.get(Endpoint.getCSList, queryParameters: {'page': 1, 'size': 1}),
+      ),
+      _fetchTotal(
+        dio.get(
+          Endpoint.getOnlineUser,
+          queryParameters: {'page': 1, 'size': 1},
+        ),
+      ),
+      _fetchTotal(
+        dio.get(
+          Endpoint.getApprovalList,
+          queryParameters: {'page': 1, 'size': 1, 'status': '1'},
+        ),
+      ),
+    ]);
+
+    final errors = <String, String>{};
+    if (results[0].error != null) errors['totalCs'] = results[0].error!;
+    if (results[1].error != null) errors['totalOnlineId'] = results[1].error!;
+    if (results[2].error != null) errors['totalPending'] = results[2].error!;
+
+    emit(
+      DashboardLoaded(
+        totalCs: results[0].value ?? '—',
+        totalUserOnline: results[1].value ?? '—',
+        totalPending: results[2].value ?? '—',
+        errors: errors,
+      ),
+    );
+  }
+
+  Future<({String? value, String? error})> _fetchTotal(
+    Future<dynamic> request,
+  ) async {
     try {
-      if (dataSource is ApiDatafeedNetworkDataSourceImpl) {
-        final dio = (dataSource as ApiDatafeedNetworkDataSourceImpl).dio;
-        Future<String> fetchTotalSafe(
-          String url,
-          Map<String, dynamic> params,
-        ) async {
-          try {
-            final res = await dio.get(url, queryParameters: params);
-            return _extractTotalItems(res.data);
-          } catch (e) {
-            print("⚠️ API GAGAL PADA ENDPOINT ($url): $e");
-            return "0"; 
-          }
-        }
-        final results = await Future.wait([
-          fetchTotalSafe(Endpoint.getCSList, {'page': 1, 'size': 1}),
-          fetchTotalSafe(Endpoint.getOnlineUser, {'page': 1, 'size': 1}),
-          fetchTotalSafe(Endpoint.getApprovalList, {'page': 1, 'size': 1}),
-        ]);
-
-        emit(
-          DashboardLoaded(
-            totalCs: results[0],
-            totalUserOnline: results[1],
-            totalPending: results[2],
-          ),
-        );
-      } else {
-        emit(
-          DashboardLoaded(
-            totalCs: "0",
-            totalUserOnline: "0",
-            totalPending: "0",
-          ),
-        );
+      final response = await request;
+      final total = _extractTotalItems(response.data);
+      if (total == null) {
+        return (value: null, error: 'Metadata total_items tidak tersedia.');
       }
-    } catch (e) {
-      print("❌ FATAL ERROR DASHBOARD BLOC: $e");
-      emit(DashboardError('Gagal memuat statistik dashboard'));
+      return (value: total, error: null);
+    } catch (error) {
+      return (value: null, error: error.toString());
     }
   }
 
-  String _extractTotalItems(dynamic responseData) {
-    try {
-      if (responseData is Map<String, dynamic>) {
-        if (responseData['pagination'] != null &&
-            responseData['pagination']['total_items'] != null) {
-          return responseData['pagination']['total_items'].toString();
-        }
-        if (responseData['total_items'] != null)
-          return responseData['total_items'].toString();
-        if (responseData['total'] != null)
-          return responseData['total'].toString();
-      }
-    } catch (_) {}
-    return '0';
+  String? _extractTotalItems(dynamic responseData) {
+    if (responseData is! Map) return null;
+    final pagination = responseData['pagination'];
+    if (pagination is Map && pagination['total_items'] != null) {
+      return pagination['total_items'].toString();
+    }
+    if (responseData['total_items'] != null) {
+      return responseData['total_items'].toString();
+    }
+    if (responseData['total'] != null) {
+      return responseData['total'].toString();
+    }
+    return null;
   }
 }

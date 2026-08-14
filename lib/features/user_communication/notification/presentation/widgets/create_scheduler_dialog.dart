@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/src/app_colors.dart';
 
 class CreateSchedulerDialog extends StatefulWidget {
   const CreateSchedulerDialog({super.key});
@@ -14,7 +13,6 @@ class _CreateSchedulerDialogState extends State<CreateSchedulerDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      backgroundColor: AppColors.systemGroupedBackgroundDark,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 500,
@@ -26,17 +24,20 @@ class _CreateSchedulerDialogState extends State<CreateSchedulerDialog> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
+                Text(
                   "Create Scheduler",
                   style: TextStyle(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.onSurface,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close, color: Colors.white),
+                  icon: Icon(
+                    Icons.close,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
               ],
             ),
@@ -51,9 +52,11 @@ class _CreateSchedulerDialogState extends State<CreateSchedulerDialog> {
                   value: isNeverExpired,
                   onChanged: (val) => setState(() => isNeverExpired = val!),
                 ),
-                const Text(
+                Text(
                   "Never Expired",
-                  style: TextStyle(color: AppColors.textColorDark),
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
               ],
             ),
@@ -89,7 +92,7 @@ class _CreateSchedulerDialogState extends State<CreateSchedulerDialog> {
             width: 120,
             child: Text(
               label,
-              style: const TextStyle(color: AppColors.textColorDark),
+              style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
           ),
           Expanded(
@@ -97,7 +100,7 @@ class _CreateSchedulerDialogState extends State<CreateSchedulerDialog> {
               decoration: InputDecoration(
                 hintText: hint,
                 filled: true,
-                fillColor: Colors.black12,
+                fillColor: Theme.of(context).colorScheme.surfaceContainer,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(4),
                   borderSide: BorderSide.none,

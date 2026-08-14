@@ -48,8 +48,8 @@ class SessionService {
     return decode(_box.read(encode(key)) ?? '');
   }
 
-  void remove(String key) {
-    _box.remove(encode(key));
+  Future<void> remove(String key) {
+    return _box.remove(encode(key));
   }
 
   T? readDB<T>(String key, T Function(Map<String, dynamic> mapJson) generator) {

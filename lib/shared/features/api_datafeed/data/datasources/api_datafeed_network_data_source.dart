@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:el_csadmin/features/cs/cs_logs/data/models/cs_log_model.dart';
 import 'package:el_csadmin/features/online/approval/data/models/link_account_model.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
+import 'package:el_csadmin/features/online/online_id/data/models/account_link_model.dart';
 import 'package:el_csadmin/features/user_communication/send_email/data/models/send_email_forgot_model.dart';
 import '../../../../../core/constants/endpoint.dart';
 import '../../../../../core/network/server_config.dart';
@@ -23,7 +24,13 @@ abstract class ApiDatafeedNetworkDataSource {
     int? page,
     int? size,
   });
-  Future<List<ApprovalScreenModel>> fetchApprovals();
+  Future<List<ApprovalScreenModel>> fetchApprovals({
+    String? search,
+    int? actionType,
+    int? status,
+    int page = 1,
+    int size = 30,
+  });
   Future<Map<String, dynamic>> fetchLinkedAccountsDetail(
     String loginId,
     String approvalId,
@@ -39,7 +46,14 @@ abstract class ApiDatafeedNetworkDataSource {
     String csLoginId,
   );
   Future<List<SendEmailForgotModel>> fetchSendEmailForgotList();
-  Future<List<dynamic>> fetchOpeningAccounts({int page = 1, int size = 10});
+  Future<List<dynamic>> fetchOpeningAccounts({
+    int page = 1,
+    int size = 10,
+    String? custId,
+    String? loginId,
+  });
+  Future<List<dynamic>> fetchOpeningAccountSuggestions();
+  Future<void> sendEmailOpeningAccount(Map<String, dynamic> payload);
   Future<List<dynamic>> fetchSchedulerNotifications({
     int page = 1,
     int size = 10,
@@ -47,6 +61,8 @@ abstract class ApiDatafeedNetworkDataSource {
   Future<void> sendPushNotification(Map<String, dynamic> payload);
   Future<void> createSchedulerNotification(Map<String, dynamic> payload);
   Future<String> postAddOnlineUser(Map<String, dynamic> payload);
+  Future<List<AccountLinkModel>> fetchAccountLinks();
+  Future<List<AccountLinkModel>> fetchLinkedAccounts(String loginId);
   Future<String> resetOnlinePasswordOrPin(Map<String, dynamic> payload);
 
   Future<void> updateApprovalStatus(Map<String, dynamic> payload) async {}
@@ -129,7 +145,20 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     };
 
     if (search != null && search.isNotEmpty) {
-      queryParams["loginId"] = search;
+      final normalizedSearch = search.trim();
+      final separatorIndex = normalizedSearch.indexOf(' - ');
+      if (separatorIndex >= 0) {
+        queryParams["loginId"] = normalizedSearch
+            .substring(0, separatorIndex)
+            .trim();
+        queryParams["email"] = normalizedSearch
+            .substring(separatorIndex + 3)
+            .trim();
+      } else if (normalizedSearch.contains('@')) {
+        queryParams["email"] = normalizedSearch;
+      } else {
+        queryParams["loginId"] = normalizedSearch;
+      }
     }
 
     final response = await dio.get(
@@ -144,13 +173,30 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   }
 
   @override
-  Future<List<ApprovalScreenModel>> fetchApprovals() async {
+  Future<List<ApprovalScreenModel>> fetchApprovals({
+    String? search,
+    int? actionType,
+    int? status,
+    int page = 1,
+    int size = 30,
+  }) async {
     final baseUrl = await ServerConfig.getBaseUrl();
     if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
     dio.options.baseUrl = baseUrl;
+    final query = <String, dynamic>{"page": page, "size": size};
+    if (actionType != null) query['actionType'] = actionType;
+    if (status != null) query['status'] = status;
+    final normalizedSearch = search?.trim() ?? '';
+    if (normalizedSearch.isNotEmpty) {
+      final parts = normalizedSearch.split(' - ');
+      query['loginId'] = parts.first.trim();
+      if (parts.length > 1) {
+        query['createdBy'] = parts.skip(1).join(' - ').trim();
+      }
+    }
     final response = await dio.get(
       Endpoint.getApprovalList,
-      queryParameters: {"page": 1, "size": 30},
+      queryParameters: query,
     );
 
     final List<dynamic> responseData = response.data['data'] ?? [];
@@ -280,11 +326,21 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<List<dynamic>> fetchOpeningAccounts({
     int page = 1,
     int size = 10,
+    String? custId,
+    String? loginId,
   }) async {
     try {
+      final baseUrl = await ServerConfig.getBaseUrl();
+      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+      dio.options.baseUrl = baseUrl;
       final response = await dio.get(
-        '/online/get-list-opening-rekening-online-user',
-        queryParameters: {'page': page, 'size': size},
+        Endpoint.getListOpeningAccount,
+        queryParameters: {
+          'page': page,
+          'size': size,
+          if (custId != null && custId.isNotEmpty) 'custId': custId,
+          if (loginId != null && loginId.isNotEmpty) 'loginId': loginId,
+        },
       );
 
       if (response.statusCode == 200) {
@@ -296,6 +352,47 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       }
     } catch (e) {
       throw Exception('Terjadi kesalahan jaringan: ${e.toString()}');
+    }
+  }
+
+  @override
+  Future<List<dynamic>> fetchOpeningAccountSuggestions() async {
+    final baseUrl = await ServerConfig.getBaseUrl();
+    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    dio.options.baseUrl = baseUrl;
+    final response = await dio.get(
+      Endpoint.getListOpeningAccountSuggestion,
+      queryParameters: const {'custId': '', 'loginId': ''},
+    );
+    return (response.data['data'] as List<dynamic>?) ?? const [];
+  }
+
+  @override
+  Future<void> sendEmailOpeningAccount(Map<String, dynamic> payload) async {
+    final baseUrl = await ServerConfig.getBaseUrl();
+    if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+    dio.options.baseUrl = baseUrl;
+
+    try {
+      final response = await dio.post(
+        Endpoint.sendEmailOpeningAccountWithRekening,
+        data: payload,
+      );
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        final data = response.data;
+        throw Exception(
+          data is Map
+              ? data['message'] ?? 'Gagal mengirim email'
+              : 'Gagal mengirim email',
+        );
+      }
+    } on DioException catch (e) {
+      final data = e.response?.data;
+      throw Exception(
+        data is Map
+            ? data['message']?.toString() ?? e.message ?? 'Gagal mengirim email'
+            : e.message ?? 'Gagal mengirim email',
+      );
     }
   }
 
@@ -360,6 +457,64 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       );
     } catch (e) {
       throw Exception(e.toString());
+    }
+  }
+
+  @override
+  Future<List<AccountLinkModel>> fetchAccountLinks() async {
+    try {
+      final baseUrl = await ServerConfig.getBaseUrl();
+      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+      dio.options.baseUrl = baseUrl;
+
+      final response = await dio.get(Endpoint.getAccountLink);
+      final body = response.data;
+      final rawData = body is Map ? body['data'] : null;
+      if (rawData is! List) return const [];
+
+      return rawData
+          .whereType<Map>()
+          .map(
+            (item) => AccountLinkModel.fromMap(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .where((item) => item.custId.isNotEmpty)
+          .toList();
+    } on DioException catch (e) {
+      final body = e.response?.data;
+      final message = body is Map ? body['message']?.toString() : null;
+      throw Exception(message ?? 'Gagal mengambil daftar account');
+    }
+  }
+
+  @override
+  Future<List<AccountLinkModel>> fetchLinkedAccounts(String loginId) async {
+    try {
+      final baseUrl = await ServerConfig.getBaseUrl();
+      if (baseUrl.isEmpty) throw Exception('IP Server belum dikonfigurasi.');
+      dio.options.baseUrl = baseUrl;
+
+      final response = await dio.get(
+        Endpoint.getLinkedInfoAccount,
+        queryParameters: {'loginId': loginId},
+      );
+      final body = response.data;
+      final rawData = body is Map ? body['data'] : null;
+      if (rawData is! List) return const [];
+      return rawData
+          .whereType<Map>()
+          .map(
+            (item) => AccountLinkModel.fromMap(
+              Map<String, dynamic>.from(item),
+            ),
+          )
+          .where((item) => item.custId.isNotEmpty)
+          .toList();
+    } on DioException catch (e) {
+      final body = e.response?.data;
+      final message = body is Map ? body['message']?.toString() : null;
+      throw Exception(message ?? 'Gagal mengambil linked account');
     }
   }
 
@@ -528,7 +683,13 @@ class ApiDatafeedNetworkDataSourceMockImpl
     ];
   }
 
-  Future<List<ApprovalScreenModel>> fetchApprovals() async {
+  Future<List<ApprovalScreenModel>> fetchApprovals({
+    String? search,
+    int? actionType,
+    int? status,
+    int page = 1,
+    int size = 30,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 800)); // Simulasi loading
 
     return [
@@ -713,9 +874,22 @@ class ApiDatafeedNetworkDataSourceMockImpl
   }
 
   @override
-  Future<List<dynamic>> fetchOpeningAccounts({int page = 1, int size = 10}) {
+  Future<List<dynamic>> fetchOpeningAccounts({
+    int page = 1,
+    int size = 10,
+    String? custId,
+    String? loginId,
+  }) {
     // TODO: implement fetchOpeningAccounts
     throw UnimplementedError();
+  }
+
+  @override
+  Future<List<dynamic>> fetchOpeningAccountSuggestions() async => const [];
+
+  @override
+  Future<void> sendEmailOpeningAccount(Map<String, dynamic> payload) async {
+    await Future.delayed(const Duration(milliseconds: 500));
   }
 
   @override
@@ -744,6 +918,13 @@ class ApiDatafeedNetworkDataSourceMockImpl
     await Future.delayed(const Duration(milliseconds: 800));
     return "Berhasil memproses data (Mock)";
   }
+
+  @override
+  Future<List<AccountLinkModel>> fetchAccountLinks() async => const [];
+
+  @override
+  Future<List<AccountLinkModel>> fetchLinkedAccounts(String loginId) async =>
+      const [];
 
   @override
   Future<String> resetOnlinePasswordOrPin(Map<String, dynamic> payload) async {

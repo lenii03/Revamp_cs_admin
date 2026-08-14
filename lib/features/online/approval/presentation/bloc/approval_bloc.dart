@@ -7,6 +7,19 @@ import 'approval_event.dart';
 class ApprovalScreenBloc
     extends Bloc<ApprovalScreenEvent, ApprovalScreenState> {
   final ApiDatafeedRepository repository;
+  String? currentSearch;
+  int? currentActionType;
+  int? currentStatus;
+  int currentPage = 1;
+  int currentSize = 30;
+
+  void applyFilters({String? search, int? actionType, int? status}) {
+    currentSearch = search?.trim();
+    currentActionType = actionType;
+    currentStatus = status;
+    currentPage = 1;
+    add(const ApprovalScreenEvent.fetchApprovals());
+  }
 
   ApprovalScreenBloc({required this.repository})
     : super(const ApprovalScreenState.initial()) {
@@ -22,7 +35,13 @@ class ApprovalScreenBloc
   Future<void> _onFetchApprovals(Emitter<ApprovalScreenState> emit) async {
     emit(const ApprovalScreenState.loading());
 
-    final result = await repository.fetchApprovals();
+    final result = await repository.fetchApprovals(
+      search: currentSearch,
+      actionType: currentActionType,
+      status: currentStatus,
+      page: currentPage,
+      size: currentSize,
+    );
 
     result.fold(
       (error) => emit(ApprovalScreenState.error(error)),
@@ -34,14 +53,19 @@ class ApprovalScreenBloc
     ApprovalScreenModel data,
     Emitter<ApprovalScreenState> emit,
   ) async {
-    await _updateApproval(data, status: 2, actionName: 'menyetujui', emit: emit);
+    await _updateApproval(
+      data,
+      status: 2,
+      actionName: 'menyetujui',
+      emit: emit,
+    );
   }
 
   Future<void> _onRejectItem(
     ApprovalScreenModel data,
     Emitter<ApprovalScreenState> emit,
   ) async {
-    await _updateApproval(data, status: 3, actionName: 'menolak', emit: emit);
+    await _updateApproval(data, status: 0, actionName: 'menolak', emit: emit);
   }
 
   Future<void> _updateApproval(

@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/src/app_colors.dart';
@@ -26,7 +24,7 @@ class AppSidebar extends StatelessWidget {
         ).extension<ThemeColors>()?.appContainerBackground,
         border: Border(
           right: BorderSide(
-            color: Colors.white.withValues(alpha: 0.05),
+            color: Theme.of(context).colorScheme.outlineVariant,
             width: 1.0,
           ),
         ),
@@ -116,7 +114,9 @@ class AppSidebar extends StatelessWidget {
     bool isDestructive = false,
   }) {
     final isSelected = selectedRoute == route;
-    final defaultColor = AppColors.textGrey;
+    final defaultColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()!.unselectedLabel;
     final color = isDestructive
         ? AppColors.errorRed
         : (isSelected ? AppColors.primaryColor : defaultColor);
@@ -147,7 +147,13 @@ class AppSidebar extends StatelessWidget {
     required String title,
     required List<Widget> children,
   }) {
-    final defaultColor = AppColors.textWhite;
+    final themeColors = Theme.of(context).extension<ThemeColors>()!;
+    final hasSelectedChild = children.any(
+      (child) => child.key == ValueKey<String>(selectedRoute),
+    );
+    final defaultColor = hasSelectedChild
+        ? themeColors.selectedLabel
+        : themeColors.unselectedLabel;
 
     return Theme(
       data: Theme.of(context).copyWith(
@@ -182,9 +188,12 @@ class AppSidebar extends StatelessWidget {
     required String route,
   }) {
     final isSelected = selectedRoute == route;
-    final defaultColor = AppColors.textGrey;
+    final defaultColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()!.unselectedLabel;
 
     return ListTile(
+      key: ValueKey<String>(route),
       contentPadding: const EdgeInsets.only(left: 52.0, right: 16.0),
       title: Text(
         title,
@@ -195,7 +204,7 @@ class AppSidebar extends StatelessWidget {
         ),
       ),
       selected: isSelected,
-      selectedTileColor: Colors.transparent,
+      selectedTileColor: AppColors.primaryColor.withValues(alpha: 0.08),
       onTap: () => onItemSelected(route),
     );
   }

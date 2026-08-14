@@ -13,7 +13,13 @@ abstract class ApiDatafeedRepository {
     int? page,
     int? size,
   });
-  Future<Either<String, List<ApprovalScreenModel>>> fetchApprovals();
+  Future<Either<String, List<ApprovalScreenModel>>> fetchApprovals({
+    String? search,
+    int? actionType,
+    int? status,
+    int page = 1,
+    int size = 30,
+  });
   Future<Either<String, List<CsLogModel>>> fetchCsLogs({
     String? loginId,
     String? targetId,
@@ -26,7 +32,17 @@ abstract class ApiDatafeedRepository {
   Future<Either<String, void>> deleteCsUser(String loginId);
   Future<Either<String, void>> resetPassword(Map<String, dynamic> requestData);
   Future<Either<String, List<ApproveOpeningAccountModel>>>
-  fetchOpeningAccounts({int page = 1, int size = 10});
+  fetchOpeningAccounts({
+    int page = 1,
+    int size = 10,
+    String? custId,
+    String? loginId,
+  });
+  Future<Either<String, List<ApproveOpeningAccountModel>>>
+  fetchOpeningAccountSuggestions();
+  Future<Either<String, void>> sendEmailOpeningAccount(
+    Map<String, dynamic> payload,
+  );
   Future<Either<String, List<NotificationModel>>> fetchSchedulerNotifications({
     int page = 1,
     int size = 10,

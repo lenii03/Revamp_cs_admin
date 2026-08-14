@@ -23,6 +23,14 @@ class RemoveFromStaging extends ApproveOpeningEvent {
 
 class ClearStaging extends ApproveOpeningEvent {}
 
+class SelectStagedAccount extends ApproveOpeningEvent {
+  final ApproveOpeningAccountModel account;
+  const SelectStagedAccount(this.account);
+
+  @override
+  List<Object> get props => [account];
+}
+
 class SendEmailOpeningAccount extends ApproveOpeningEvent {
   final String loginId;
   final String custId;
@@ -32,3 +40,5 @@ class SendEmailOpeningAccount extends ApproveOpeningEvent {
   @override
   List<Object> get props => [loginId, custId];
 }
+
+class SendEmailOpeningAccountToAll extends ApproveOpeningEvent {}

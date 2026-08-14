@@ -1,11 +1,8 @@
-import 'package:el_csadmin/core/theme/src/app_colors.dart';
 import 'package:el_csadmin/features/user_communication/send_email/data/models/send_email_forgot_model.dart';
-import 'package:el_csadmin/features/user_communication/send_email/presentation/bloc/send_email_bloc.dart';
-import 'package:el_csadmin/features/user_communication/send_email/presentation/bloc/send_email_event.dart';
 import 'package:el_csadmin/shared/widgets/app_data_grid.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trina_grid/trina_grid.dart';
+import '../../../../../core/theme/theme.dart';
 
 class SendEmailForgotTableWidget extends StatelessWidget {
   final List<SendEmailForgotModel> dataList;
@@ -14,12 +11,13 @@ class SendEmailForgotTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final themeColors = Theme.of(context).extension<ThemeColors>()!;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
-        color: AppColors.systemGroupedBackgroundDark,
+        color: themeColors.appContainerBackground,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.separatorDark),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: LayoutBuilder(
         builder: (context, constraints) {
@@ -27,116 +25,6 @@ class SendEmailForgotTableWidget extends StatelessWidget {
           return _buildTable(context, dataList, maxWidth);
         },
       ),
-    );
-  }
-
-  void _showConfirmationDialog(
-    BuildContext pageContext,
-    SendEmailForgotModel data,
-  ) {
-    if (data.status == 2) return;
-    final actionName = data.actionType.toString() == '1' ? "PIN" : "Password";
-
-    showDialog(
-      context: pageContext,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          backgroundColor: AppColors.systemGroupedBackgroundDark,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          contentPadding: const EdgeInsets.all(24),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Ikon Peringatan Kuning
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: const BoxDecoration(
-                  color: Colors.orange,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.priority_high,
-                  color: Colors.white,
-                  size: 36,
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Judul
-              Text(
-                "Send Email Forgot $actionName",
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                "Are you sure want to send email forgot $actionName\n[LoginId : ${data.loginId} & Email: ${data.email}]?",
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  color: AppColors.secondaryTextColorDark,
-                  fontSize: 14,
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Tombol Action
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  // Tombol Cancel
-                  OutlinedButton(
-                    onPressed: () => Navigator.pop(dialogContext),
-                    style: OutlinedButton.styleFrom(
-                      side: const BorderSide(color: AppColors.primaryDark),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                    ),
-                    child: const Text(
-                      "Cancel",
-                      style: TextStyle(color: AppColors.primaryDark),
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(dialogContext);
-                      final index = dataList.indexOf(data);
-                      pageContext.read<SendEmailForgotBloc>().add(
-                        SubmitSendEmail(data: data, index: index),
-                      );
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primaryDark,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                    ),
-                    child: const Text(
-                      "Confirm",
-                      style: TextStyle(color: Colors.white),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 
@@ -168,7 +56,6 @@ class SendEmailForgotTableWidget extends StatelessWidget {
       );
     }
 
-    // 2. Renderer Kotak Status (0 = Rejected, 1 = Pending, 2 = Email Send)
     Widget statusRenderer(TrinaColumnRendererContext renderContext) {
       final status = int.tryParse(renderContext.cell.value.toString()) ?? 9;
       String text = "Unknown";
@@ -216,7 +103,10 @@ class SendEmailForgotTableWidget extends StatelessWidget {
       };
       return Text(
         text,
-        style: const TextStyle(color: Colors.white, fontSize: 13),
+        style: TextStyle(
+          color: Theme.of(context).colorScheme.onSurface,
+          fontSize: 13,
+        ),
       );
     }
 
@@ -227,18 +117,21 @@ class SendEmailForgotTableWidget extends StatelessWidget {
         type: TrinaColumnType.text(),
         width: maxWidth * 0.12,
         renderer: actionRenderer,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Login Id',
         field: 'loginId',
         type: TrinaColumnType.text(),
         width: maxWidth * 0.18,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Email',
         field: 'email',
         type: TrinaColumnType.text(),
         width: maxWidth * 0.38,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Login Type',
@@ -246,6 +139,7 @@ class SendEmailForgotTableWidget extends StatelessWidget {
         type: TrinaColumnType.text(),
         width: maxWidth * 0.16,
         renderer: loginTypeRenderer,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Status',
@@ -253,6 +147,7 @@ class SendEmailForgotTableWidget extends StatelessWidget {
         type: TrinaColumnType.text(),
         width: maxWidth * 0.16,
         renderer: statusRenderer,
+        readOnly: true,
       ),
     ];
 
@@ -276,10 +171,6 @@ class SendEmailForgotTableWidget extends StatelessWidget {
       ),
       columns: columns,
       rows: rows,
-      onRowDoubleTap: (index) {
-        final selectedData = data[index];
-        _showConfirmationDialog(context, selectedData);
-      },
     );
   }
 }

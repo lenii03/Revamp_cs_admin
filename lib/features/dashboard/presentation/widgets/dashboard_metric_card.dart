@@ -8,6 +8,7 @@ class DashboardMetricCard extends StatelessWidget {
   final IconData icon;
   final Color iconColor;
   final Gradient? gradient;
+  final String? errorMessage;
 
   const DashboardMetricCard({
     super.key,
@@ -16,6 +17,7 @@ class DashboardMetricCard extends StatelessWidget {
     required this.icon,
     required this.iconColor,
     this.gradient,
+    this.errorMessage,
   });
 
   @override
@@ -84,15 +86,32 @@ class DashboardMetricCard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    value,
-                    style: TextStyle(
-                      color: hasGradient
-                          ? Colors.white
-                          : Theme.of(context).textTheme.bodyLarge?.color,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    children: [
+                      Text(
+                        value,
+                        style: TextStyle(
+                          color: hasGradient
+                              ? Colors.white
+                              : Theme.of(context).textTheme.bodyLarge?.color,
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (errorMessage != null) ...[
+                        const SizedBox(width: 8),
+                        Tooltip(
+                          message: 'Data gagal dimuat: $errorMessage',
+                          child: Icon(
+                            Icons.error_outline,
+                            size: 18,
+                            color: hasGradient
+                                ? Colors.white
+                                : AppColors.destructiveRedDark,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                 ],
               ),

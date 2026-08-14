@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -34,10 +33,10 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Text(
+              Text(
                 "Report Reset Password dan PIN code",
                 style: TextStyle(
-                  color: AppColors.textColorDark,
+                  color: Theme.of(context).colorScheme.onSurface,
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
@@ -65,13 +64,13 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
                     child: DropdownButton<String>(
                       value: _selectedYear,
                       isExpanded: true,
-                      dropdownColor: AppColors.systemGroupedBackgroundDark,
-                      icon: const Icon(
+                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      icon: Icon(
                         Icons.arrow_drop_down,
-                        color: AppColors.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                      style: const TextStyle(
-                        color: AppColors.textColorDark,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 14,
                       ),
                       items: ['2024', '2025', '2026'].map((String value) {
@@ -94,13 +93,13 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
                     child: DropdownButton<String>(
                       value: _selectedMonth,
                       isExpanded: true,
-                      dropdownColor: AppColors.systemGroupedBackgroundDark,
-                      icon: const Icon(
+                      dropdownColor: Theme.of(context).colorScheme.surface,
+                      icon: Icon(
                         Icons.arrow_drop_down,
-                        color: AppColors.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
-                      style: const TextStyle(
-                        color: AppColors.textColorDark,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 14,
                       ),
                       items:
@@ -130,22 +129,22 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
                 child: _buildFilterContainer(
                   child: TextField(
                     controller: _searchController,
-                    style: const TextStyle(
-                      color: AppColors.textColorDark,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 14,
                     ),
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
                       hintText: 'Search...',
                       hintStyle: TextStyle(
-                        color: AppColors.secondaryTextColorDark,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       suffixIcon: Icon(
                         Icons.search,
-                        color: AppColors.textColorDark,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                         size: 20,
                       ),
                       border: InputBorder.none,
-                      contentPadding: EdgeInsets.symmetric(
+                      contentPadding: const EdgeInsets.symmetric(
                         vertical: 12,
                         horizontal: 16,
                       ),
@@ -173,9 +172,9 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
       height: 45,
       padding: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
-        color: AppColors.systemGroupedBackgroundDark,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: AppColors.separatorDark),
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
       ),
       child: child,
     );

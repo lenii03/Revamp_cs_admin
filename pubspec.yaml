@@ -1,6 +1,6 @@
 name: el_csadmin
 description: "A new Flutter project."
-publish_to: 'none' 
+publish_to: "none"
 version: 1.0.0+1
 
 environment:
@@ -21,6 +21,14 @@ dependencies:
   get_storage: ^2.1.1
   pretty_dio_logger: ^1.4.0
   freezed_annotation: ^3.1.0
+  pdf: ^3.13.0
+  printing: ^5.14.3
+  package_info_plus: ^10.2.1
+  window_manager: ^0.5.2
+  crypto: ^3.0.7
+  path: ^1.9.1
+  lottie: ^3.5.1
+  mask_text_input_formatter: ^2.9.0
 
 dev_dependencies:
   flutter_test:
@@ -30,5 +38,7 @@ dev_dependencies:
   freezed: ^4.0.0-dev.3
 
 flutter:
-
+  assets:
+    - assets/images/
+    - assets/animations/
   uses-material-design: true

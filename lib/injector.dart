@@ -1,3 +1,6 @@
+import 'package:el_csadmin/features/auto_update/data/repositories/auto_update_repository_impl.dart';
+import 'package:el_csadmin/features/auto_update/domain/repositories/auto_update_repository.dart';
+import 'package:el_csadmin/features/auto_update/presentation/bloc/auto_update_bloc.dart';
 import 'package:el_csadmin/features/cs/cs_logs/presentation/bloc/cs_logs_bloc.dart';
 import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_bloc.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
@@ -85,4 +88,8 @@ Future<void> setupLocator() async {
   locator.registerFactory<NotificationBloc>(
     () => NotificationBloc(repository: locator<ApiDatafeedRepository>()),
   );
+  locator.registerLazySingleton<AutoUpdateRepository>(
+    () => AutoUpdateRepositoryImpl(dioClient: locator()),
+  );
+  locator.registerFactory(() => AutoUpdateBloc(repository: locator()));
 }

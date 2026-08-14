@@ -15,18 +15,25 @@ class CreateOnlineIdPage extends StatelessWidget {
     return BlocProvider(
       create: (context) =>
           locator<OnlineIdBloc>()..add(const OnlineIdEvent.fetchOnlineIds()),
-      child: const Padding(
-        padding: EdgeInsets.all(32.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            OnlineIdTopBarWidget(),
-            SizedBox(height: 24),
-            Expanded(child: OnlineIdTableWidget()),
-            SizedBox(height: 24),
-            OnlineIdActionButtonsWidget(),
-          ],
-        ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final compact = constraints.maxWidth < 700;
+          final padding = compact ? 12.0 : 32.0;
+          final spacing = compact ? 12.0 : 24.0;
+          return Padding(
+            padding: EdgeInsets.all(padding),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const OnlineIdTopBarWidget(),
+                SizedBox(height: spacing),
+                const Expanded(child: OnlineIdTableWidget()),
+                SizedBox(height: spacing),
+                const OnlineIdActionButtonsWidget(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

@@ -22,10 +22,9 @@ class DashboardRecentActivityWidget extends StatelessWidget {
     ).extension<ThemeColors>()?.unselectedLabel;
 
     return BlocProvider(
-      create: (context) => locator<CsLogsBloc>()
-        ..add(
-          const FetchCsLogsEvent(page: 1, perPage: 5),
-        ), // Cukup minta 5 data
+      create: (context) =>
+          locator<CsLogsBloc>()
+            ..add(const FetchCsLogsEvent(page: 1, perPage: 30)),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -71,9 +70,18 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                       ),
                     );
                   } else if (state is CsLogsLoaded) {
-                    final logs = state.logs.take(5).toList();
+                    final logs = [...state.logs]
+                      ..sort((a, b) {
+                        final aTime = DateTime.tryParse(a.logTime);
+                        final bTime = DateTime.tryParse(b.logTime);
+                        if (aTime == null && bTime == null) return 0;
+                        if (aTime == null) return 1;
+                        if (bTime == null) return -1;
+                        return bTime.compareTo(aTime);
+                      });
+                    final recentLogs = logs.take(5).toList();
 
-                    if (logs.isEmpty) {
+                    if (recentLogs.isEmpty) {
                       return Center(
                         child: Text(
                           "Belum ada aktivitas CS",
@@ -84,11 +92,11 @@ class DashboardRecentActivityWidget extends StatelessWidget {
 
                     return ListView.separated(
                       padding: EdgeInsets.zero,
-                      itemCount: logs.length,
+                      itemCount: recentLogs.length,
                       separatorBuilder: (context, index) =>
                           Divider(color: separatorColor, height: 1),
                       itemBuilder: (context, index) {
-                        final logData = logs[index];
+                        final logData = recentLogs[index];
 
                         return ListTile(
                           contentPadding: const EdgeInsets.symmetric(
@@ -112,16 +120,14 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                             ),
                           ),
                           subtitle: Text(
-                            logData
-                                .descriptions, 
+                            logData.descriptions,
                             style: TextStyle(color: subTextColor),
                           ),
                           trailing: Text(
-                            logData.logTime.isNotEmpty
-                                ? logData.logTime.substring(
-                                    0,
-                                    10,
-                                  ) 
+                            logData.logTime.length >= 10
+                                ? logData.logTime.substring(0, 10)
+                                : logData.logTime.isNotEmpty
+                                ? logData.logTime
                                 : "Baru saja",
                             style: TextStyle(color: subTextColor, fontSize: 12),
                           ),

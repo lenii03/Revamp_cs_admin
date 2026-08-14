@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 import '../bloc/online_id_bloc.dart';
 import '../bloc/online_id_event.dart';
+import 'online_id_print_dialog.dart';
 
 class OnlineIdTopBarWidget extends StatefulWidget {
   const OnlineIdTopBarWidget({super.key});
@@ -34,7 +35,6 @@ class _OnlineIdTopBarWidgetState extends State<OnlineIdTopBarWidget> {
     return Row(
       children: [
         Expanded(
-          flex: 3,
           child: Container(
             height: 45,
             decoration: BoxDecoration(
@@ -75,9 +75,14 @@ class _OnlineIdTopBarWidgetState extends State<OnlineIdTopBarWidget> {
             ),
           ),
         ),
-        const Spacer(flex: 5),
+        const SizedBox(width: 12),
         IconButton(
-          onPressed: () {},
+          onPressed: () => showDialog<void>(
+            context: context,
+            builder: (_) => OnlineIdPrintDialog(
+              repository: context.read<OnlineIdBloc>().repository,
+            ),
+          ),
           icon: Icon(Icons.print, color: iconColor),
           tooltip: 'Print Data',
         ),

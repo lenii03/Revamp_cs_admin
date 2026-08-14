@@ -29,7 +29,8 @@ class ThemeTextStyles extends ThemeExtension<ThemeTextStyles> {
       appDescription: appDescription ?? this.appDescription,
       labelStyle: labelStyle ?? this.labelStyle,
       searchHint: searchHint ?? this.searchHint,
-      searchInput: searchInput ?? this.searchInput);
+      searchInput: searchInput ?? this.searchInput,
+    );
   }
 
   @override
@@ -51,45 +52,30 @@ class ThemeTextStyles extends ThemeExtension<ThemeTextStyles> {
   }
 
   static get light => ThemeTextStyles(
-        appTitle: headline1.copyWith(
-          color: AppColors.darkerGrey,
-          fontWeight: FontWeight.w700,
-        ),
-        appDescription: headline3.copyWith(
-          color: AppColors.darkerGrey,
-          fontWeight: FontWeight.w500,
-        ),
-        labelStyle: headline1.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-        searchHint: headline1.copyWith(
-          color: AppColors.white,
-          fontSize: 18,
-        ),
-        searchInput: headline1.copyWith(
-          fontSize: 18,
-        ),
-      );
+    appTitle: headline1.copyWith(
+      color: AppColors.darkerGrey,
+      fontWeight: FontWeight.w700,
+    ),
+    appDescription: headline3.copyWith(
+      color: AppColors.darkerGrey,
+      fontWeight: FontWeight.w500,
+    ),
+    labelStyle: headline1.copyWith(fontWeight: FontWeight.w500),
+    searchHint: headline1.copyWith(color: AppColors.white, fontSize: 18),
+    searchInput: headline1.copyWith(fontSize: 18),
+  );
 
   static get dark => ThemeTextStyles(
-        appTitle: headline1.copyWith(
-          color: AppColors.lighterGrey,
-          fontWeight: FontWeight.w700,
-        ),
-        appDescription: headline3.copyWith(
-          color: AppColors.lightGrey,
-          fontWeight: FontWeight.w500,
-        ),
-        labelStyle: headline1.copyWith(
-          fontWeight: FontWeight.w500,
-        ),
-        searchHint: headline1.copyWith(
-          color: AppColors.lighterGrey,
-          fontSize: 18,
-        ),
-        searchInput: headline1.copyWith(
-          fontSize: 18,
-          color: AppColors.grey,
-        ),
-      );
+    appTitle: headline1.copyWith(
+      color: AppColors.lighterGrey,
+      fontWeight: FontWeight.w700,
+    ),
+    appDescription: headline3.copyWith(
+      color: AppColors.lightGrey,
+      fontWeight: FontWeight.w500,
+    ),
+    labelStyle: headline1.copyWith(fontWeight: FontWeight.w500),
+    searchHint: headline1.copyWith(color: AppColors.lighterGrey, fontSize: 18),
+    searchInput: headline1.copyWith(fontSize: 18, color: AppColors.grey),
+  );
 }

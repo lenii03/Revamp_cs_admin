@@ -67,9 +67,21 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   }
 
   @override
-  Future<Either<String, List<ApprovalScreenModel>>> fetchApprovals() async {
+  Future<Either<String, List<ApprovalScreenModel>>> fetchApprovals({
+    String? search,
+    int? actionType,
+    int? status,
+    int page = 1,
+    int size = 30,
+  }) async {
     try {
-      final result = await _networkDataSource.fetchApprovals();
+      final result = await _networkDataSource.fetchApprovals(
+        search: search,
+        actionType: actionType,
+        status: status,
+        page: page,
+        size: size,
+      );
       return Right(result);
     } catch (e) {
       return Left(e.toString());
@@ -128,11 +140,18 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
 
   @override
   Future<Either<String, List<ApproveOpeningAccountModel>>>
-  fetchOpeningAccounts({int page = 1, int size = 10}) async {
+  fetchOpeningAccounts({
+    int page = 1,
+    int size = 10,
+    String? custId,
+    String? loginId,
+  }) async {
     try {
       final rawData = await _networkDataSource.fetchOpeningAccounts(
         page: page,
         size: size,
+        custId: custId,
+        loginId: loginId,
       );
       final List<ApproveOpeningAccountModel> result = rawData
           .map((data) => ApproveOpeningAccountModel.fromMap(data))
@@ -141,6 +160,37 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
       return Right(result);
     } catch (e) {
       return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, List<ApproveOpeningAccountModel>>>
+  fetchOpeningAccountSuggestions() async {
+    try {
+      final rawData = await _networkDataSource.fetchOpeningAccountSuggestions();
+      return Right(
+        rawData
+            .map(
+              (item) => ApproveOpeningAccountModel.fromMap(
+                item as Map<String, dynamic>,
+              ),
+            )
+            .toList(),
+      );
+    } catch (e) {
+      return Left(e.toString());
+    }
+  }
+
+  @override
+  Future<Either<String, void>> sendEmailOpeningAccount(
+    Map<String, dynamic> payload,
+  ) async {
+    try {
+      await _networkDataSource.sendEmailOpeningAccount(payload);
+      return const Right(null);
+    } catch (e) {
+      return Left(e.toString().replaceFirst('Exception: ', ''));
     }
   }
 

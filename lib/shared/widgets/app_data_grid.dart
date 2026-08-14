@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../core/theme/src/app_colors.dart';
-import '../../core/theme/theme.dart'; 
+import '../../core/theme/theme.dart';
 
 class AppDataGrid extends StatelessWidget {
   final List<TrinaColumn> columns;
@@ -18,7 +18,7 @@ class AppDataGrid extends StatelessWidget {
     this.onLoaded,
     this.onRowDoubleTap,
     this.onSelected,
-    this.mode = TrinaGridMode.normal, 
+    this.mode = TrinaGridMode.normal,
   });
 
   @override
@@ -30,6 +30,7 @@ class AppDataGrid extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
       child: TrinaGrid(
+        mode: mode,
         columns: columns,
         rows: rows,
         onRowDoubleTap: onRowDoubleTap == null
@@ -62,7 +63,7 @@ class AppDataGrid extends StatelessWidget {
             cellTextStyle:
                 themePluto?.cellTextStyle ?? const TextStyle(fontSize: 13),
             columnTextStyle: TextStyle(
-              color: textColor, 
+              color: textColor,
               fontWeight: FontWeight.bold,
               fontSize: 13,
             ),

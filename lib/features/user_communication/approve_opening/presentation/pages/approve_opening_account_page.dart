@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../core/theme/src/app_colors.dart';
 import '../../../../../injector.dart';
 import '../bloc/approve_opening_bloc.dart';
-import '../bloc/approve_opening_event.dart';
 import '../widgets/approve_opening_table_widget.dart';
 import '../widgets/approve_opening_action_widget.dart';
 

@@ -2,6 +2,7 @@ part of '../theme.dart';
 
 ThemeData lightTheme() {
   return ThemeData(
+    useMaterial3: true,
     textTheme: const TextTheme(
       bodyMedium: TextStyle(color: AppColors.black),
       bodyLarge: TextStyle(color: AppColors.black),
@@ -15,7 +16,13 @@ ThemeData lightTheme() {
     colorScheme: const ColorScheme.light(
       primary: AppColors.primary,
       onPrimary: Colors.white,
-      onSurface: AppColors.black,
+      surface: AppColors.systemGroupedBackgroundLight,
+      onSurface: AppColors.textColorLight,
+      onSurfaceVariant: AppColors.secondaryTextColorLight,
+      outline: AppColors.lighterGrey,
+      outlineVariant: AppColors.separatorLight,
+      surfaceContainer: Color(0xFFF1F5F9),
+      surfaceContainerLow: Color(0xFFF8FAFC),
     ),
     extensions: <ThemeExtension<dynamic>>[
       ThemeColors.light,
@@ -24,6 +31,10 @@ ThemeData lightTheme() {
     ],
     appBarTheme: AppBarTheme(
       color: AppColors.white,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      surfaceTintColor: Colors.transparent,
+      shadowColor: Colors.transparent,
       iconTheme: const IconThemeData(color: AppColors.lightGrey),
       titleTextStyle: headline1.copyWith(
         color: AppColors.grey,
@@ -33,7 +44,8 @@ ThemeData lightTheme() {
     ),
     dialogTheme: DialogThemeData(
       backgroundColor: AppColors.white,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       titleTextStyle: headline1.copyWith(
         color: AppColors.black,
         fontSize: 20,

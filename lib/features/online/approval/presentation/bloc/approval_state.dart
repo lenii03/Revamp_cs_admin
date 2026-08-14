@@ -6,10 +6,11 @@ part 'approval_state.freezed.dart';
 @freezed
 class ApprovalScreenState with _$ApprovalScreenState {
   const factory ApprovalScreenState.initial() = _Initial;
-  
+
   const factory ApprovalScreenState.loading() = _Loading;
-  
-  const factory ApprovalScreenState.loaded(List<ApprovalScreenModel> data) = _Loaded;
-  
+
+  const factory ApprovalScreenState.loaded(List<ApprovalScreenModel> data) =
+      _Loaded;
+
   const factory ApprovalScreenState.error(String message) = _Error;
 }

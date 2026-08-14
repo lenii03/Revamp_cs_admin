@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 import '../../../../../injector.dart';
@@ -21,36 +20,85 @@ class AddOpeningAccountDialog extends StatefulWidget {
 class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
   List<ApproveOpeningAccountModel> _apiResults = [];
   List<ApproveOpeningAccountModel> _filteredResults = [];
-  bool _isLoading = false;
+  List<ApproveOpeningAccountModel> _suggestions = [];
   ApproveOpeningAccountModel? _selectedAccount;
 
   @override
   void initState() {
     super.initState();
     _fetchData();
+    _loadSuggestions();
+  }
+
+  Future<void> _loadSuggestions() async {
+    final result = await locator<ApiDatafeedRepository>()
+        .fetchOpeningAccountSuggestions();
+    if (!mounted) return;
+    result.fold(
+      (error) => debugPrint('Suggestion error: $error'),
+      (data) => setState(() => _suggestions = data),
+    );
+  }
+
+  Future<void> _selectSuggestion(ApproveOpeningAccountModel suggestion) async {
+    final result = await locator<ApiDatafeedRepository>().fetchOpeningAccounts(
+      size: 30,
+      custId: suggestion.custId,
+      loginId: suggestion.loginId,
+    );
+    if (!mounted) return;
+    result.fold(
+      (error) => ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Gagal memuat account: $error'))),
+      (data) => setState(() {
+        _filteredResults = data;
+        _selectedAccount = data.isNotEmpty ? data.first : null;
+      }),
+    );
   }
 
   Future<void> _fetchData() async {
-    setState(() => _isLoading = true);
-    final result = await locator<ApiDatafeedRepository>()
-        .fetchOpeningAccounts();
+    final cachedData = widget.parentBloc.apiAccountsList;
+
+    if (cachedData.isNotEmpty) {
+      setState(() {
+        _apiResults = List.from(cachedData);
+        _filteredResults = List.from(cachedData);
+      });
+      return;
+    }
+
+    final result = await locator<ApiDatafeedRepository>().fetchOpeningAccounts(
+      size: 30,
+    );
+    if (!mounted) return;
     result.fold(
       (error) => debugPrint("Error: $error"),
       (data) => setState(() {
+        widget.parentBloc.apiAccountsList = data;
         _apiResults = data;
         _filteredResults = data;
       }),
     );
-    setState(() => _isLoading = false);
   }
 
   void _runFilter(String enteredKeyword) {
     List<ApproveOpeningAccountModel> results = [];
-    if (enteredKeyword.isEmpty) {
+    final keyword = enteredKeyword.trim();
+    if (keyword.isEmpty) {
       results = _apiResults;
+    } else if (keyword.contains(' - ')) {
+      final parts = keyword.split(' - ');
+      final custId = parts.first.trim().toLowerCase();
+      final loginId = parts.skip(1).join(' - ').trim().toLowerCase();
+      results = _apiResults.where((item) {
+        return item.custId.toLowerCase() == custId &&
+            item.loginId.toLowerCase() == loginId;
+      }).toList();
     } else {
       results = _apiResults.where((item) {
-        final searchLower = enteredKeyword.toLowerCase();
+        final searchLower = keyword.toLowerCase();
         return item.loginId.toLowerCase().contains(searchLower) ||
             item.custId.toLowerCase().contains(searchLower) ||
             item.name.toLowerCase().contains(searchLower);
@@ -71,6 +119,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
         field: 'loginId',
         type: TrinaColumnType.text(),
         width: 100,
+        readOnly: true,
       ),
       TrinaColumn(
         frozen: TrinaColumnFrozen.start,
@@ -78,6 +127,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
         field: 'custId',
         type: TrinaColumnType.text(),
         width: 120,
+        readOnly: true,
       ),
       TrinaColumn(
         frozen: TrinaColumnFrozen.start,
@@ -85,36 +135,42 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
         field: 'name',
         type: TrinaColumnType.text(),
         width: 200,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'RDN Account',
         field: 'rdnAccount',
         type: TrinaColumnType.text(),
         width: 150,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'RDN Bank',
         field: 'rdnBank',
         type: TrinaColumnType.text(),
         width: 120,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Investor No',
         field: 'investorNo',
         type: TrinaColumnType.text(),
         width: 150,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'KSEI Id',
         field: 'kseiId',
         type: TrinaColumnType.text(),
         width: 120,
+        readOnly: true,
       ),
       TrinaColumn(
         title: 'Email',
         field: 'email',
         type: TrinaColumnType.text(),
         width: 200,
+        readOnly: true,
       ),
     ];
 
@@ -141,9 +197,12 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
         try {
           final String clickedLoginId =
               event.row.cells['loginId']?.value.toString() ?? '';
+          final String clickedCustId =
+              event.row.cells['custId']?.value.toString() ?? '';
           setState(() {
             _selectedAccount = _filteredResults.firstWhere(
-              (acc) => acc.loginId == clickedLoginId,
+              (acc) =>
+                  acc.loginId == clickedLoginId && acc.custId == clickedCustId,
             );
           });
         } catch (e) {
@@ -198,42 +257,95 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
               ],
             ),
             const SizedBox(height: 16),
-            TextField(
-              style: TextStyle(color: textColor), // 👈 Dinamis
-              onChanged: (value) => _runFilter(value),
-              decoration: InputDecoration(
-                hintText: "Search Account ID or Name",
-                hintStyle: TextStyle(color: hintColor), // 👈 Dinamis
-                suffixIcon: Icon(Icons.search, color: hintColor), // 👈 Dinamis
-                filled: true,
-                fillColor: Colors.transparent,
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: separatorColor), // 👈 Dinamis
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(
-                    color: AppColors.primaryColor,
-                  ), // 👈 Seragam Cyan
-                ),
-              ),
+            Autocomplete<ApproveOpeningAccountModel>(
+              displayStringForOption: (item) =>
+                  '${item.custId} - ${item.loginId}',
+              optionsBuilder: (textEditingValue) {
+                final query = textEditingValue.text.trim().toLowerCase();
+                if (query.isEmpty) {
+                  return const Iterable<ApproveOpeningAccountModel>.empty();
+                }
+                return _suggestions.where(
+                  (item) =>
+                      item.custId.toLowerCase().contains(query) ||
+                      item.loginId.toLowerCase().contains(query) ||
+                      item.name.toLowerCase().contains(query),
+                );
+              },
+              onSelected: _selectSuggestion,
+              fieldViewBuilder:
+                  (context, controller, focusNode, onFieldSubmitted) {
+                    return TextField(
+                      controller: controller,
+                      focusNode: focusNode,
+                      style: TextStyle(color: textColor),
+                      onChanged: _runFilter,
+                      onSubmitted: (_) => onFieldSubmitted(),
+                      decoration: InputDecoration(
+                        hintText: "Search Account ID, Login ID, or Name",
+                        hintStyle: TextStyle(color: hintColor),
+                        suffixIcon: Icon(Icons.search, color: hintColor),
+                        filled: true,
+                        fillColor: Colors.transparent,
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: BorderSide(color: separatorColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: AppColors.primaryColor,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+              optionsViewBuilder: (context, onSelected, options) {
+                return Align(
+                  alignment: Alignment.topLeft,
+                  child: Material(
+                    elevation: 8,
+                    color: dialogBgColor,
+                    borderRadius: BorderRadius.circular(8),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        maxWidth: 600,
+                        maxHeight: 240,
+                      ),
+                      child: ListView.builder(
+                        padding: EdgeInsets.zero,
+                        shrinkWrap: true,
+                        itemCount: options.length,
+                        itemBuilder: (context, index) {
+                          final item = options.elementAt(index);
+                          return ListTile(
+                            dense: true,
+                            title: Text(
+                              '${item.custId} - ${item.loginId}',
+                              style: TextStyle(color: textColor),
+                            ),
+                            subtitle: Text(
+                              item.name,
+                              style: TextStyle(color: hintColor),
+                            ),
+                            onTap: () => onSelected(item),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                );
+              },
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.primaryColor, // 👈 Seragam Cyan
-                      ),
-                    )
-                  : Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(color: separatorColor), // 👈 Dinamis
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: _buildDialogTable(),
-                    ),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(color: separatorColor),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: _buildDialogTable(),
+              ),
             ),
             const SizedBox(height: 16),
             Row(
@@ -249,16 +361,36 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                 const SizedBox(width: 16),
                 ElevatedButton(
                   onPressed: () {
-                    if (_selectedAccount != null) {
-                      widget.parentBloc.add(AddToStaging(_selectedAccount!));
-                      Navigator.pop(context);
-                    } else {
+                    final selected = _selectedAccount;
+                    if (selected == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text("Silakan pilih akun terlebih dahulu"),
                         ),
                       );
+                      return;
                     }
+
+                    if (widget.parentBloc.isStaged(selected)) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            "Login ID dan Account ID tersebut sudah ditambahkan",
+                          ),
+                        ),
+                      );
+                      return;
+                    }
+
+                    widget.parentBloc.add(AddToStaging(selected));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          "${selected.loginId} - ${selected.custId} berhasil ditambahkan",
+                        ),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primaryColor, // 👈 Seragam Cyan

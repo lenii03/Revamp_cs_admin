@@ -514,7 +514,8 @@ class ApprovalDetailDialog extends StatelessWidget {
     );
   }
 
-  bool get _isPending => data.status.toLowerCase() == 'pending';
+  bool get _isPending =>
+      data.status.toLowerCase() == 'pending' || data.status == '1';
 
   Future<void> _showStatusLockedDialog(
     BuildContext context,
@@ -640,7 +641,12 @@ class ApprovalDetailDialog extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusBadge(String status) {
+  Widget _buildStatusBadge(String rawStatus) {
+    String status = rawStatus;
+    if (status == '1') status = 'Pending';
+    if (status == '2') status = 'Approved';
+    if (status == '0' || status == '3') status = 'Rejected';
+
     Color bgColor = Colors.grey.shade600;
     if (status.toLowerCase() == 'approved') {
       bgColor = const Color(0xFF4CAF50);

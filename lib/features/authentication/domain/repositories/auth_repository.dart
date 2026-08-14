@@ -6,4 +6,6 @@ abstract class AuthRepository {
     String username,
     String password,
   );
+
+  Future<Either<String, String>> resetPassword(String loginId);
 }

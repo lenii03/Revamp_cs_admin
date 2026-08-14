@@ -29,7 +29,6 @@ class _DashboardPendingApprovalWidgetState
       context.read<ApprovalScreenBloc>().add(
         const ApprovalScreenEvent.fetchApprovals(),
       );
-      print("🔄 [DASHBOARD] Auto-refresh antrean persetujuan dieksekusi!");
     });
   }
 
@@ -91,7 +90,8 @@ class _DashboardPendingApprovalWidgetState
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const ApprovalScreenPage(),
+                        builder: (context) =>
+                            const ApprovalScreenPage(showBackButton: true),
                       ),
                     );
                   },
@@ -133,8 +133,7 @@ class _DashboardPendingApprovalWidgetState
                   ),
                   loaded: (data) {
                     final pendingList = data
-                        .where((e) => e.status.toLowerCase() == 'pending')
-                        .take(5)
+                        .where((e) => e.status.toLowerCase() == 'pending' || e.status == '1')
                         .toList();
 
                     if (pendingList.isEmpty) {

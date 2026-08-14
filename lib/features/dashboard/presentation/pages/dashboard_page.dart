@@ -3,7 +3,6 @@ import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_event.
 import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:el_csadmin/features/dashboard/presentation/widgets/dashboard_pending_approval_widget.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
-import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../core/theme/src/app_colors.dart';
@@ -19,9 +18,11 @@ class DashboardPage extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider(
-          create: (context) =>
-              locator<ApprovalScreenBloc>()
-                ..add(const ApprovalScreenEvent.fetchApprovals()),
+          create: (context) {
+            final bloc = locator<ApprovalScreenBloc>();
+            bloc.applyFilters(status: 1);
+            return bloc;
+          },
         ),
         BlocProvider(
           create: (context) =>
@@ -46,14 +47,16 @@ class DashboardPage extends StatelessWidget {
 
             BlocBuilder<DashboardBloc, DashboardState>(
               builder: (context, state) {
-                String totalCs = "0";
-                String totalUserOnline = "0";
-                String totalPending = "0";
+                String totalCs = "—";
+                String totalUserOnline = "—";
+                String totalPending = "—";
+                Map<String, String> metricErrors = const {};
 
                 if (state is DashboardLoaded) {
                   totalCs = state.totalCs;
                   totalUserOnline = state.totalUserOnline;
                   totalPending = state.totalPending;
+                  metricErrors = state.errors;
                 } else if (state is DashboardLoading) {
                   totalCs = "...";
                   totalUserOnline = "...";
@@ -63,8 +66,9 @@ class DashboardPage extends StatelessWidget {
                 return Row(
                   children: [
                     DashboardMetricCard(
-                      title: "Total CS Aktif",
+                      title: "Total CS",
                       value: totalCs,
+                      errorMessage: metricErrors['totalCs'],
                       icon: Icons.support_agent,
                       iconColor: const Color(0xFF2EBDAD),
                       gradient: AppColors.tealGradient,
@@ -72,8 +76,9 @@ class DashboardPage extends StatelessWidget {
                     const SizedBox(width: 16),
 
                     DashboardMetricCard(
-                      title: "User Online",
+                      title: "Total Online ID",
                       value: totalUserOnline,
+                      errorMessage: metricErrors['totalOnlineId'],
                       icon: Icons.public,
                       iconColor: const Color(0xFF7D43E0),
                       gradient: AppColors.purpleGradient,
@@ -83,6 +88,7 @@ class DashboardPage extends StatelessWidget {
                     DashboardMetricCard(
                       title: "Pending Approval",
                       value: totalPending,
+                      errorMessage: metricErrors['totalPending'],
                       icon: Icons.pending_actions,
                       iconColor: const Color(0xFFE97A44),
                       gradient: AppColors.orangeGradient,
