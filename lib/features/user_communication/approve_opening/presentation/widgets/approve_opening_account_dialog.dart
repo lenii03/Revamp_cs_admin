@@ -22,6 +22,8 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
   List<ApproveOpeningAccountModel> _filteredResults = [];
   List<ApproveOpeningAccountModel> _suggestions = [];
   ApproveOpeningAccountModel? _selectedAccount;
+  bool _isLoading = true;
+  String? _loadError;
 
   @override
   void initState() {
@@ -41,6 +43,10 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
   }
 
   Future<void> _selectSuggestion(ApproveOpeningAccountModel suggestion) async {
+    setState(() {
+      _isLoading = true;
+      _loadError = null;
+    });
     final result = await locator<ApiDatafeedRepository>().fetchOpeningAccounts(
       size: 30,
       custId: suggestion.custId,
@@ -48,10 +54,12 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
     );
     if (!mounted) return;
     result.fold(
-      (error) => ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Failed to load accounts: $error'))),
+      (error) => setState(() {
+        _isLoading = false;
+        _loadError = error;
+      }),
       (data) => setState(() {
+        _isLoading = false;
         _filteredResults = data;
         _selectedAccount = data.isNotEmpty ? data.first : null;
       }),
@@ -59,10 +67,17 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
   }
 
   Future<void> _fetchData() async {
+    if (mounted) {
+      setState(() {
+        _isLoading = true;
+        _loadError = null;
+      });
+    }
     final cachedData = widget.parentBloc.apiAccountsList;
 
     if (cachedData.isNotEmpty) {
       setState(() {
+        _isLoading = false;
         _apiResults = List.from(cachedData);
         _filteredResults = List.from(cachedData);
       });
@@ -74,8 +89,12 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
     );
     if (!mounted) return;
     result.fold(
-      (error) => debugPrint("Error: $error"),
+      (error) => setState(() {
+        _isLoading = false;
+        _loadError = error;
+      }),
       (data) => setState(() {
+        _isLoading = false;
         widget.parentBloc.apiAccountsList = data;
         _apiResults = data;
         _filteredResults = data;
@@ -344,7 +363,44 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                   border: Border.all(color: separatorColor),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: _buildDialogTable(),
+                child: _isLoading
+                    ? const SizedBox.expand()
+                    : _loadError != null
+                    ? Center(
+                        child: Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(
+                                Icons.error_outline_rounded,
+                                color: AppColors.destructiveRedDark,
+                                size: 40,
+                              ),
+                              const SizedBox(height: 12),
+                              Text(
+                                'Failed to load opening accounts\n$_loadError',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(color: textColor),
+                              ),
+                              const SizedBox(height: 16),
+                              OutlinedButton.icon(
+                                onPressed: _fetchData,
+                                icon: const Icon(Icons.refresh_rounded),
+                                label: const Text('Try Again'),
+                              ),
+                            ],
+                          ),
+                        ),
+                      )
+                    : _filteredResults.isEmpty
+                    ? Center(
+                        child: Text(
+                          'No opening account data found',
+                          style: TextStyle(color: hintColor),
+                        ),
+                      )
+                    : _buildDialogTable(),
               ),
             ),
             const SizedBox(height: 16),

@@ -8,6 +8,8 @@ import '../../../../core/network/server_config.dart';
 import '../../../../core/theme/src/app_colors.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
+import '../../../../shared/widgets/app_drag_to_move_area.dart';
+import '../../../../shared/widgets/app_window_controls.dart';
 import '../../../../shared/widgets/layout/main_layout.dart';
 import '../bloc/authentication_bloc.dart';
 import '../bloc/authentication_event.dart';
@@ -91,6 +93,7 @@ class _LoginPageState extends State<LoginPage> {
 
     await showDialog<void>(
       context: context,
+
       barrierDismissible: false,
       builder: (dialogContext) => BlocProvider.value(
         value: authBloc,
@@ -429,10 +432,12 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 800;
-          return Row(
+      body: Stack(
+        children: [
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final compact = constraints.maxWidth < 800;
+              return Row(
             children: [
               if (!compact)
                 Expanded(
@@ -598,34 +603,42 @@ class _LoginPageState extends State<LoginPage> {
                             ),
                             const SizedBox(height: 16),
 
-                            Row(
+                            Wrap(
+                              alignment: WrapAlignment.spaceBetween,
+                              crossAxisAlignment: WrapCrossAlignment.center,
+                              spacing: 12,
+                              runSpacing: 4,
                               children: [
-                                SizedBox(
-                                  height: 24,
-                                  width: 24,
-                                  child: Checkbox(
-                                    value: _rememberMe,
-                                    activeColor: AppColors.primaryColor,
-                                    checkColor: AppColors.backgroundDark,
-                                    side: const BorderSide(
-                                      color: AppColors.textGrey,
+                                Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    SizedBox(
+                                      height: 24,
+                                      width: 24,
+                                      child: Checkbox(
+                                        value: _rememberMe,
+                                        activeColor: AppColors.primaryColor,
+                                        checkColor: AppColors.backgroundDark,
+                                        side: const BorderSide(
+                                          color: AppColors.textGrey,
+                                        ),
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _rememberMe = value ?? false;
+                                          });
+                                        },
+                                      ),
                                     ),
-                                    onChanged: (value) {
-                                      setState(() {
-                                        _rememberMe = value ?? false;
-                                      });
-                                    },
-                                  ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      "Remember me",
+                                      style: TextStyle(
+                                        color: AppColors.textGrey,
+                                        fontSize: 14,
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(width: 8),
-                                const Text(
-                                  "Remember me",
-                                  style: TextStyle(
-                                    color: AppColors.textGrey,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                                const Spacer(),
                                 TextButton(
                                   onPressed: _showForgotPasswordDialog,
                                   child: const Text(
@@ -645,17 +658,19 @@ class _LoginPageState extends State<LoginPage> {
                             >(
                               listener: (context, state) {
                                 if (state is AuthFailure) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      backgroundColor: AppColors.errorRed,
-                                      content: Text(
-                                        state.message,
-                                        style: const TextStyle(
-                                          color: AppColors.textWhite,
+                                  ScaffoldMessenger.of(context)
+                                    ..hideCurrentSnackBar()
+                                    ..showSnackBar(
+                                      SnackBar(
+                                        backgroundColor: AppColors.errorRed,
+                                        content: Text(
+                                          state.message,
+                                          style: const TextStyle(
+                                            color: AppColors.textWhite,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  );
+                                    );
                                 } else if (state is AuthSuccess) {
                                   Navigator.pushReplacement(
                                     context,
@@ -678,7 +693,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const Spacer(),
                       const Text(
-                        "© 2026 CS Admin System. Seluruh hak cipta dilindungi.",
+                        "© 2026 CS Admin System. All rights reserved.",
                         style: TextStyle(
                           color: AppColors.textGrey,
                           fontSize: 12,
@@ -689,8 +704,22 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               ),
             ],
-          );
-        },
+              );
+            },
+          ),
+          const Positioned(
+            top: 0,
+            left: 0,
+            right: 180,
+            height: 28,
+            child: AppDragToMoveArea(child: SizedBox.expand()),
+          ),
+          const Positioned(
+            top: 0,
+            right: 0,
+            child: AppWindowControls(),
+          ),
+        ],
       ),
     );
   }

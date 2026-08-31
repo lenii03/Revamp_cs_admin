@@ -59,31 +59,46 @@ class SendEmailForgotTableWidget extends StatelessWidget {
     Widget statusRenderer(TrinaColumnRendererContext renderContext) {
       final status = int.tryParse(renderContext.cell.value.toString()) ?? 9;
       String text = "Unknown";
-      Color bgColor = Colors.grey.shade600;
+      Color color = Colors.grey;
+      IconData icon = Icons.help_outline_rounded;
 
       if (status == 1) {
         text = "Pending";
-        bgColor = const Color(0xFFC08080);
+        color = const Color(0xFFE58A9B);
+        icon = Icons.schedule_rounded;
       } else if (status == 2) {
-        text = "Email Send";
-        bgColor = const Color(0xFF4CAF50);
+        text = "Email Sent";
+        color = const Color(0xFF22C55E);
+        icon = Icons.mark_email_read_outlined;
       } else if (status == 0) {
         text = "Rejected";
-        bgColor = Colors.redAccent;
+        color = const Color(0xFFEF4444);
+        icon = Icons.cancel_outlined;
       }
 
-      return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-        decoration: BoxDecoration(
-          color: bgColor,
-          borderRadius: BorderRadius.circular(4),
-        ),
-        child: Text(
-          text,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
+      return Align(
+        alignment: Alignment.centerLeft,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.14),
+            borderRadius: BorderRadius.circular(999),
+            border: Border.all(color: color.withValues(alpha: 0.45)),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(icon, color: color, size: 14),
+              const SizedBox(width: 6),
+              Text(
+                text,
+                style: TextStyle(
+                  color: color,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
           ),
         ),
       );

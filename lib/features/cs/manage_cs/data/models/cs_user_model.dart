@@ -28,12 +28,14 @@ class ManageCsUsersModel {
   });
 
   factory ManageCsUsersModel.fromMap(Map<String, dynamic> map) {
+    final activeValue =
+        map['Active'] ?? map['active'] ?? map['Status'] ?? map['status'];
+
     return ManageCsUsersModel(
       loginId: map['LoginId'] ?? map['login_id'] ?? '-',
       employeeId: map['EmployeeId'] ?? map['employee_id'] ?? '-',
       email: map['Email'] ?? map['email'] ?? '-',
-      isActive:
-          map['Active'] == 1 || map['Active'] == true || map['Active'] == 'Y',
+      isActive: _isEnabled(activeValue),
       isCs: map['CS'] == 1 || map['CS'] == true || map['CS'] == 'Y',
       isOnline:
           map['Online'] == 1 || map['Online'] == true || map['Online'] == 'Y',
@@ -44,6 +46,18 @@ class ManageCsUsersModel {
       createdBy: map['CreatedBy'] ?? map['createdBy'] ?? '-',
       modifiedBy: map['ModifiedBy'] ?? map['modifiedBy'] ?? '-',
     );
+  }
+
+  static bool _isEnabled(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value == 1;
+
+    final normalized = value?.toString().trim().toLowerCase();
+    return normalized == '1' ||
+        normalized == 'y' ||
+        normalized == 'yes' ||
+        normalized == 'true' ||
+        normalized == 'active';
   }
 
   bool get hasApprove => (permissions & 1) != 0;

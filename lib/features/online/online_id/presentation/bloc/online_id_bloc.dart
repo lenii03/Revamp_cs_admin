@@ -158,6 +158,8 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
       // Catat request lebih dahulu. Backend reset dapat mengirim email tetapi
       // responsnya terlambat/timeout; request tetap harus terlihat di antrean.
       final now = DateTime.now();
+      final requestId =
+          '${now.microsecondsSinceEpoch}-$loginId-$actionType';
       await queueRepository.enqueue(
         SendEmailForgotModel(
           actionType: actionType,
@@ -165,7 +167,7 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
           email: email,
           loginType: loginType,
           status: 1,
-          requestId: '${now.microsecondsSinceEpoch}-$loginId-$actionType',
+          requestId: requestId,
           source: 'new',
           createdAt: now.toIso8601String(),
         ),
@@ -185,6 +187,7 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
         return;
       }
 
+      await queueRepository.markAsSentByRequestId(requestId);
       add(const OnlineIdEvent.fetchOnlineIds());
     } catch (e) {
       emit(

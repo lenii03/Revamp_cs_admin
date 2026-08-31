@@ -4,6 +4,8 @@ import 'package:el_csadmin/features/splash/presentation/pages/splash_screen.dart
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:window_manager/window_manager.dart';
+import 'core/navigation/app_navigator.dart';
 import 'features/authentication/presentation/pages/login_page.dart';
 import 'features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'injector.dart';
@@ -16,6 +18,20 @@ const bool _forceUpdateSplash = bool.fromEnvironment(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await setupLocator();
+  await windowManager.ensureInitialized();
+  WindowOptions windowOptions = const WindowOptions(
+    size: Size(1280, 720),
+    minimumSize: Size(800, 600),
+    center: true,
+    backgroundColor: Colors.transparent,
+    skipTaskbar: false,
+    titleBarStyle: TitleBarStyle.hidden,
+  );
+
+  windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.show();
+    await windowManager.focus();
+  });
   runApp(const MainApp());
 }
 
@@ -32,14 +48,12 @@ class MainApp extends StatelessWidget {
       child: BlocBuilder<ThemeCubit, ThemeMode>(
         builder: (context, themeMode) {
           return MaterialApp(
+            navigatorKey: AppNavigator.navigatorKey,
             title: 'CS Admin',
             debugShowCheckedModeBanner: false,
             theme: lightTheme(),
             darkTheme: darkTheme(),
             themeMode: themeMode,
-
-            // Auto-update membandingkan binary Release. Pada mode Debug,
-            // langsung buka login agar file debug tidak dianggap update.
             home: kReleaseMode || _forceUpdateSplash
                 ? SplashScreen(
                     simulateUpdate: !kReleaseMode && _forceUpdateSplash,

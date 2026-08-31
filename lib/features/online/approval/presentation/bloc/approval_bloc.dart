@@ -1,5 +1,7 @@
 import 'package:el_csadmin/features/online/approval/data/models/approval_screen_model.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_state.dart';
+import 'package:el_csadmin/data/local/session_service.dart';
+import 'package:el_csadmin/injector.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../shared/features/api_datafeed/domain/repositories/api_datafeed_repository.dart';
 import 'approval_event.dart';
@@ -85,6 +87,16 @@ class ApprovalScreenBloc
       return;
     }
 
+    final approvedBy = locator<SessionService>().read(SessionKey.loginId);
+    if (approvedBy.isEmpty) {
+      emit(
+        ApprovalScreenState.error(
+          'Failed to $actionName: the active CS Login ID was not found. Please log in again.',
+        ),
+      );
+      return;
+    }
+
     var actionTypeId = 1;
     if (data.action.toLowerCase() == 'edit') {
       actionTypeId = 2;
@@ -94,7 +106,7 @@ class ApprovalScreenBloc
 
     final result = await repository.updateApprovalStatus({
       'ApprovalId': approvalId,
-      'ApprovedBy': 'admin',
+      'ApprovedBy': approvedBy,
       'Email': data.email == '-' ? '' : data.email,
       'LoginId': data.loginId,
       'Status': status,

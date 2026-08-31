@@ -4,6 +4,8 @@ import 'package:el_csadmin/features/online/approval/data/models/link_account_mod
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/account_link_model.dart';
 import 'package:el_csadmin/features/user_communication/send_email/data/models/send_email_forgot_model.dart';
+import 'package:el_csadmin/data/local/session_service.dart';
+import 'package:el_csadmin/injector.dart';
 import '../../../../../core/constants/endpoint.dart';
 import '../../../../../core/network/server_config.dart';
 import '../../../../../features/online/approval/data/models/approval_screen_model.dart';
@@ -264,9 +266,15 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
 
   @override
   Future<void> deleteCsUser(String loginId) async {
+    final deletedBy = locator<SessionService>().read(SessionKey.loginId);
+    if (deletedBy.isEmpty) {
+      throw Exception(
+        'The active CS Login ID was not found. Please log in again.',
+      );
+    }
     await dio.delete(
       Endpoint.deleteCs,
-      queryParameters: {'loginId': loginId, 'deletedBy': 'admin'},
+      queryParameters: {'loginId': loginId, 'deletedBy': deletedBy},
     );
   }
 

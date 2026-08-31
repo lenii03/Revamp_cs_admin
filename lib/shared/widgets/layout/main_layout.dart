@@ -19,6 +19,8 @@ import '../../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../../features/cs/manage_cs/presentation/pages/manage_cs_page.dart';
 import '../../../features/reports/report_send_pwd_pin/presentation/pages/report_send_pwd_pin_page.dart';
 import 'app_sidebar.dart';
+import '../app_drag_to_move_area.dart';
+import '../app_window_controls.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -105,26 +107,29 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      appBar: AppBar(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        bottom: PreferredSize(
+        appBar: AppBar(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            surfaceTintColor: Colors.transparent,
+            shadowColor: Colors.transparent,
+            bottom: PreferredSize(
           preferredSize: const Size.fromHeight(1.0),
           child: Container(
             color: Theme.of(context).colorScheme.outlineVariant,
             height: 1.0,
           ),
         ),
-        leading: IconButton(
+            leading: IconButton(
           icon: Icon(Icons.menu, color: Theme.of(context).iconTheme.color),
           onPressed: () => setState(() => _isSidebarOpen = !_isSidebarOpen),
         ),
-        title: Row(
-          children: [
+            title: AppDragToMoveArea(
+              child: SizedBox(
+                height: kToolbarHeight,
+                child: Row(
+                  children: [
             Flexible(
               child: Text(
                 "CS Admin",
@@ -136,7 +141,7 @@ class _MainLayoutState extends State<MainLayout> {
               const SizedBox(width: 12),
               _buildHeaderBadge(
                 context,
-                label: _appVersion.isEmpty ? 'Versi …' : 'v$_appVersion',
+                label: _appVersion.isEmpty ? 'Version …' : 'v$_appVersion',
               ),
             ],
             if (MediaQuery.sizeOf(context).width >= 900) ...[
@@ -153,9 +158,11 @@ class _MainLayoutState extends State<MainLayout> {
                 ),
               ),
             ],
-          ],
-        ),
-        actions: [
+                  ],
+                ),
+              ),
+            ),
+            actions: [
           PopupMenuButton<String>(
             icon: Icon(
               Icons.settings,
@@ -168,9 +175,6 @@ class _MainLayoutState extends State<MainLayout> {
             onSelected: (value) {
               if (value == 'theme') {
                 context.read<ThemeCubit>().toggleTheme();
-              }
-              if (value == 'token') {
-                /* TODO: Aksi Delete Token */
               }
               if (value == 'logout') {
                 _logout();
@@ -186,15 +190,6 @@ class _MainLayoutState extends State<MainLayout> {
                   ),
                 ),
               ),
-              PopupMenuItem(
-                value: 'token',
-                child: Text(
-                  "Delete Token",
-                  style: TextStyle(
-                    color: Theme.of(context).textTheme.bodyLarge?.color,
-                  ),
-                ),
-              ),
               const PopupMenuDivider(height: 1),
               const PopupMenuItem(
                 value: 'logout',
@@ -205,11 +200,11 @@ class _MainLayoutState extends State<MainLayout> {
               ),
             ],
           ),
-          const SizedBox(width: 16),
-        ],
-      ),
+          const AppWindowControls(),
+            ],
+        ),
 
-      body: LayoutBuilder(
+        body: LayoutBuilder(
         builder: (context, constraints) {
           final compact = constraints.maxWidth < 800;
           final page =
@@ -258,7 +253,7 @@ class _MainLayoutState extends State<MainLayout> {
             ],
           );
         },
-      ),
+        ),
     );
   }
 

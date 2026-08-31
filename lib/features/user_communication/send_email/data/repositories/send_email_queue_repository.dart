@@ -75,6 +75,37 @@ class SendEmailQueueRepository {
     });
   }
 
+  Future<List<SendEmailForgotModel>> markAsSentByRequestId(
+    String requestId,
+  ) {
+    return _runExclusive(() async {
+      load();
+      final index = _items.indexWhere(
+        (item) => item.requestId == requestId,
+      );
+      if (index < 0) {
+        throw StateError(
+          'Send Email request $requestId was not found in the local queue.',
+        );
+      }
+
+      final current = _items[index];
+      _items[index] = SendEmailForgotModel(
+        actionType: current.actionType,
+        loginId: current.loginId,
+        email: current.email,
+        loginType: current.loginType,
+        status: 2,
+        requestId: current.requestId,
+        source: current.source,
+        createdAt: current.createdAt,
+      );
+      await _persist();
+      await _writeToLegacyQueue(_items[index]);
+      return List.unmodifiable(_items);
+    });
+  }
+
   Future<void> _persist() {
     return _sessionService.writeDB(SessionKey.listPwdNPIN, {
       'ListEmailForgotPINAndPassword': _items

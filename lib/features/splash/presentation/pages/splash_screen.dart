@@ -8,12 +8,11 @@ import 'package:lottie/lottie.dart';
 
 import '../../../../core/theme/src/app_colors.dart';
 import '../../../../injector.dart';
+import '../../../../shared/widgets/app_drag_to_move_area.dart';
+import '../../../../shared/widgets/app_window_controls.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key, this.simulateUpdate = false});
-
-  /// Khusus preview alur update pada mode Debug. Tidak mengakses server,
-  /// mengunduh file, maupun menjalankan update.exe.
   final bool simulateUpdate;
 
   @override
@@ -245,6 +244,18 @@ class _SplashScreenState extends State<SplashScreen> {
                     },
                   ),
                 ),
+                const Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: 28,
+                  child: AppDragToMoveArea(child: SizedBox.expand()),
+                ),
+                const Positioned(
+                  top: 0,
+                  right: 0,
+                  child: AppWindowControls(),
+                ),
               ],
             ),
           );
@@ -265,7 +276,7 @@ class _SplashScreenState extends State<SplashScreen> {
                 foregroundColor: const Color(0xFF9EB0C2),
                 side: const BorderSide(color: Color(0xFF30445A)),
               ),
-              child: const Text('Lewati'),
+              child: const Text('Skip'),
             ),
           ),
           const SizedBox(width: 12),
@@ -288,7 +299,7 @@ class _SplashScreenState extends State<SplashScreen> {
     }
 
     return const Text(
-      'Pemeriksaan berjalan otomatis. Mohon tunggu sebentar.',
+      'The update check runs automatically. Please wait a moment.',
       textAlign: TextAlign.center,
       style: TextStyle(color: Color(0xFF6F8498), fontSize: 12),
     );
@@ -309,7 +320,7 @@ class _DownloadProgress extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'File ${state.currentFileIndex} dari ${state.totalFiles}',
+              'File ${state.currentFileIndex} of ${state.totalFiles}',
               style: const TextStyle(color: Color(0xFF9EB0C2), fontSize: 12),
             ),
             Text(
@@ -410,7 +421,7 @@ class _UpdateViewData {
       );
     }
     return const _UpdateViewData(
-      title: 'Menyiapkan CS Admin',
+      title: 'Preparing CS Admin',
       description:
           'Checking for the latest updates to keep the application secure and optimized.',
     );

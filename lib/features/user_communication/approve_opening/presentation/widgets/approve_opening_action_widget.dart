@@ -29,19 +29,36 @@ class ApproveOpeningActionWidget extends StatelessWidget {
         final isSending = state is ApproveOpeningLoaded && state.isSending;
         return Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Wrap(
+            LayoutBuilder(
+              builder: (context, constraints) {
+                final compact = constraints.maxWidth < 780;
+                final managementActions = Wrap(
                   spacing: 12.0,
+                  runSpacing: 8,
                   children: [
-                    _buildActionButton(context, "Add", Icons.add),
-                    _buildActionButton(context, "Remove", Icons.remove),
-                    _buildActionButton(context, "Clear", Icons.clear_all),
+                    _buildActionButton(
+                      context,
+                      "Add",
+                      Icons.add,
+                      disabled: isSending,
+                    ),
+                    _buildActionButton(
+                      context,
+                      "Remove",
+                      Icons.remove,
+                      disabled: isSending,
+                    ),
+                    _buildActionButton(
+                      context,
+                      "Clear",
+                      Icons.clear_all,
+                      disabled: isSending,
+                    ),
                   ],
-                ),
-                Wrap(
+                );
+                final emailActions = Wrap(
                   spacing: 12.0,
+                  runSpacing: 8,
                   children: [
                     _buildActionButton(
                       context,
@@ -58,8 +75,24 @@ class ApproveOpeningActionWidget extends StatelessWidget {
                       disabled: isSending,
                     ),
                   ],
-                ),
-              ],
+                );
+
+                if (compact) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      managementActions,
+                      const SizedBox(height: 10),
+                      emailActions,
+                    ],
+                  );
+                }
+
+                return Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [managementActions, emailActions],
+                );
+              },
             ),
             if (isSending) ...[
               const SizedBox(height: 10),
@@ -112,7 +145,7 @@ class ApproveOpeningActionWidget extends StatelessWidget {
               ),
               const SizedBox(height: 24),
               const Text(
-                'Loading',
+                'Attention',
                 style: TextStyle(
                   color: Colors.orange,
                   fontSize: 20,

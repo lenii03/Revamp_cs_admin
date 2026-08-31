@@ -6,19 +6,29 @@ import 'authentication_state.dart';
 class AuthenticationBloc
     extends Bloc<AuthenticationEvent, AuthenticationState> {
   final AuthRepository authRepository;
+  bool _isLoginInProgress = false;
 
   AuthenticationBloc({required this.authRepository}) : super(AuthInitial()) {
     on<LoginSubmitted>((event, emit) async {
-      emit(AuthLoading());
-      final result = await authRepository.login(event.username, event.password);
-      result.fold(
-        (errorMessage) {
-          emit(AuthFailure(errorMessage));
-        },
-        (user) {
-          emit(AuthSuccess(user));
-        },
-      );
+      if (_isLoginInProgress) return;
+      _isLoginInProgress = true;
+      try {
+        emit(AuthLoading());
+        final result = await authRepository.login(
+          event.username,
+          event.password,
+        );
+        result.fold(
+          (errorMessage) {
+            emit(AuthFailure(errorMessage));
+          },
+          (user) {
+            emit(AuthSuccess(user));
+          },
+        );
+      } finally {
+        _isLoginInProgress = false;
+      }
     });
 
     on<ForgotPasswordSubmitted>((event, emit) async {

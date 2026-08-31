@@ -1,4 +1,8 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
+import 'package:el_csadmin/core/constants/endpoint.dart';
+import 'package:el_csadmin/core/network/session_expired_handler.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/injector.dart';
 
@@ -24,6 +28,12 @@ class DioInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    if (err.response?.statusCode == 401 &&
+        !_isAuthenticationRequest(err.requestOptions.path)) {
+      unawaited(SessionExpiredHandler.handle());
+    }
+
+
     print(
       "❌ ERROR DIO :: ${err.requestOptions.method} :: ${err.requestOptions.baseUrl}${err.requestOptions.path}",
     );
@@ -31,6 +41,13 @@ class DioInterceptor extends Interceptor {
       "❌ STATUS :: ${err.response?.statusCode} :: ${err.response?.statusMessage}",
     );
     return super.onError(err, handler);
+  }
+
+  bool _isAuthenticationRequest(String path) {
+    final normalizedPath = path.toLowerCase().replaceFirst(RegExp(r'^/+'), '');
+    return normalizedPath == Endpoint.signIn.toLowerCase() ||
+        normalizedPath == Endpoint.signOut.toLowerCase() ||
+        normalizedPath == Endpoint.resetPasswordCs.toLowerCase();
   }
 
   @override

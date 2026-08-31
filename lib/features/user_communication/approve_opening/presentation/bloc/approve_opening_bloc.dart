@@ -30,6 +30,7 @@ class ApproveOpeningBloc
     _loadApiDataInBackground();
 
     on<AddToStaging>((event, emit) {
+      if (isSending) return;
       if (!_stagedAccounts.any(
         (acc) =>
             acc.loginId == event.account.loginId &&
@@ -41,6 +42,7 @@ class ApproveOpeningBloc
     });
 
     on<RemoveFromStaging>((event, emit) {
+      if (isSending) return;
       _stagedAccounts.removeWhere(
         (acc) =>
             acc.loginId == event.account.loginId &&
@@ -51,16 +53,20 @@ class ApproveOpeningBloc
     });
 
     on<ClearStaging>((event, emit) {
+      if (isSending) return;
       _stagedAccounts.clear();
       _selectedAccount = null;
       emit(const ApproveOpeningLoaded([]));
     });
 
     on<SelectStagedAccount>((event, emit) {
+      if (isSending) return;
       _selectedAccount = event.account;
+      _emitLoaded(emit);
     });
 
     on<SendEmailOpeningAccount>((event, emit) async {
+      if (isSending) return;
       final account = _stagedAccounts
           .cast<ApproveOpeningAccountModel?>()
           .firstWhere(
@@ -90,7 +96,7 @@ class ApproveOpeningBloc
     });
 
     on<SendEmailOpeningAccountToAll>((event, emit) async {
-      if (_stagedAccounts.isEmpty) return;
+      if (isSending || _stagedAccounts.isEmpty) return;
       _emitLoaded(emit, isSending: true);
 
       final accounts = _stagedAccounts.take(10).toList();
@@ -114,6 +120,23 @@ class ApproveOpeningBloc
 
   Future<Either<String, void>> _send(ApproveOpeningAccountModel account) {
     final csLoginId = locator<SessionService>().read(SessionKey.loginId);
+    if (csLoginId.isEmpty) {
+      return Future.value(
+        const Left<String, void>(
+          'The active CS Login ID was not found. Please log in again.',
+        ),
+      );
+    }
+    if (account.loginId.isEmpty || account.loginId == '-') {
+      return Future.value(
+        const Left<String, void>('The selected Login ID is invalid.'),
+      );
+    }
+    if (account.custId.isEmpty || account.custId == '-') {
+      return Future.value(
+        const Left<String, void>('The selected Account ID is invalid.'),
+      );
+    }
     return repository.sendEmailOpeningAccount({
       'LoginId': account.loginId,
       'CustId': account.custId,

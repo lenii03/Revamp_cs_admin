@@ -1,5 +1,7 @@
 import 'package:el_csadmin/core/theme/theme.dart';
+import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/features/cs/manage_cs/presentation/bloc/manage_cs_event.dart';
+import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -383,7 +385,10 @@ class ManageCsTableWidget extends StatelessWidget {
     showDialog(
       context: context,
       builder: (ctx) {
-        bool createCsLogin = user.hasApprove;
+        final permissionValues = List<bool>.generate(
+          9,
+          (index) => (user.permissions & (1 << index)) != 0,
+        );
         bool suspended = !user.isActive;
 
         return StatefulBuilder(
@@ -490,47 +495,33 @@ class ManageCsTableWidget extends StatelessWidget {
 
                       _buildFormRow(
                         'Permissions',
-                        Column(
-                          children: [
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildCheckboxRow(
-                                    'Create CS Login',
-                                    createCsLogin,
-                                    (val) =>
-                                        setState(() => createCsLogin = val!),
-                                  ),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 8,
+                          children: List.generate(9, (index) {
+                            const labels = [
+                              'Create CS Login',
+                              'Create Online User',
+                              'Approve Online User',
+                              'Create Only Demo Account',
+                              'View CS Logs',
+                              'Approval Opening Account',
+                              'View Report',
+                              'Send OL User Disclaimer',
+                              'View Customer Ratio',
+                            ];
+
+                            return SizedBox(
+                              width: 210,
+                              child: _buildCheckboxRow(
+                                labels[index],
+                                permissionValues[index],
+                                (value) => setState(
+                                  () => permissionValues[index] = value ?? false,
                                 ),
-                                Expanded(
-                                  child: _buildCheckboxRow(
-                                    'Create Online User',
-                                    true,
-                                    (val) {},
-                                  ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Row(
-                              children: [
-                                Expanded(
-                                  child: _buildCheckboxRow(
-                                    'View CSLogs',
-                                    false,
-                                    (val) {},
-                                  ),
-                                ),
-                                Expanded(
-                                  child: _buildCheckboxRow(
-                                    'Send OLUser Disclaimer',
-                                    true,
-                                    (val) {},
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ],
+                              ),
+                            );
+                          }),
                         ),
                       ),
                       _buildFormRow(
@@ -562,20 +553,37 @@ class ManageCsTableWidget extends StatelessWidget {
                           ElevatedButton(
                             onPressed: () {
                               if (formKey.currentState!.validate()) {
-                                int newPermissions = 0;
-                                if (createCsLogin) newPermissions += 1;
+                                final modifiedBy = locator<SessionService>()
+                                    .read(SessionKey.loginId);
+                                if (modifiedBy.isEmpty) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'The active CS Login ID was not found. Please log in again.',
+                                      ),
+                                    ),
+                                  );
+                                  return;
+                                }
+                                var newPermissions = 0;
+                                for (
+                                  var index = 0;
+                                  index < permissionValues.length;
+                                  index++
+                                ) {
+                                  if (permissionValues[index]) {
+                                    newPermissions |= 1 << index;
+                                  }
+                                }
                                 final payload = {
                                   "LoginId": user.loginId,
                                   "EmployeeId": cEmployeeId.text.trim(),
                                   "Email": cEmail.text.trim(),
                                   "Permissions": newPermissions,
-                                  "Status": suspended ? 1 : 0,
-                                  "ModifiedBy": "admin",
+                                  "Status": suspended ? 0 : 1,
+                                  "ModifiedBy": modifiedBy,
                                 };
 
-                                context.read<ManageCsBloc>().add(
-                                  EditCsUser(payload),
-                                );
                                 manageCsBloc.add(EditCsUser(payload));
                                 Navigator.pop(ctx);
                               }
@@ -888,14 +896,23 @@ class ManageCsTableWidget extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () {
                             if (formKey.currentState!.validate()) {
+                              final modifiedBy = locator<SessionService>()
+                                  .read(SessionKey.loginId);
+                              if (modifiedBy.isEmpty) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'The active CS Login ID was not found. Please log in again.',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
                               final payload = {
                                 'LoginId': user.loginId,
                                 'Password': cRetypePassword.text,
-                                'ModifiedBy': 'admin',
+                                'ModifiedBy': modifiedBy,
                               };
-                              context.read<ManageCsBloc>().add(
-                                ResetPasswordCsUser(payload),
-                              );
                               bloc.add(ResetPasswordCsUser(payload));
                               Navigator.pop(dialogContext);
                             }
