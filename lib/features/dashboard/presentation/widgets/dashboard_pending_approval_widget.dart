@@ -1,5 +1,8 @@
 import 'dart:async'; // 👇 Wajib di-import untuk menggunakan Timer
 import 'package:el_csadmin/core/theme/theme.dart';
+import 'package:el_csadmin/core/notifications/dashboard_notification_center.dart';
+import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_bloc.dart';
+import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:el_csadmin/features/online/approval/data/models/approval_screen_model.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_event.dart';
@@ -21,6 +24,10 @@ class DashboardPendingApprovalWidget extends StatefulWidget {
 class _DashboardPendingApprovalWidgetState
     extends State<DashboardPendingApprovalWidget> {
   Timer? _refreshTimer;
+  Timer? _notificationTimer;
+  OverlayEntry? _notificationOverlay;
+  String? _pendingAction;
+  String? _pendingLoginId;
 
   @override
   void initState() {
@@ -35,6 +42,8 @@ class _DashboardPendingApprovalWidgetState
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _notificationTimer?.cancel();
+    _notificationOverlay?.remove();
     super.dispose();
   }
 
@@ -52,6 +61,115 @@ class _DashboardPendingApprovalWidgetState
       default:
         return 'Tipe Lain';
     }
+  }
+
+  void _submitApproval({
+    required ApprovalScreenModel item,
+    required bool approve,
+  }) {
+    _pendingAction = approve ? 'approved' : 'rejected';
+    _pendingLoginId = item.loginId;
+    context.read<ApprovalScreenBloc>().add(
+      approve
+          ? ApprovalScreenEvent.approveItem(item)
+          : ApprovalScreenEvent.rejectItem(item),
+    );
+  }
+
+  void _showActionNotification({
+    required String message,
+    required bool success,
+  }) {
+    DashboardNotificationCenter.instance.add(
+      message: message,
+      success: success,
+    );
+    _notificationTimer?.cancel();
+    _notificationOverlay?.remove();
+
+    final overlay = Overlay.of(context);
+    _notificationOverlay = OverlayEntry(
+      builder: (overlayContext) => Positioned(
+        top: 76,
+        right: 32,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 360),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: success
+                  ? const Color(0xFF123C37)
+                  : const Color(0xFF4A2028),
+              borderRadius: BorderRadius.circular(9),
+              border: Border.all(
+                color: success
+                    ? const Color(0xFF2EBDAD)
+                    : const Color(0xFFFF647C),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.24),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  success
+                      ? Icons.check_circle_outline
+                      : Icons.error_outline,
+                  size: 18,
+                  color: success
+                      ? const Color(0xFF5DE0D0)
+                      : const Color(0xFFFF8A9B),
+                ),
+                const SizedBox(width: 9),
+                Flexible(
+                  child: Text(
+                    message,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: _hideActionNotification,
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(
+                      Icons.close,
+                      color: Colors.white70,
+                      size: 16,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    overlay.insert(_notificationOverlay!);
+    _notificationTimer = Timer(const Duration(seconds: 4), () {
+      _hideActionNotification();
+    });
+  }
+
+  void _hideActionNotification() {
+    _notificationTimer?.cancel();
+    _notificationTimer = null;
+    _notificationOverlay?.remove();
+    _notificationOverlay = null;
   }
 
   @override
@@ -114,7 +232,47 @@ class _DashboardPendingApprovalWidgetState
             height: 1,
           ),
           Expanded(
-            child: BlocBuilder<ApprovalScreenBloc, ApprovalScreenState>(
+            child: BlocConsumer<ApprovalScreenBloc, ApprovalScreenState>(
+              listener: (context, state) {
+                if (_pendingAction == null) return;
+
+                state.maybeWhen(
+                  loaded: (_) {
+                    final action = _pendingAction!;
+                    final loginId = _pendingLoginId ?? 'User';
+                    _pendingAction = null;
+                    _pendingLoginId = null;
+                    _showActionNotification(
+                      message: '$loginId was successfully $action.',
+                      success: true,
+                    );
+                    context.read<DashboardBloc>().add(
+                      FetchDashboardMetricsEvent(),
+                    );
+                  },
+                  error: (message) {
+                    final action = _pendingAction!;
+                    final loginId = _pendingLoginId ?? 'User';
+                    final actionWasSaved = context
+                        .read<ApprovalScreenBloc>()
+                        .lastActionSucceeded;
+                    _pendingAction = null;
+                    _pendingLoginId = null;
+                    _showActionNotification(
+                      message: actionWasSaved
+                          ? '$loginId was successfully $action, but the dashboard could not be refreshed.'
+                          : 'The approval could not be $action. $message',
+                      success: actionWasSaved,
+                    );
+                    if (actionWasSaved) {
+                      context.read<DashboardBloc>().add(
+                        FetchDashboardMetricsEvent(),
+                      );
+                    }
+                  },
+                  orElse: () {},
+                );
+              },
               builder: (context, state) {
                 return state.maybeWhen(
                   loading: () => const Center(
@@ -258,13 +416,15 @@ class _DashboardPendingApprovalWidgetState
                                     builder: (ctx) => ApprovalDetailDialog(
                                       data: item,
                                       onApprove: () {
-                                        context.read<ApprovalScreenBloc>().add(
-                                          ApprovalScreenEvent.approveItem(item),
+                                        _submitApproval(
+                                          item: item,
+                                          approve: true,
                                         );
                                       },
                                       onReject: () {
-                                        context.read<ApprovalScreenBloc>().add(
-                                          ApprovalScreenEvent.rejectItem(item),
+                                        _submitApproval(
+                                          item: item,
+                                          approve: false,
                                         );
                                       },
                                     ),

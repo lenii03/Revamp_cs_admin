@@ -30,6 +30,7 @@ class SessionExpiredHandler {
       if (navigator == null || dialogContext == null) return;
 
       await showDialog<void>(
+        // ignore: use_build_context_synchronously
         context: dialogContext,
         useRootNavigator: true,
         barrierDismissible: false,
@@ -80,7 +81,7 @@ class SessionExpiredHandler {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),
+                    ),   
                     child: const Text(
                       'Log In Again',
                       style: TextStyle(fontWeight: FontWeight.bold),

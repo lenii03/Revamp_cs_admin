@@ -14,6 +14,7 @@ class ApprovalScreenBloc
   int? currentStatus;
   int currentPage = 1;
   int currentSize = 30;
+  bool lastActionSucceeded = false;
 
   void applyFilters({String? search, int? actionType, int? status}) {
     currentSearch = search?.trim();
@@ -76,6 +77,7 @@ class ApprovalScreenBloc
     required String actionName,
     required Emitter<ApprovalScreenState> emit,
   }) async {
+    lastActionSucceeded = false;
     emit(const ApprovalScreenState.loading());
     final approvalId = int.tryParse(data.approvalId);
     if (approvalId == null) {
@@ -118,6 +120,7 @@ class ApprovalScreenBloc
         emit(ApprovalScreenState.error('Failed to $actionName: $error'));
       },
       (_) async {
+        lastActionSucceeded = true;
         await _onFetchApprovals(emit);
       },
     );

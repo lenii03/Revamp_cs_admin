@@ -269,10 +269,12 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                       ),
                     ],
                     validator: (val) {
-                      if (val == null || val.isEmpty)
+                      if (val == null || val.isEmpty) {
                         return 'Login Id cannot be empty';
-                      if (val.length < 3)
+                      }
+                      if (val.length < 3) {
                         return 'Login Id must be at least 3 characters';
+                      }
                       final validPattern = RegExp(
                         r'^(?!.*[._]{2,})(?![._])[a-zA-Z0-9._]{3,32}(?<![._])$',
                       );
@@ -344,10 +346,12 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                       final digitsOnly =
                           val?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
                       if (digitsOnly.isEmpty) return 'Handphone No is required';
-                      if (digitsOnly.length < 10)
+                      if (digitsOnly.length < 10) {
                         return 'Phone number is too short';
-                      if (digitsOnly.length > 15)
+                      }
+                      if (digitsOnly.length > 15) {
                         return 'Phone number is too long';
+                      }
 
                       // Wajib diawali 08
                       final regex = RegExp(r'^08\d{8,13}$');

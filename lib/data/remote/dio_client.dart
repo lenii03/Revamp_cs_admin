@@ -12,7 +12,7 @@ class DioClient {
 
   Future<DioClient> init() async {
     final sessionService = locator<SessionService>();
-    final String? token = sessionService.read(SessionKey.token);
+    final String token = sessionService.read(SessionKey.token);
 
     String savedBaseUrl = await ServerConfig.getBaseUrl();
     if (savedBaseUrl.isEmpty) {
@@ -25,7 +25,7 @@ class DioClient {
       receiveTimeout: const Duration(seconds: 15),
       headers: {
         'Content-Type': 'application/json',
-        if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
+        if (token.isNotEmpty) 'Authorization': 'Bearer $token',
       },
       responseType: ResponseType.json,
     );

@@ -836,8 +836,9 @@ class ManageCsTableWidget extends StatelessWidget {
                         isPassword: true,
                         maxLength: 64,
                         validator: (val) {
-                          if (val == null || val.length < 6)
+                          if (val == null || val.length < 6) {
                             return 'Password must be at least 6 characters';
+                          }
                           if (!RegExp(
                             r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).+$',
                           ).hasMatch(val)) {

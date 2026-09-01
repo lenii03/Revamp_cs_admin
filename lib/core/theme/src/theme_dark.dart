@@ -97,12 +97,12 @@ ThemeData darkTheme() {
       iconColor: AppColors.white,
     ),
     scrollbarTheme: ScrollbarThemeData(
-      thickness: MaterialStateProperty.all(6),
-      thumbColor: MaterialStateProperty.all(
+      thickness: WidgetStateProperty.all(6),
+      thumbColor: WidgetStateProperty.all(
         AppColors.primary.withValues(alpha: 0.5),
       ),
       radius: const Radius.circular(10),
-      thumbVisibility: MaterialStateProperty.all(true),
+      thumbVisibility: WidgetStateProperty.all(true),
       minThumbLength: 50,
     ),
 

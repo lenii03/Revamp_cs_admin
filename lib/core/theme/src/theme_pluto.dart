@@ -89,7 +89,7 @@ class ThemePluto extends ThemeExtension<ThemePluto> {
     );
   }
 
-  static get light => ThemePluto(
+  static ThemePluto get light => ThemePluto(
     gridBackgroundColor: const Color(0xFFF8F9FA),
     rowColor: AppColors.white,
     gridBorderColor: AppColors.separatorLight,

@@ -1,6 +1,7 @@
 import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:el_csadmin/core/theme/theme_cubit.dart';
 import 'package:el_csadmin/core/network/server_config.dart';
+import 'package:el_csadmin/core/notifications/dashboard_notification_center.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/data/repositories/login_repository.dart';
 import 'package:el_csadmin/features/authentication/presentation/pages/login_page.dart';
@@ -163,6 +164,65 @@ class _MainLayoutState extends State<MainLayout> {
               ),
             ),
             actions: [
+          ValueListenableBuilder<List<DashboardNotificationItem>>(
+            valueListenable:
+                DashboardNotificationCenter.instance.notifications,
+            builder: (context, notifications, child) {
+              return PopupMenuButton<void>(
+                tooltip: 'Approval notifications',
+                position: PopupMenuPosition.under,
+                color: Theme.of(context)
+                    .extension<ThemeColors>()
+                    ?.appContainerBackground,
+                icon: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Icon(
+                      Icons.notifications_none_rounded,
+                      color: Theme.of(context).iconTheme.color,
+                    ),
+                    if (notifications.isNotEmpty)
+                      Positioned(
+                        right: -5,
+                        top: -5,
+                        child: Container(
+                          constraints: const BoxConstraints(minWidth: 16),
+                          height: 16,
+                          padding: const EdgeInsets.symmetric(horizontal: 4),
+                          alignment: Alignment.center,
+                          decoration: const BoxDecoration(
+                            color: AppColors.destructiveRedDark,
+                            borderRadius: BorderRadius.all(Radius.circular(8)),
+                          ),
+                          child: Text(
+                            notifications.length > 9
+                                ? '9+'
+                                : '${notifications.length}',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+                itemBuilder: (context) => [
+                  PopupMenuItem<void>(
+                    enabled: false,
+                    padding: EdgeInsets.zero,
+                    child: SizedBox(
+                      width: 360,
+                      child: _NotificationHistoryPanel(
+                        notifications: notifications,
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
           PopupMenuButton<String>(
             icon: Icon(
               Icons.settings,
@@ -306,6 +366,143 @@ class _MainLayoutState extends State<MainLayout> {
           },
         ),
       ),
+    );
+  }
+}
+
+class _NotificationHistoryPanel extends StatelessWidget {
+  const _NotificationHistoryPanel({required this.notifications});
+
+  final List<DashboardNotificationItem> notifications;
+
+  String _formatTime(DateTime value) {
+    String twoDigits(int number) => number.toString().padLeft(2, '0');
+    return '${twoDigits(value.hour)}:${twoDigits(value.minute)}:${twoDigits(value.second)}';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final separatorColor = Theme.of(context).colorScheme.outlineVariant;
+    final secondaryColor = Theme.of(
+      context,
+    ).extension<ThemeColors>()?.unselectedLabel;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Approval History',
+                  style: TextStyle(
+                    color: Theme.of(context).textTheme.bodyLarge?.color,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              if (notifications.isNotEmpty)
+                TextButton(
+                  onPressed: DashboardNotificationCenter.instance.clear,
+                  child: const Text(
+                    'Clear',
+                    style: TextStyle(fontSize: 12),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Divider(height: 1, color: separatorColor),
+        if (notifications.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.notifications_none_rounded,
+                  color: secondaryColor,
+                  size: 28,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'No approval notifications yet.',
+                  style: TextStyle(color: secondaryColor, fontSize: 12),
+                ),
+              ],
+            ),
+          )
+        else
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxHeight: 360),
+            child: ListView.separated(
+              shrinkWrap: true,
+              padding: EdgeInsets.zero,
+              itemCount: notifications.length,
+              separatorBuilder: (_, index) => Divider(
+                height: 1,
+                indent: 48,
+                color: separatorColor,
+              ),
+              itemBuilder: (context, index) {
+                final notification = notifications[index];
+                final success =
+                    notification.type == DashboardNotificationType.success;
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 11,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(
+                        success
+                            ? Icons.check_circle_outline
+                            : Icons.error_outline,
+                        size: 20,
+                        color: success
+                            ? const Color(0xFF2EBDAD)
+                            : const Color(0xFFFF647C),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              notification.message,
+                              maxLines: 3,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.color,
+                                fontSize: 12,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              _formatTime(notification.createdAt),
+                              style: TextStyle(
+                                color: secondaryColor,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+      ],
     );
   }
 }

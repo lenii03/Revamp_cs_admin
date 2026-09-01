@@ -209,6 +209,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         .toList();
   }
 
+  @override
   Future<Map<String, dynamic>> fetchLinkedAccountsDetail(
     String loginId,
     String approvalId,
@@ -247,7 +248,6 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     return {'old': oldLinks, 'new': newLinks};
   }
 
-  @override
   Future<List<ResetPasswordReportModel>> fetchResetPasswordReports() {
     // TODO: implement fetchResetPasswordReports
     throw UnimplementedError();
@@ -339,7 +339,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   }) async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
+      if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
       final response = await dio.get(
         Endpoint.getListOpeningAccount,
@@ -417,7 +417,9 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       if (response.statusCode == 200) {
         return response.data['data'] as List<dynamic>;
       } else {
-        throw Exception(response.data['message'] ?? 'Failed to load scheduler data');
+        throw Exception(
+          response.data['message'] ?? 'Failed to load scheduler data',
+        );
       }
     } catch (e) {
       throw Exception('A network error occurred: ${e.toString()}');
@@ -449,7 +451,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<String> postAddOnlineUser(Map<String, dynamic> payload) async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
+      if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
 
       final response = await dio.post(Endpoint.postAddOnUser, data: payload);
@@ -460,9 +462,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         throw Exception(response.data['message'] ?? "Failed to process data");
       }
     } on DioException catch (e) {
-      throw Exception(
-        e.response?.data['message'] ?? "A server error occurred",
-      );
+      throw Exception(e.response?.data['message'] ?? "A server error occurred");
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -472,7 +472,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   Future<List<AccountLinkModel>> fetchAccountLinks() async {
     try {
       final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
+      if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
       dio.options.baseUrl = baseUrl;
 
       final response = await dio.get(Endpoint.getAccountLink);
@@ -483,9 +483,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       return rawData
           .whereType<Map>()
           .map(
-            (item) => AccountLinkModel.fromMap(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) => AccountLinkModel.fromMap(Map<String, dynamic>.from(item)),
           )
           .where((item) => item.custId.isNotEmpty)
           .toList();
@@ -513,9 +511,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       return rawData
           .whereType<Map>()
           .map(
-            (item) => AccountLinkModel.fromMap(
-              Map<String, dynamic>.from(item),
-            ),
+            (item) => AccountLinkModel.fromMap(Map<String, dynamic>.from(item)),
           )
           .where((item) => item.custId.isNotEmpty)
           .toList();
@@ -574,9 +570,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
         );
       }
     } on DioException catch (e) {
-      throw Exception(
-        e.response?.data['message'] ?? "A server error occurred",
-      );
+      throw Exception(e.response?.data['message'] ?? "A server error occurred");
     } catch (e) {
       throw Exception(e.toString());
     }
@@ -691,6 +685,7 @@ class ApiDatafeedNetworkDataSourceMockImpl
     ];
   }
 
+  @override
   Future<List<ApprovalScreenModel>> fetchApprovals({
     String? search,
     int? actionType,

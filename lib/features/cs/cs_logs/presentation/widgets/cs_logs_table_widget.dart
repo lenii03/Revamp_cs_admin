@@ -1,6 +1,5 @@
 import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -40,7 +39,7 @@ class CsLogsTableWidget extends StatelessWidget {
                 style: const TextStyle(color: AppColors.destructiveRedDark),
               ),
             );
-          } else if (state is CsLogsLoaded) {
+          } else if (state is CsLogsLoaded) { 
             if (state.logs.isEmpty) {
               return const Center(
                 child: Text(

@@ -161,14 +161,14 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
       context,
     ).extension<ThemeColors>()?.appContainerBackground;
     final disabledBgColor = isDark
-        ? AppColors.systemBackgroundDark.withOpacity(0.3)
-        : AppColors.lighterGrey.withOpacity(0.5);
+        ? AppColors.systemBackgroundDark.withValues(alpha: 0.3)
+        : AppColors.lighterGrey.withValues(alpha: 0.5);
     final borderColor = isDark
         ? AppColors.separatorDark
         : AppColors.separatorLight;
     final iconColor = isEnabled
         ? Theme.of(context).iconTheme.color
-        : (isDark ? Colors.grey.withOpacity(0.5) : Colors.grey);
+        : (isDark ? Colors.grey.withValues(alpha: 0.5) : Colors.grey.withValues(alpha: 0.5));
 
     return InkWell(
       onTap: isEnabled ? onTap : null,
