@@ -21,12 +21,13 @@ class OnlineIdPrintDialog extends StatefulWidget {
 
 class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
   final _formKey = GlobalKey<FormState>();
-  final _pageController = TextEditingController();
-  final _perPageController = TextEditingController();
+  final _pageController = TextEditingController(text: '1');
+  final _perPageController = TextEditingController(text: '30');
   final _searchController = TextEditingController();
   List<OnlineIdModel> _searchOptions = const [];
   bool _isLoadingSearchOptions = true;
   bool _isPrinting = false;
+  bool _printAll = false;
 
   @override
   void initState() {
@@ -58,59 +59,108 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() => _isPrinting = true);
-    final page = int.parse(_pageController.text);
-    final perPage = int.parse(_perPageController.text);
+    final page = _printAll ? 1 : int.parse(_pageController.text);
+    final perPage = _printAll ? 100 : int.parse(_perPageController.text);
     final search = _searchController.text.trim();
+    final result = _printAll
+        ? await _fetchAllOnlineIds(search)
+        : await _fetchOnlineIdsPage(page, perPage, search);
+
+    if (!mounted) return;
+    if (result.error != null) {
+      setState(() => _isPrinting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to retrieve print data: ${result.error}'),
+          backgroundColor: AppColors.destructiveRedDark,
+        ),
+      );
+      return;
+    }
+
+    final data = result.data;
+    if (data.isEmpty) {
+      setState(() => _isPrinting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('No data available to print.')),
+      );
+      return;
+    }
+
+    try {
+      final navigator = Navigator.of(context);
+      setState(() => _isPrinting = false);
+      navigator.pop();
+      await showDialog<void>(
+        context: navigator.context,
+        barrierDismissible: false,
+        builder: (_) => _OnlineIdPdfPreviewDialog(
+          fileName: _printAll
+              ? 'All_Online_Users.pdf'
+              : 'Online_User_Page_$page.pdf',
+          buildPdf: (pageFormat) => _buildPdf(
+            data,
+            page,
+            perPage,
+            search,
+            pageFormat,
+            printAll: _printAll,
+          ),
+        ),
+      );
+    } catch (error) {
+      if (!mounted) return;
+      setState(() => _isPrinting = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to create PDF preview: $error'),
+          backgroundColor: AppColors.destructiveRedDark,
+        ),
+      );
+    }
+  }
+
+  Future<({String? error, List<OnlineIdModel> data})> _fetchOnlineIdsPage(
+    int page,
+    int perPage,
+    String search,
+  ) async {
+    String? error;
+    List<OnlineIdModel> data = const [];
     final result = await widget.repository.fetchOnlineIds(
       page: page,
       size: perPage,
       search: search,
     );
+    result.fold((value) => error = value, (value) => data = value);
+    return (error: error, data: data);
+  }
 
-    if (!mounted) return;
-    await result.fold(
-      (error) async {
-        setState(() => _isPrinting = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to retrieve print data: $error'),
-            backgroundColor: AppColors.destructiveRedDark,
-          ),
-        );
-      },
-      (data) async {
-        if (data.isEmpty) {
-          setState(() => _isPrinting = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('No data available to print.')),
-          );
-          return;
-        }
+  Future<({String? error, List<OnlineIdModel> data})> _fetchAllOnlineIds(
+    String search,
+  ) async {
+    const batchSize = 100;
+    const maximumPages = 1000;
+    final allData = <OnlineIdModel>[];
+    final collectedLoginIds = <String>{};
 
-        try {
-          final navigator = Navigator.of(context);
-          setState(() => _isPrinting = false);
-          navigator.pop();
-          await showDialog<void>(
-            context: navigator.context,
-            barrierDismissible: false,
-            builder: (_) => _OnlineIdPdfPreviewDialog(
-              fileName: 'Online_User_Page_$page.pdf',
-              buildPdf: (pageFormat) =>
-                  _buildPdf(data, page, perPage, search, pageFormat),
-            ),
-          );
-        } catch (error) {
-          if (!mounted) return;
-          setState(() => _isPrinting = false);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to create PDF preview: $error'),
-              backgroundColor: AppColors.destructiveRedDark,
-            ),
-          );
-        }
-      },
+    for (var page = 1; page <= maximumPages; page++) {
+      final result = await _fetchOnlineIdsPage(page, batchSize, search);
+      if (result.error != null) return result;
+      if (result.data.isEmpty) return (error: null, data: allData);
+
+      final newData = result.data
+          .where((item) => collectedLoginIds.add(item.loginId))
+          .toList();
+      allData.addAll(newData);
+      if (result.data.isNotEmpty && newData.isEmpty) {
+        return (error: null, data: allData);
+      }
+    }
+
+    return (
+      error: 'The print limit was reached. Please use a search filter.',
+      data: allData,
     );
   }
 
@@ -119,8 +169,9 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
     int page,
     int perPage,
     String search,
-    PdfPageFormat pageFormat,
-  ) async {
+    PdfPageFormat pageFormat, {
+    required bool printAll,
+  }) async {
     final document = pw.Document();
     final createdBy = locator<SessionService>().read(SessionKey.loginId);
     document.addPage(
@@ -138,7 +189,7 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
             pw.Text(
               'Search: ${search.isEmpty ? '-' : search}    '
               'Created By: ${createdBy.isEmpty ? 'admin' : createdBy}    '
-              'Page: $page    Per Page: $perPage',
+              '${printAll ? 'Scope: All Data (${data.length} records)' : 'Page: $page    Per Page: $perPage'}',
               style: const pw.TextStyle(fontSize: 9),
             ),
             pw.SizedBox(height: 12),
@@ -309,12 +360,38 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
                 ),
                 const SizedBox(height: 20),
                 _fieldRow(
+                  'Print Scope',
+                  SegmentedButton<bool>(
+                    segments: const [
+                      ButtonSegment<bool>(
+                        value: false,
+                        icon: Icon(Icons.description_outlined),
+                        label: Text('Current Page'),
+                      ),
+                      ButtonSegment<bool>(
+                        value: true,
+                        icon: Icon(Icons.library_books_outlined),
+                        label: Text('All Data'),
+                      ),
+                    ],
+                    selected: {_printAll},
+                    showSelectedIcon: false,
+                    onSelectionChanged: _isPrinting
+                        ? null
+                        : (selection) {
+                            setState(() => _printAll = selection.first);
+                          },
+                  ),
+                  textColor,
+                ),
+                _fieldRow(
                   'Page',
                   TextFormField(
                     controller: _pageController,
                     autofocus: true,
+                    enabled: !_printAll,
                     keyboardType: TextInputType.number,
-                    validator: _positiveNumberValidator,
+                    validator: _printAll ? null : _positiveNumberValidator,
                     decoration: _inputDecoration('Insert Page'),
                   ),
                   textColor,
@@ -323,8 +400,9 @@ class _OnlineIdPrintDialogState extends State<OnlineIdPrintDialog> {
                   'Per Page',
                   TextFormField(
                     controller: _perPageController,
+                    enabled: !_printAll,
                     keyboardType: TextInputType.number,
-                    validator: _positiveNumberValidator,
+                    validator: _printAll ? null : _positiveNumberValidator,
                     decoration: _inputDecoration('Insert Per Page'),
                   ),
                   textColor,

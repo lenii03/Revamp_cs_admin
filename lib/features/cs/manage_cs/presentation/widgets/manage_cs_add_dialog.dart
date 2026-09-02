@@ -159,6 +159,8 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                           maxLength: 100,
                           keyboardType: TextInputType.emailAddress,
                           validator: _validateEmail,
+
+                          
                         ),
                         textColor,
                       ),

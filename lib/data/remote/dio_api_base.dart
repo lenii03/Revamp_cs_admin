@@ -76,7 +76,6 @@ class DioApiBase<T> {
       }
       return right(success);
     } on DioException catch (e) {
-      print("ini print $e");
       String fallback = DioExceptions.fromDioError(e).toString();
       String errorMessage = _extractErrorMessage(e.response?.data, fallback);
       if (e.response?.statusCode == 401) {
@@ -94,7 +93,6 @@ class DioApiBase<T> {
       String success = 'success';
       return right(success);
     } on DioException catch (e) {
-      print("ini print $e");
       String fallback = DioExceptions.fromDioError(e).toString();
       String errorMessage = _extractErrorMessage(e.response?.data, fallback);
 
@@ -148,7 +146,6 @@ class DioApiBase<T> {
         return left('Unexpected response format');
       }
     } on DioException catch (e) {
-      print("ini print $e");
       String fallback = DioExceptions.fromDioError(e).toString();
       String errorMessage = _extractErrorMessage(e.response?.data, fallback);
 

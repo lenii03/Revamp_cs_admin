@@ -1,6 +1,7 @@
 import 'package:el_csadmin/features/user_communication/approve_opening/presentation/bloc/approve_opening_bloc.dart';
 import 'package:el_csadmin/features/user_communication/approve_opening/presentation/bloc/approve_opening_event.dart';
 import 'package:el_csadmin/features/user_communication/approve_opening/presentation/widgets/approve_opening_account_dialog.dart';
+import 'package:el_csadmin/shared/widgets/app_notice_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -109,19 +110,9 @@ class ApproveOpeningActionWidget extends StatelessWidget {
   Future<bool> _confirm(BuildContext context, String message) async {
     return await showDialog<bool>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Confirmation'),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Continue'),
-              ),
-            ],
+          builder: (dialogContext) => AppConfirmationDialog(
+            title: 'Confirmation',
+            message: message,
           ),
         ) ??
         false;
@@ -130,55 +121,10 @@ class ApproveOpeningActionWidget extends StatelessWidget {
   void _showValidationPopup(BuildContext context, String message) {
     showDialog(
       context: context,
-      builder: (dialogContext) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        backgroundColor: const Color(0xFF161B22),
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(
-                Icons.warning_amber_rounded,
-                color: Colors.orange,
-                size: 64,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Attention',
-                style: TextStyle(
-                  color: Colors.orange,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-              ),
-              const SizedBox(height: 32),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(dialogContext),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                ),
-                child: const Text(
-                  'Ok',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
+      builder: (dialogContext) => AppNoticeDialog(
+        title: 'Attention',
+        message: message,
+        type: AppNoticeType.warning,
       ),
     );
   }

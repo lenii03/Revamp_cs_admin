@@ -9,6 +9,7 @@ class DashboardMetricCard extends StatelessWidget {
   final Color iconColor;
   final Gradient? gradient;
   final String? errorMessage;
+  final VoidCallback? onViewDetails;
 
   const DashboardMetricCard({
     super.key,
@@ -18,6 +19,7 @@ class DashboardMetricCard extends StatelessWidget {
     required this.iconColor,
     this.gradient,
     this.errorMessage,
+    this.onViewDetails,
   });
 
   @override
@@ -27,7 +29,8 @@ class DashboardMetricCard extends StatelessWidget {
 
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(20.0),
+        height: 120,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         decoration: BoxDecoration(
           gradient: gradient,
           color: hasGradient
@@ -68,21 +71,29 @@ class DashboardMetricCard extends StatelessWidget {
                 size: 28,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      color: hasGradient
-                          ? Colors.white.withValues(alpha: 0.8)
-                          : Theme.of(
-                              context,
-                            ).extension<ThemeColors>()?.unselectedLabel,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                  SizedBox(
+                    height: 36,
+                    child: Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        title,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: hasGradient
+                              ? Colors.white.withValues(alpha: 0.8)
+                              : Theme.of(
+                                  context,
+                                ).extension<ThemeColors>()?.unselectedLabel,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -108,6 +119,38 @@ class DashboardMetricCard extends StatelessWidget {
                             color: hasGradient
                                 ? Colors.white
                                 : AppColors.destructiveRedDark,
+                          ),
+                        ),
+                      ],
+                      if (onViewDetails != null) ...[
+                        const Spacer(),
+                        InkWell(
+                          onTap: onViewDetails,
+                          borderRadius: BorderRadius.circular(6),
+                          child: const Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 4,
+                              vertical: 3,
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  'View Details',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                SizedBox(width: 2),
+                                Icon(
+                                  Icons.arrow_forward_rounded,
+                                  color: Colors.white,
+                                  size: 12,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

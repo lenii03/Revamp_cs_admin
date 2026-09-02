@@ -2,6 +2,8 @@ import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_bloc.d
 import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_event.dart';
 import 'package:el_csadmin/features/dashboard/presentation/bloc/dashboard_state.dart';
 import 'package:el_csadmin/features/dashboard/presentation/widgets/dashboard_pending_approval_widget.dart';
+import 'package:el_csadmin/features/dashboard/presentation/widgets/incomplete_credentials_dialog.dart';
+import 'package:el_csadmin/features/dashboard/data/models/incomplete_credential_item.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_bloc.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -50,50 +52,118 @@ class DashboardPage extends StatelessWidget {
                 String totalCs = "—";
                 String totalUserOnline = "—";
                 String totalPending = "—";
+                String incompleteCredentials = "—";
+                List<IncompleteCredentialItem> incompleteUsers = const [];
                 Map<String, String> metricErrors = const {};
 
                 if (state is DashboardLoaded) {
                   totalCs = state.totalCs;
                   totalUserOnline = state.totalUserOnline;
                   totalPending = state.totalPending;
+                  incompleteCredentials = state.incompleteCredentials;
+                  incompleteUsers = state.incompleteCredentialUsers;
                   metricErrors = state.errors;
                 } else if (state is DashboardLoading) {
                   totalCs = "...";
                   totalUserOnline = "...";
                   totalPending = "...";
+                  incompleteCredentials = "...";
                 }
 
-                return Row(
-                  children: [
-                    DashboardMetricCard(
+                Widget totalCsCard() => DashboardMetricCard(
                       title: "Total CS",
                       value: totalCs,
                       errorMessage: metricErrors['totalCs'],
                       icon: Icons.support_agent,
                       iconColor: const Color(0xFF2EBDAD),
                       gradient: AppColors.tealGradient,
-                    ),
-                    const SizedBox(width: 16),
-
-                    DashboardMetricCard(
+                    );
+                Widget totalOnlineCard() => DashboardMetricCard(
                       title: "Total Online ID",
                       value: totalUserOnline,
                       errorMessage: metricErrors['totalOnlineId'],
                       icon: Icons.public,
                       iconColor: const Color(0xFF7D43E0),
                       gradient: AppColors.purpleGradient,
-                    ),
-                    const SizedBox(width: 16),
-
-                    DashboardMetricCard(
+                    );
+                Widget pendingCard() => DashboardMetricCard(
                       title: "Pending Approval",
                       value: totalPending,
                       errorMessage: metricErrors['totalPending'],
                       icon: Icons.pending_actions,
                       iconColor: const Color(0xFFE97A44),
                       gradient: AppColors.orangeGradient,
-                    ),
-                  ],
+                    );
+                Widget incompleteCard() => DashboardMetricCard(
+                      title: "Incomplete Credentials",
+                      value: incompleteCredentials,
+                      errorMessage: metricErrors['incompleteCredentials'],
+                      icon: Icons.contact_page_outlined,
+                      iconColor: const Color(0xFFD81B60),
+                      gradient: AppColors.pinkGradient,
+                      onViewDetails: state is DashboardLoaded &&
+                              metricErrors['incompleteCredentials'] == null
+                          ? () {
+                              showDialog<void>(
+                                context: context,
+                                builder: (_) => IncompleteCredentialsDialog(
+                                  users: incompleteUsers,
+                                  onUpdated: () {
+                                    Future<void>.delayed(
+                                      const Duration(milliseconds: 500),
+                                      () {
+                                        if (!context.mounted) return;
+                                        context
+                                            .read<ApprovalScreenBloc>()
+                                            .applyFilters(status: 1);
+                                        context.read<DashboardBloc>().add(
+                                          FetchDashboardMetricsEvent(),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                          : null,
+                    );
+
+                return LayoutBuilder(
+                  builder: (context, constraints) {
+                    if (constraints.maxWidth >= 900) {
+                      return Row(
+                        children: [
+                          totalCsCard(),
+                          const SizedBox(width: 16),
+                          totalOnlineCard(),
+                          const SizedBox(width: 16),
+                          pendingCard(),
+                          const SizedBox(width: 16),
+                          incompleteCard(),
+                        ],
+                      );
+                    }
+
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            totalCsCard(),
+                            const SizedBox(width: 16),
+                            totalOnlineCard(),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          children: [
+                            pendingCard(),
+                            const SizedBox(width: 16),
+                            incompleteCard(),
+                          ],
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
             ),

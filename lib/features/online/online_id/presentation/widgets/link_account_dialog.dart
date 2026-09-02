@@ -6,6 +6,7 @@ import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../../core/theme/src/app_colors.dart';
+import '../../../../../shared/widgets/app_notice_dialog.dart';
 
 class LinkAccountDialog extends StatefulWidget {
   const LinkAccountDialog({
@@ -124,7 +125,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
       _showNotice(
         'Complete ${missingFields.join(' and ')} from the Edit menu before '
         'changing linked accounts.',
-        title: 'Incomplete user data',
+        title: 'Incomplete User Data',
       );
       return;
     }
@@ -172,15 +173,12 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
   }) async {
     await showDialog<void>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(title),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('OK'),
-          ),
-        ],
+      builder: (dialogContext) => AppNoticeDialog(
+        title: title,
+        message: message,
+        type: title == 'Incomplete User Data'
+            ? AppNoticeType.warning
+            : AppNoticeType.info,
       ),
     );
   }

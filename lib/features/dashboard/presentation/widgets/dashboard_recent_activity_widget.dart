@@ -10,6 +10,39 @@ import '../../../cs/cs_logs/presentation/bloc/cs_logs_state.dart';
 class DashboardRecentActivityWidget extends StatelessWidget {
   const DashboardRecentActivityWidget({super.key});
 
+  static const List<String> _monthNames = [
+    'Jan',
+    'Feb',
+    'Mar',
+    'Apr',
+    'May',
+    'Jun',
+    'Jul',
+    'Aug',
+    'Sep',
+    'Oct',
+    'Nov',
+    'Dec',
+  ];
+
+  ({String date, String time}) _formatLogTime(String serverLogTime) {
+    final parsed = DateTime.tryParse(serverLogTime.trim());
+    if (parsed == null) {
+      return (
+        date: serverLogTime.trim().isEmpty ? '-' : serverLogTime.trim(),
+        time: '',
+      );
+    }
+
+    final day = parsed.day.toString().padLeft(2, '0');
+    final hour = parsed.hour.toString().padLeft(2, '0');
+    final minute = parsed.minute.toString().padLeft(2, '0');
+    return (
+      date: '$day ${_monthNames[parsed.month - 1]} ${parsed.year}',
+      time: '$hour:$minute',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -97,6 +130,7 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                           Divider(color: separatorColor, height: 1),
                       itemBuilder: (context, index) {
                         final logData = recentLogs[index];
+                        final formattedTime = _formatLogTime(logData.logTime);
 
                         return ListTile(
                           contentPadding: const EdgeInsets.symmetric(
@@ -123,13 +157,32 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                             logData.descriptions,
                             style: TextStyle(color: subTextColor),
                           ),
-                          trailing: Text(
-                            logData.logTime.length >= 10
-                                ? logData.logTime.substring(0, 10)
-                                : logData.logTime.isNotEmpty
-                                ? logData.logTime
-                                : "Just now",
-                            style: TextStyle(color: subTextColor, fontSize: 12),
+                          trailing: Tooltip(
+                            message: 'Server time: ${logData.logTime}',
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  formattedTime.date,
+                                  style: TextStyle(
+                                    color: subTextColor,
+                                    fontSize: 11,
+                                  ),
+                                ),
+                                if (formattedTime.time.isNotEmpty) ...[
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    formattedTime.time,
+                                    style: const TextStyle(
+                                      color: AppColors.primaryDark,
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ],
+                            ),
                           ),
                         );
                       },
