@@ -84,7 +84,7 @@ class ThemeColors extends ThemeExtension<ThemeColors> {
     );
   }
 
-  static get light => ThemeColors(
+  static ThemeColors get light => ThemeColors(
     appTitleBar: AppColors.white,
     appContainerBackground: AppColors.white,
     appContainerShadow: AppColors.darkestGrey.withValues(alpha: 0.08),
@@ -96,7 +96,7 @@ class ThemeColors extends ThemeExtension<ThemeColors> {
     settingsDialogLanguage: AppColors.white,
   );
 
-  static get dark => ThemeColors(
+  static ThemeColors get dark => ThemeColors(
     appTitleBar: AppColors.backgroundDarkest,
     appContainerBackground: AppColors.backgroundDark,
     appContainerShadow: AppColors.darkerGrey.withValues(alpha: 0.2),

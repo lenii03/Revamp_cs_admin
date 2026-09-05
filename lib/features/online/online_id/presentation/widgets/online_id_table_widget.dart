@@ -349,6 +349,7 @@ class OnlineIdTableWidget extends StatelessWidget {
     return AppDataGrid(
       columns: columns,
       rows: rows,
+      mode: TrinaGridMode.selectWithOneTap,
       onSelected: (event) {
         final rowIndex = event.rowIdx as int?;
         if (rowIndex == null || rowIndex < 0 || rowIndex >= dataList.length) {
@@ -356,12 +357,6 @@ class OnlineIdTableWidget extends StatelessWidget {
         }
         context.read<OnlineIdBloc>().add(
           OnlineIdEvent.selectOnlineId(dataList[rowIndex]),
-        );
-      },
-      onRowDoubleTap: (index) {
-        final selectedData = dataList[index];
-        context.read<OnlineIdBloc>().add(
-          OnlineIdEvent.selectOnlineId(selectedData),
         );
       },
     );

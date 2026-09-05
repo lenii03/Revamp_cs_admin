@@ -20,10 +20,10 @@ void main() async {
   await setupLocator();
   await windowManager.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(1280, 720),
-    minimumSize: Size(800, 600),
+    size: Size(1040, 620),
+    minimumSize: Size(800, 520),
     center: true,
-    backgroundColor: Colors.transparent,
+    backgroundColor: Color(0xFF081017),
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );

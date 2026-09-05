@@ -106,7 +106,7 @@ class ThemePluto extends ThemeExtension<ThemePluto> {
     ),
   );
 
-  static get dark => ThemePluto(
+  static ThemePluto get dark => ThemePluto(
     gridBackgroundColor: AppColors.systemGroupedBackgroundDark,
     rowColor: AppColors.systemGroupedBackgroundDark,
     gridBorderColor: AppColors.separatorDark,

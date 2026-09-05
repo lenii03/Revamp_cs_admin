@@ -31,7 +31,7 @@ ThemeData darkTheme() {
       ThemePluto.dark,
     ],
     appBarTheme: AppBarTheme(
-      color: AppColors.lighterDark,
+      backgroundColor: AppColors.lighterDark,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,

@@ -11,18 +11,18 @@ class DioInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final sessionService = locator<SessionService>();
     final token = sessionService.read(SessionKey.token);
+    final isAuthenticationRequest = _isAuthenticationRequest(options.path);
+
+    if (isAuthenticationRequest) {
+      options.headers.remove('Authorization');
+    }
 
     options.headers.addAll({
       "Access-Control-Allow-Origin": "*",
       "Accept": "*/*",
-      if (token.isNotEmpty) "Authorization": "Bearer $token",
+      if (token.isNotEmpty && !isAuthenticationRequest)
+        "Authorization": "Bearer $token",
     });
-
-    print(
-      "🚀 MENGIRIM :: ${options.method} :: ${options.baseUrl}${options.path}",
-    );
-    print("📦 DATA :: ${options.data}");
-    print("🔑 TOKEN :: Bearer $token");
     return super.onRequest(options, handler);
   }
 
@@ -32,29 +32,13 @@ class DioInterceptor extends Interceptor {
         !_isAuthenticationRequest(err.requestOptions.path)) {
       unawaited(SessionExpiredHandler.handle());
     }
-
-
-    print(
-      "❌ ERROR DIO :: ${err.requestOptions.method} :: ${err.requestOptions.baseUrl}${err.requestOptions.path}",
-    );
-    print(
-      "❌ STATUS :: ${err.response?.statusCode} :: ${err.response?.statusMessage}",
-    );
-    return super.onError(err, handler);
+    handler.next(err);
   }
 
   bool _isAuthenticationRequest(String path) {
     final normalizedPath = path.toLowerCase().replaceFirst(RegExp(r'^/+'), '');
-    return normalizedPath == Endpoint.signIn.toLowerCase() ||
-        normalizedPath == Endpoint.signOut.toLowerCase() ||
-        normalizedPath == Endpoint.resetPasswordCs.toLowerCase();
-  }
-
-  @override
-  void onResponse(Response response, ResponseInterceptorHandler handler) {
-    print(
-      "✅ SUKSES :: ${response.requestOptions.method} :: ${response.requestOptions.baseUrl}${response.requestOptions.path}",
-    );
-    return super.onResponse(response, handler);
+    return normalizedPath.endsWith(Endpoint.signIn.toLowerCase()) ||
+        normalizedPath.endsWith(Endpoint.signOut.toLowerCase()) ||
+        normalizedPath.endsWith(Endpoint.resetPasswordCs.toLowerCase());
   }
 }

@@ -229,7 +229,6 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
           .map((e) => LinkAccountInfoModel.fromMap(e))
           .toList();
     } catch (e) {
-      print("ERROR FETCH OLD LINK: $e");
     }
     try {
       final responseNew = await dio.get(
@@ -241,8 +240,8 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       newLinks = rawNewLinks
           .map((e) => NewLinkAccountInfoModel.fromMap(e))
           .toList();
+    // ignore: empty_catches
     } catch (e) {
-      print("ERROR FETCH NEW LINK (Approval): $e");
     }
 
     return {'old': oldLinks, 'new': newLinks};

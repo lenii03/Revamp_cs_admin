@@ -3,6 +3,8 @@ import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:lottie/lottie.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/network/server_config.dart';
 import '../../../../core/theme/src/app_colors.dart';
@@ -23,6 +25,9 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
+  static const String _defaultCompanyLogoAsset =
+      'assets/images/launcher_logo.png';
+
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _hostController = TextEditingController();
@@ -33,6 +38,8 @@ class _LoginPageState extends State<LoginPage> {
       TextEditingController();
 
   bool _rememberMe = false;
+  String _appVersion = '';
+  String _activeServerUrl = '';
 
   @override
   void initState() {
@@ -43,11 +50,21 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _loadSavedConfig() async {
     final host = await ServerConfig.getHost();
     final port = await ServerConfig.getPort();
+    String appVersion = 'Unavailable';
+    try {
+      final packageInfo = await PackageInfo.fromPlatform();
+      appVersion = packageInfo.version;
+    } catch (_) {
+      // The login page remains usable if package metadata cannot be read.
+    }
+    final savedBaseUrl = await ServerConfig.getBaseUrl();
+    if (!mounted) return;
     setState(() {
       _hostController.text = host;
       _portController.text = port;
+      _appVersion = appVersion;
+      _activeServerUrl = savedBaseUrl.replaceFirst(RegExp(r'/$'), '');
     });
-    final savedBaseUrl = await ServerConfig.getBaseUrl();
     if (savedBaseUrl.isNotEmpty) {
       locator<DioClient>().dio.options.baseUrl = savedBaseUrl;
     }
@@ -406,6 +423,12 @@ class _LoginPageState extends State<LoginPage> {
               locator<DioClient>().dio.options.baseUrl = newBaseUrl;
 
               if (context.mounted) {
+                setState(() {
+                  _activeServerUrl = newBaseUrl.replaceFirst(
+                    RegExp(r'/$'),
+                    '',
+                  );
+                });
                 Navigator.pop(context);
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -432,75 +455,123 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundDark,
-      body: Stack(
-        children: [
+      body: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+          const Positioned.fill(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.centerLeft,
+                  end: Alignment.centerRight,
+                  colors: [
+                    Color(0xFF07131B),
+                    Color(0xFF0A1721),
+                    Color(0xFF101D2A),
+                  ],
+                  stops: [0, 0.48, 1],
+                ),
+              ),
+            ),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 8,
+            height: 170,
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: 0.13,
+                child: Lottie.asset(
+                  'assets/animations/moving_wave.json',
+                  fit: BoxFit.fill,
+                  alignment: Alignment.bottomCenter,
+                  repeat: true,
+                  animate: !MediaQuery.disableAnimationsOf(context),
+                ),
+              ),
+            ),
+          ),
           LayoutBuilder(
             builder: (context, constraints) {
-              final compact = constraints.maxWidth < 800;
+              final compact = constraints.maxWidth < 900;
               return Row(
             children: [
               if (!compact)
                 Expanded(
                   flex: 1,
                   child: Container(
-                    padding: const EdgeInsets.all(48.0),
-                    decoration: const BoxDecoration(
-                      color: AppColors.backgroundDark,
-                    ),
+                    padding: const EdgeInsets.all(36.0),
+                    color: Colors.transparent,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.accentGreen.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            "CS Admin System",
-                            style: TextStyle(
-                              color: AppColors.accentGreen,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 12,
+                        Align(
+                          alignment: Alignment.topLeft,
+                          child: Transform.translate(
+                            offset: const Offset(-36, -36),
+                            child: Container(
+                              width: 150,
+                              height: 86,
+                              padding: const EdgeInsets.fromLTRB(
+                                14,
+                                10,
+                                16,
+                                12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF8FAFC),
+                                borderRadius: const BorderRadius.only(
+                                  bottomRight: Radius.circular(24),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withValues(alpha: 0.2),
+                                    blurRadius: 22,
+                                    offset: const Offset(6, 8),
+                                  ),
+                                ],
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Powered by',
+                                    style: TextStyle(
+                                      color: Color(0xFF64748B),
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Expanded(
+                                    child: Image.asset(
+                                      _defaultCompanyLogoAsset,
+                                      width: double.infinity,
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.centerLeft,
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        const Text(
-                          "Manage with Precision.\nStay in Control.",
-                          style: TextStyle(
-                            color: AppColors.textWhite,
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
                           ),
                         ),
                         const SizedBox(height: 16),
-                        const Text(
-                          "A unified CS management platform designed for speed, accuracy, and operational efficiency.",
-                          style: TextStyle(
-                            color: AppColors.textGrey,
-                            fontSize: 16,
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 48),
-
                         Expanded(
                           child: Center(
-                            child: Image.asset(
-                              'assets/images/logo_csadmin.png',
-                              width: 700,
-                              height: 700,
-                              fit: BoxFit.contain,
+                            child: FractionallySizedBox(
+                              widthFactor: 0.94,
+                              heightFactor: 0.94,
+                              child: Image.asset(
+                                'assets/images/logo_csadmin.png',
+                                fit: BoxFit.contain,
+                              ),
                             ),
                           ),
                         ),
-                        // --------------------------------------------------------
                       ],
                     ),
                   ),
@@ -509,8 +580,8 @@ class _LoginPageState extends State<LoginPage> {
               Expanded(
                 flex: 1,
                 child: Container(
-                  color: AppColors.cardDark,
-                  padding: EdgeInsets.all(compact ? 24 : 48),
+                  color: Colors.transparent,
+                  padding: EdgeInsets.all(compact ? 24 : 36),
                   child: Column(
                     children: [
                       Align(
@@ -530,7 +601,7 @@ class _LoginPageState extends State<LoginPage> {
 
                       const Spacer(),
                       SizedBox(
-                        width: 400,
+                        width: 360,
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -538,7 +609,7 @@ class _LoginPageState extends State<LoginPage> {
                               "Login Screen",
                               style: TextStyle(
                                 color: AppColors.textWhite,
-                                fontSize: 28,
+                                fontSize: 26,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -550,7 +621,7 @@ class _LoginPageState extends State<LoginPage> {
                                 fontSize: 14,
                               ),
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 24),
 
                             const Text(
                               "USERNAME",
@@ -576,7 +647,7 @@ class _LoginPageState extends State<LoginPage> {
                               textInputAction: TextInputAction.next,
                               onSubmitted: (_) => _passwordFocus.requestFocus(),
                             ),
-                            const SizedBox(height: 24),
+                            const SizedBox(height: 18),
 
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -651,7 +722,7 @@ class _LoginPageState extends State<LoginPage> {
                                 ),
                               ],
                             ),
-                            const SizedBox(height: 32),
+                            const SizedBox(height: 24),
                             BlocConsumer<
                               AuthenticationBloc,
                               AuthenticationState
@@ -692,13 +763,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const Spacer(),
-                      const Text(
-                        "© 2026 CS Admin System. All rights reserved.",
-                        style: TextStyle(
-                          color: AppColors.textGrey,
-                          fontSize: 12,
-                        ),
-                      ),
+                      const SizedBox(height: 34),
                     ],
                   ),
                 ),
@@ -706,6 +771,24 @@ class _LoginPageState extends State<LoginPage> {
             ],
               );
             },
+          ),
+          Positioned(
+            left: 24,
+            right: 24,
+            bottom: 10,
+            child: Center(
+              child: Text(
+                'CS Admin ${_appVersion.isEmpty ? '' : 'v$_appVersion'}  •  '
+                'Active Host ${_activeServerUrl.isEmpty ? 'Not configured' : _activeServerUrl}',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  color: AppColors.textGrey,
+                  fontSize: 11,
+                ),
+              ),
+            ),
           ),
           const Positioned(
             top: 0,
@@ -719,7 +802,8 @@ class _LoginPageState extends State<LoginPage> {
             right: 0,
             child: AppWindowControls(),
           ),
-        ],
+          ],
+        ),
       ),
     );
   }

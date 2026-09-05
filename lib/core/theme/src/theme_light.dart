@@ -30,7 +30,7 @@ ThemeData lightTheme() {
       ThemePluto.light,
     ],
     appBarTheme: AppBarTheme(
-      color: AppColors.white,
+      backgroundColor: AppColors.white,
       elevation: 0,
       scrolledUnderElevation: 0,
       surfaceTintColor: Colors.transparent,
@@ -98,12 +98,12 @@ ThemeData lightTheme() {
       collapsedIconColor: AppColors.black.withValues(alpha: 0.5),
     ),
     scrollbarTheme: ScrollbarThemeData(
-      thickness: MaterialStateProperty.all(6),
-      thumbColor: MaterialStateProperty.all(
+      thickness: WidgetStateProperty.all(6),
+      thumbColor: WidgetStateProperty.all(
         AppColors.primary.withValues(alpha: 0.5),
       ),
       radius: const Radius.circular(10),
-      thumbVisibility: MaterialStateProperty.all(true),
+      thumbVisibility: WidgetStateProperty.all(true),
       minThumbLength: 50,
     ),
 

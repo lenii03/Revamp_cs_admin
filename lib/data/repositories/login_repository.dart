@@ -121,12 +121,6 @@ class LoginRepository extends DioApiBase<LoginUserModel> {
     try {
       final sessionService = locator<SessionService>();
       final Map<String, dynamic> data = rawData['data'] ?? {};
-      final message = rawData['message'] ?? "null Message";
-      print("\n🚀 === BUKTI DATA ASLI DARI SERVER ===");
-      print(rawData.toString());
-      print("=======================================\n");
-
-      print("cs/login M: $message");
       String token = data['Token'];
       await sessionService.write(SessionKey.token, token);
       if (data.isNotEmpty) {

@@ -26,6 +26,12 @@ class AuthenticationBloc
             emit(AuthSuccess(user));
           },
         );
+      } catch (error) {
+        emit(
+          AuthFailure(
+            error.toString().replaceFirst('Exception: ', ''),
+          ),
+        );
       } finally {
         _isLoginInProgress = false;
       }

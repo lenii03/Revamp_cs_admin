@@ -118,7 +118,6 @@ class DioApiBase<T> {
       }
       return right(result);
     } on DioException catch (e) {
-      print("ini print $e");
       String fallback = DioExceptions.fromDioError(e).toString();
       String errorMessage = fallback;
 

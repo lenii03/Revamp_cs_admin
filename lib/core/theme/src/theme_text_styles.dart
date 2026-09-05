@@ -51,7 +51,7 @@ class ThemeTextStyles extends ThemeExtension<ThemeTextStyles> {
     );
   }
 
-  static get light => ThemeTextStyles(
+  static ThemeTextStyles get light => ThemeTextStyles(
     appTitle: headline1.copyWith(
       color: AppColors.darkerGrey,
       fontWeight: FontWeight.w700,
@@ -65,7 +65,7 @@ class ThemeTextStyles extends ThemeExtension<ThemeTextStyles> {
     searchInput: headline1.copyWith(fontSize: 18),
   );
 
-  static get dark => ThemeTextStyles(
+  static ThemeTextStyles get dark => ThemeTextStyles(
     appTitle: headline1.copyWith(
       color: AppColors.lighterGrey,
       fontWeight: FontWeight.w700,
