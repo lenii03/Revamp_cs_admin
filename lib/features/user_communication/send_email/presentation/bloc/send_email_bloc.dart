@@ -1,16 +1,13 @@
 import 'package:el_csadmin/features/user_communication/send_email/data/repositories/send_email_queue_repository.dart';
 import 'package:el_csadmin/features/user_communication/send_email/presentation/bloc/send_email_event.dart';
 import 'package:el_csadmin/features/user_communication/send_email/presentation/bloc/send_email_state.dart';
-import 'package:el_csadmin/shared/features/api_datafeed/data/datasources/api_datafeed_network_data_source.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class SendEmailForgotBloc
     extends Bloc<SendEmailForgotEvent, SendEmailForgotState> {
-  final ApiDatafeedNetworkDataSource apiDataSource;
   final SendEmailQueueRepository queueRepository;
 
   SendEmailForgotBloc({
-    required this.apiDataSource,
     required this.queueRepository,
   }) : super(const SendEmailForgotState()) {
     on<FetchSendEmailData>(_onFetchData);

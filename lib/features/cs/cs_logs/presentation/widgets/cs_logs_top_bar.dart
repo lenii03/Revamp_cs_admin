@@ -165,7 +165,7 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
                 targetId: _targetIdController.text,
                 logType: apiLogType,
                 page: 1,
-                perPage: context.read<CsLogsBloc>().perPage,
+                pageSize: context.read<CsLogsBloc>().state.pageSize,
               ),
             );
           },

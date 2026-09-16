@@ -4,8 +4,10 @@ import 'package:el_csadmin/features/online/online_id/data/models/online_id_model
 part 'online_id_event.freezed.dart';
 
 @freezed
-class OnlineIdEvent with _$OnlineIdEvent {
+abstract class OnlineIdEvent with _$OnlineIdEvent {
   const factory OnlineIdEvent.fetchOnlineIds() = _FetchOnlineIds;
+
+  const factory OnlineIdEvent.loadMoreOnlineIds() = _LoadMoreOnlineIds;
 
   const factory OnlineIdEvent.addOnlineId(Map<String, dynamic> data) =
       _AddOnlineId;

@@ -1,32 +1,19 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class CsLogsEvent extends Equatable {
-  const CsLogsEvent();
-  @override
-  List<Object> get props => [];
-}
+part 'cs_logs_event.freezed.dart';
 
-class FetchCsLogsEvent extends CsLogsEvent {
-  final String? loginId;
-  final String? targetId;
-  final int? logType;
-  final int? page;
-  final int? perPage;
+@freezed
+abstract class CsLogsEvent with _$CsLogsEvent {
+  const factory CsLogsEvent.fetchCsLogs({
+    String? loginId,
+    String? targetId,
+    int? logType,
+    @Default(1) int page,
+    @Default(30) int pageSize,
+  }) = FetchCsLogsEvent;
 
-  const FetchCsLogsEvent({
-    this.loginId,
-    this.targetId,
-    this.logType,
-    this.page,
-    this.perPage,
-  });
+  const factory CsLogsEvent.changeCsLogsPage(int page) = ChangeCsLogsPage;
 
-  @override
-  List<Object> get props => [
-    loginId ?? '',
-    targetId ?? '',
-    logType ?? -1,
-    page ?? 1,
-    perPage ?? 30,
-  ];
+  const factory CsLogsEvent.changeCsLogsPageSize(int pageSize) =
+      ChangeCsLogsPageSize;
 }

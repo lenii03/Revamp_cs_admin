@@ -15,7 +15,7 @@ class ApprovalActionButtonsWidget extends StatelessWidget {
     return BlocBuilder<OnlineIdBloc, OnlineIdState>(
       builder: (context, state) {
         final OnlineIdModel? selectedUser = state.maybeWhen(
-          loaded: (data, user) => user,
+          loaded: (_, user, _, _) => user,
           orElse: () => null,
         );
 

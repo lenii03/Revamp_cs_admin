@@ -9,7 +9,6 @@ class NotificationPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Ambil tema dinamis
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
     final separatorColor = isDark
@@ -20,7 +19,7 @@ class NotificationPage extends StatelessWidget {
     ).extension<ThemeColors>()?.unselectedLabel;
 
     return DefaultTabController(
-      length: 2, // Jumlah tab
+      length: 2, 
       child: Padding(
         padding: const EdgeInsets.all(32.0),
         child: Column(
@@ -29,24 +28,22 @@ class NotificationPage extends StatelessWidget {
             Text(
               'Notification Management',
               style: TextStyle(
-                color: textColor, // 👈 Dinamis
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
+                color: textColor, 
+                fontSize: 22, 
               ),
             ),
             const SizedBox(height: 24),
 
-            // TabBar Menu
             Container(
               decoration: BoxDecoration(
                 border: Border(
                   bottom: BorderSide(color: separatorColor),
-                ), // 👈 Dinamis
+                ), 
               ),
               child: TabBar(
-                indicatorColor: AppColors.primaryColor, // 👈 Seragam Cyan
+                indicatorColor: AppColors.primaryColor,
                 labelColor: AppColors.primaryColor,
-                unselectedLabelColor: unselectedColor, // 👈 Dinamis
+                unselectedLabelColor: unselectedColor,
                 tabs: const [
                   Tab(text: "Push Notification"),
                   Tab(text: "Scheduler Notification"),
@@ -54,8 +51,6 @@ class NotificationPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-
-            // Isi Konten Tab
             const Expanded(
               child: TabBarView(
                 children: [

@@ -44,7 +44,6 @@ class SendEmailQueueRepository {
   Future<void> enqueue(SendEmailForgotModel item) {
     return _runExclusive(() async {
       load();
-      // Aplikasi lama mempertahankan setiap request, termasuk request berulang.
       _items.insert(0, item);
       await _persist();
       await _writeToLegacyQueue(item);
@@ -146,8 +145,6 @@ class SendEmailQueueRepository {
     for (final legacyItem in legacyItems) {
       final mirroredNewItem = newItemsByRequestId[legacyItem.requestId];
       if (mirroredNewItem != null) {
-        // Baris ini adalah salinan kompatibilitas untuk aplikasi lama, bukan
-        // request berbeda. Ambil perubahan statusnya tanpa menggandakan baris.
         if (legacyItem.status == 2) mirroredNewItem.status = 2;
         continue;
       }
@@ -163,7 +160,6 @@ class SendEmailQueueRepository {
           loginId: legacyItem.loginId,
           email: legacyItem.email,
           loginType: legacyItem.loginType,
-          // Email Send bersifat final; jangan dikembalikan menjadi Pending.
           status: legacyItem.status == 2 || currentItem?.status == 2 ? 2 : 1,
           requestId: currentItem?.requestId ?? '',
           source: 'legacy',
@@ -172,7 +168,6 @@ class SendEmailQueueRepository {
       );
     }
 
-    // Request yang dibuat hanya dari aplikasi baru tetap dipertahankan.
     for (final remainingItems in currentByIdentity.values) {
       synchronized.addAll(remainingItems);
     }

@@ -9,8 +9,62 @@ import '../../data/models/online_id_model.dart';
 import '../bloc/online_id_bloc.dart';
 import '../bloc/online_id_state.dart';
 
-class OnlineIdTableWidget extends StatelessWidget {
+class OnlineIdTableWidget extends StatefulWidget {
   const OnlineIdTableWidget({super.key});
+
+  @override
+  State<OnlineIdTableWidget> createState() => _OnlineIdTableWidgetState();
+}
+
+class _OnlineIdTableWidgetState extends State<OnlineIdTableWidget> {
+  static const _loadMoreThreshold = 160.0;
+
+  TrinaGridStateManager? _gridStateManager;
+  ScrollController? _verticalScrollController;
+  int _renderedRowCount = 0;
+
+  @override
+  void dispose() {
+    _detachGridScrollListener();
+    super.dispose();
+  }
+
+  void _onGridLoaded(TrinaGridOnLoadedEvent event) {
+    _detachGridScrollListener();
+    _gridStateManager = event.stateManager;
+    _renderedRowCount = event.stateManager.refRows.length;
+    _verticalScrollController = event.stateManager.scroll.bodyRowsVertical
+      ?..addListener(_loadMoreWhenNeeded);
+  }
+
+  void _detachGridScrollListener() {
+    _verticalScrollController?.removeListener(_loadMoreWhenNeeded);
+    _verticalScrollController = null;
+    _gridStateManager = null;
+    _renderedRowCount = 0;
+  }
+
+  void _loadMoreWhenNeeded() {
+    final controller = _verticalScrollController;
+    if (controller == null || !controller.hasClients) return;
+
+    final position = controller.position;
+    if (position.pixels < position.maxScrollExtent - _loadMoreThreshold) {
+      return;
+    }
+    context.read<OnlineIdBloc>().add(const OnlineIdEvent.loadMoreOnlineIds());
+  }
+
+  void _appendNewRows(List<OnlineIdModel> data) {
+    final stateManager = _gridStateManager;
+    if (stateManager == null || data.length <= _renderedRowCount) return;
+
+    final rows = _buildRows(data.skip(_renderedRowCount));
+    if (rows.isEmpty) return;
+
+    stateManager.appendRows(rows);
+    _renderedRowCount += rows.length;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +86,10 @@ class OnlineIdTableWidget extends StatelessWidget {
       child: BlocConsumer<OnlineIdBloc, OnlineIdState>(
         listener: (context, state) {
           state.maybeWhen(
+            loading: _detachGridScrollListener,
+            loaded: (data, _, _, _) => _appendNewRows(data),
             error: (message) {
+              _detachGridScrollListener();
               final cleanMessage = message.replaceAll('Exception: ', '');
 
               showDialog(
@@ -114,14 +171,15 @@ class OnlineIdTableWidget extends StatelessWidget {
               child: CircularProgressIndicator(color: AppColors.primaryColor),
             ),
             error: (_) => _buildEmptyState(context, "Failed to load data."),
-            loaded: (dataList, selectedUser) {
+            loaded: (dataList, _, isLoadingMore, _) {
               if (dataList.isEmpty) {
-                return _buildEmptyState(
-                  context,
-                  "No user data found.",
-                );
+                return _buildEmptyState(context, "No user data found.");
               }
-              return _buildTable(context, dataList);
+              return _buildTable(
+                context,
+                dataList,
+                isLoadingMore: isLoadingMore,
+              );
             },
             orElse: () => _buildEmptyState(context, "Loading table data..."),
           );
@@ -141,7 +199,11 @@ class OnlineIdTableWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildTable(BuildContext context, List<OnlineIdModel> dataList) {
+  Widget _buildTable(
+    BuildContext context,
+    List<OnlineIdModel> dataList, {
+    required bool isLoadingMore,
+  }) {
     Widget permissionRenderer(TrinaColumnRendererContext renderContext) {
       final value = renderContext.cell.value.toString();
       final bool hasPermission = value == 'Y';
@@ -167,7 +229,6 @@ class OnlineIdTableWidget extends StatelessWidget {
       );
     }
 
-    // 👇 SEMUA readOnly DIUBAH MENJADI true
     final List<TrinaColumn> columns = [
       TrinaColumn(
         frozen: TrinaColumnFrozen.start,
@@ -277,7 +338,7 @@ class OnlineIdTableWidget extends StatelessWidget {
         type: TrinaColumnType.text(),
         width: 110,
         renderer: permissionRenderer,
-        readOnly: true, // Pastikan ini juga diset, sebelumnya tidak ada
+        readOnly: true, 
       ),
       TrinaColumn(
         title: 'Delayed',
@@ -313,7 +374,51 @@ class OnlineIdTableWidget extends StatelessWidget {
       ),
     ];
 
-    final List<TrinaRow> rows = dataList.map((data) {
+    final rows = _buildRows(dataList);
+
+    return Stack(
+      children: [
+        AppDataGrid(
+          columns: columns,
+          rows: rows,
+          mode: TrinaGridMode.selectWithOneTap,
+          onLoaded: _onGridLoaded,
+          onSelected: (event) {
+            final rowIndex = event.rowIdx as int?;
+            final currentState = context.read<OnlineIdBloc>().state;
+            currentState.maybeWhen(
+              loaded: (currentData, _, _, _) {
+                if (rowIndex == null ||
+                    rowIndex < 0 ||
+                    rowIndex >= currentData.length) {
+                  return;
+                }
+                context.read<OnlineIdBloc>().add(
+                  OnlineIdEvent.selectOnlineId(currentData[rowIndex]),
+                );
+              },
+              orElse: () {},
+            );
+          },
+        ),
+        if (isLoadingMore)
+          const Align(
+            alignment: Alignment.bottomCenter,
+            child: Padding(
+              padding: EdgeInsets.all(12),
+              child: SizedBox(
+                width: 20,
+                height: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  List<TrinaRow> _buildRows(Iterable<OnlineIdModel> dataList) {
+    return dataList.map((data) {
       bool hasPermission(int bitOffset) {
         return (data.permissions & (1 << bitOffset)) != 0;
       }
@@ -345,21 +450,6 @@ class OnlineIdTableWidget extends StatelessWidget {
         },
       );
     }).toList();
-
-    return AppDataGrid(
-      columns: columns,
-      rows: rows,
-      mode: TrinaGridMode.selectWithOneTap,
-      onSelected: (event) {
-        final rowIndex = event.rowIdx as int?;
-        if (rowIndex == null || rowIndex < 0 || rowIndex >= dataList.length) {
-          return;
-        }
-        context.read<OnlineIdBloc>().add(
-          OnlineIdEvent.selectOnlineId(dataList[rowIndex]),
-        );
-      },
-    );
   }
 
   String _getLoginTypeName(int type) {

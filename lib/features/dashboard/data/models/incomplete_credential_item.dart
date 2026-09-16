@@ -1,3 +1,5 @@
+import '../../domain/entities/incomplete_credential.dart';
+
 class IncompleteCredentialItem {
   const IncompleteCredentialItem({
     required this.loginId,
@@ -22,4 +24,17 @@ class IncompleteCredentialItem {
   final int permissions;
   final int status;
   final String salesId;
+
+  IncompleteCredential toEntity() => IncompleteCredential(
+    loginId: loginId,
+    email: email,
+    phoneNumber: phoneNumber,
+    birthDate: birthDate,
+    missingFields: missingFields,
+    loginType: loginType,
+    accountExpired: accountExpired,
+    permissions: permissions,
+    status: status,
+    salesId: salesId,
+  );
 }

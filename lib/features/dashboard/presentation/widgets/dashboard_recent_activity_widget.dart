@@ -57,7 +57,7 @@ class DashboardRecentActivityWidget extends StatelessWidget {
     return BlocProvider(
       create: (context) =>
           locator<CsLogsBloc>()
-            ..add(const FetchCsLogsEvent(page: 1, perPage: 30)),
+            ..add(const FetchCsLogsEvent(page: 1, pageSize: 30)),
       child: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -86,23 +86,23 @@ class DashboardRecentActivityWidget extends StatelessWidget {
             Expanded(
               child: BlocBuilder<CsLogsBloc, CsLogsState>(
                 builder: (context, state) {
-                  if (state is CsLogsLoading) {
+                  if (state.isLoading && state.logs.isEmpty) {
                     return const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.primaryDark,
                       ),
                     );
-                  } else if (state is CsLogsError) {
+                  } else if (state.hasError && state.logs.isEmpty) {
                     return Center(
                       child: Text(
-                        "Failed to load logs:\n${state.message}",
+                        'Failed to load logs:\n${state.errorMessage}',
                         textAlign: TextAlign.center,
                         style: const TextStyle(
                           color: AppColors.destructiveRedDark,
                         ),
                       ),
                     );
-                  } else if (state is CsLogsLoaded) {
+                  } else {
                     final logs = [...state.logs]
                       ..sort((a, b) {
                         final aTime = DateTime.tryParse(a.logTime);
@@ -188,8 +188,6 @@ class DashboardRecentActivityWidget extends StatelessWidget {
                       },
                     );
                   }
-
-                  return const SizedBox();
                 },
               ),
             ),

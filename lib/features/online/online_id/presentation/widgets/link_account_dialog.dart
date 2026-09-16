@@ -1,7 +1,7 @@
 import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/account_link_model.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
-import 'package:el_csadmin/features/online/online_id/data/repositories/online_id_repository.dart';
+import 'package:el_csadmin/features/online/online_id/domain/repositories/online_id_repository.dart';
 import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
 

@@ -8,7 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 import '../../../../../shared/widgets/app_data_grid.dart';
-import '../../data/models/cs_user_model.dart';
+import '../../domain/entities/manage_cs_user.dart';
 import '../bloc/manage_cs_bloc.dart';
 import '../bloc/manage_cs_state.dart';
 
@@ -32,18 +32,18 @@ class ManageCsTableWidget extends StatelessWidget {
       ),
       child: BlocBuilder<ManageCsBloc, ManageCsState>(
         builder: (context, state) {
-          if (state is ManageCsLoading || state is ManageCsInitial) {
+          if (state.isLoading && state.csUsers.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primaryDark),
             );
-          } else if (state is ManageCsError) {
+          } else if (state.hasError && state.csUsers.isEmpty) {
             return Center(
               child: Text(
-                state.message,
+                state.errorMessage,
                 style: const TextStyle(color: AppColors.destructiveRedDark),
               ),
             );
-          } else if (state is ManageCsLoaded) {
+          } else {
             if (state.csUsers.isEmpty) {
               return const Center(
                 child: Text(
@@ -54,7 +54,6 @@ class ManageCsTableWidget extends StatelessWidget {
             }
             return _buildDataTable(context, state.csUsers);
           }
-          return const SizedBox.shrink();
         },
       ),
     );
@@ -62,7 +61,7 @@ class ManageCsTableWidget extends StatelessWidget {
 
   Widget _buildDataTable(
     BuildContext context,
-    List<ManageCsUsersModel> dataList,
+    List<ManageCsUser> dataList,
   ) {
     final List<TrinaColumn> columns = [
       TrinaColumn(
@@ -348,7 +347,22 @@ class ManageCsTableWidget extends StatelessWidget {
                   const SizedBox(width: 16),
                   ElevatedButton(
                     onPressed: () {
-                      context.read<ManageCsBloc>().add(DeleteCsUser(loginId));
+                      final deletedBy = locator<SessionService>().read(
+                        SessionKey.loginId,
+                      );
+                      if (deletedBy.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              'The active CS Login ID was not found. Please log in again.',
+                            ),
+                          ),
+                        );
+                        return;
+                      }
+                      context.read<ManageCsBloc>().add(
+                        DeleteCsUser(loginId: loginId, deletedBy: deletedBy),
+                      );
                       Navigator.pop(ctx);
                     },
                     style: ElevatedButton.styleFrom(
@@ -375,7 +389,7 @@ class ManageCsTableWidget extends StatelessWidget {
     );
   }
 
-  void _showEditUserDialog(BuildContext context, ManageCsUsersModel user) {
+  void _showEditUserDialog(BuildContext context, ManageCsUser user) {
     final cEmployeeId = TextEditingController(text: user.employeeId);
     final cEmail = TextEditingController(text: user.email);
     final cRetypeEmail = TextEditingController();
@@ -740,7 +754,7 @@ class ManageCsTableWidget extends StatelessWidget {
     return null;
   }
 
-  void _showResetPasswordDialog(BuildContext context, ManageCsUsersModel user) {
+  void _showResetPasswordDialog(BuildContext context, ManageCsUser user) {
     final formKey = GlobalKey<FormState>();
     final cRetypeEmail = TextEditingController();
     final cNewPassword = TextEditingController();

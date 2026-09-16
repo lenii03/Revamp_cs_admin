@@ -1,7 +1,5 @@
 import 'package:el_csadmin/features/online/approval/data/models/approval_screen_model.dart';
 import 'package:el_csadmin/features/online/approval/data/models/link_account_model.dart';
-import 'package:el_csadmin/injector.dart';
-import 'package:el_csadmin/shared/features/api_datafeed/data/datasources/api_datafeed_network_data_source.dart';
 import 'package:el_csadmin/shared/widgets/app_data_grid.dart';
 import 'package:flutter/material.dart';
 import 'package:trina_grid/trina_grid.dart';
@@ -13,12 +11,15 @@ class ApprovalDetailDialog extends StatelessWidget {
   // 👇 Tambahkan dua parameter callback ini
   final VoidCallback onApprove;
   final VoidCallback onReject;
+  final Future<Map<String, dynamic>> Function(String loginId, String approvalId)
+  loadLinkedAccounts;
 
   const ApprovalDetailDialog({
     super.key,
     required this.data,
     required this.onApprove, // 👈 Wajib diisi saat dialog dipanggil
     required this.onReject, // 👈 Wajib diisi saat dialog dipanggil
+    required this.loadLinkedAccounts,
   });
 
   @override
@@ -211,8 +212,7 @@ class ApprovalDetailDialog extends StatelessWidget {
               const SizedBox(height: 16),
 
               FutureBuilder<Map<String, dynamic>>(
-                future: locator<ApiDatafeedNetworkDataSource>()
-                    .fetchLinkedAccountsDetail(data.loginId, data.approvalId),
+                future: loadLinkedAccounts(data.loginId, data.approvalId),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
                     return const Center(

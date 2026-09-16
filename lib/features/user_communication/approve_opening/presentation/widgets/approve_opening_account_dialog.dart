@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 import '../../../../../injector.dart';
-import '../../../../../shared/features/api_datafeed/domain/repositories/api_datafeed_repository.dart';
+import '../../domain/repositories/approve_opening_repository.dart';
 import '../../../../../shared/widgets/app_data_grid.dart';
 import '../../data/models/approve_opening_account_model.dart';
 import '../bloc/approve_opening_bloc.dart';
@@ -33,8 +33,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
   }
 
   Future<void> _loadSuggestions() async {
-    final result = await locator<ApiDatafeedRepository>()
-        .fetchOpeningAccountSuggestions();
+    final result = await locator<ApproveOpeningRepository>().fetchSuggestions();
     if (!mounted) return;
     result.fold(
       (error) => debugPrint('Suggestion error: $error'),
@@ -47,7 +46,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
       _isLoading = true;
       _loadError = null;
     });
-    final result = await locator<ApiDatafeedRepository>().fetchOpeningAccounts(
+    final result = await locator<ApproveOpeningRepository>().fetchAccounts(
       size: 30,
       custId: suggestion.custId,
       loginId: suggestion.loginId,
@@ -84,7 +83,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
       return;
     }
 
-    final result = await locator<ApiDatafeedRepository>().fetchOpeningAccounts(
+    final result = await locator<ApproveOpeningRepository>().fetchAccounts(
       size: 30,
     );
     if (!mounted) return;
@@ -245,8 +244,8 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
         : AppColors.lighterGrey;
 
     return Dialog(
-      backgroundColor: dialogBgColor, // 👈 Dinamis
-      surfaceTintColor: Colors.transparent, // 👈 Bersihkan bias warna M3
+      backgroundColor: dialogBgColor,
+      surfaceTintColor: Colors.transparent, 
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
         width: 900,
@@ -261,7 +260,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                 Text(
                   "Add Opening Account",
                   style: TextStyle(
-                    color: textColor, // 👈 Dinamis
+                    color: textColor, 
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                   ),
@@ -271,7 +270,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                   icon: const Icon(
                     Icons.close,
                     color: AppColors.destructiveRedDark,
-                  ), // Merah agar terlihat
+                  ), 
                 ),
               ],
             ),
@@ -411,7 +410,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                   onPressed: () => Navigator.pop(context),
                   child: Text(
                     "Close",
-                    style: TextStyle(color: hintColor), // 👈 Dinamis
+                    style: TextStyle(color: hintColor), 
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -449,7 +448,7 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
                     );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryColor, // 👈 Seragam Cyan
+                    backgroundColor: AppColors.primaryColor,
                   ),
                   child: const Text(
                     "Add",

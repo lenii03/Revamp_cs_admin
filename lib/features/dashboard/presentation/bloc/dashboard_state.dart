@@ -1,31 +1,23 @@
-import '../../data/models/incomplete_credential_item.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class DashboardState {}
+import '../../domain/entities/incomplete_credential.dart';
 
-class DashboardInitial extends DashboardState {}
+part 'dashboard_state.freezed.dart';
 
-class DashboardLoading extends DashboardState {}
+@freezed
+abstract class DashboardState with _$DashboardState {
+  const factory DashboardState.initial() = DashboardInitial;
 
-class DashboardLoaded extends DashboardState {
-  final String totalCs;
-  final String totalUserOnline;
-  final String totalPending;
-  final String incompleteCredentials;
-  final List<IncompleteCredentialItem> incompleteCredentialUsers;
-  final Map<String, String> errors;
+  const factory DashboardState.loading() = DashboardLoading;
 
-  DashboardLoaded({
-    required this.totalCs,
-    required this.totalUserOnline,
-    required this.totalPending,
-    required this.incompleteCredentials,
-    required this.incompleteCredentialUsers,
-    this.errors = const {},
-  });
-}
+  const factory DashboardState.loaded({
+    required String totalCs,
+    required String totalUserOnline,
+    required String totalPending,
+    required String incompleteCredentials,
+    required List<IncompleteCredential> incompleteCredentialUsers,
+    @Default(<String, String>{}) Map<String, String> errors,
+  }) = DashboardLoaded;
 
-class DashboardError extends DashboardState {
-  final String message;
-
-  DashboardError(this.message);
+  const factory DashboardState.error(String message) = DashboardError;
 }

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
 
-/// A lightweight Windows drag region without double-click gesture latency.
 class AppDragToMoveArea extends StatelessWidget {
   final Widget child;
 

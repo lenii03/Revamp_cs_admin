@@ -1,10 +1,9 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class SendEmailForgotEvent extends Equatable {
-  const SendEmailForgotEvent();
+part 'send_email_event.freezed.dart';
 
-  @override
-  List<Object?> get props => [];
+@freezed
+abstract class SendEmailForgotEvent with _$SendEmailForgotEvent {
+  const factory SendEmailForgotEvent.fetchSendEmailData() =
+      FetchSendEmailData;
 }
-
-class FetchSendEmailData extends SendEmailForgotEvent {}

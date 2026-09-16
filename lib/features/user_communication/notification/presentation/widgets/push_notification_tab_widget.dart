@@ -7,7 +7,6 @@ class PushNotificationTabWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Ambil tema dinamis
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final containerBg = Theme.of(
       context,
@@ -25,9 +24,9 @@ class PushNotificationTabWidget extends StatelessWidget {
         constraints: const BoxConstraints(maxWidth: 600),
         padding: const EdgeInsets.all(32.0),
         decoration: BoxDecoration(
-          color: containerBg, // 👈 Dinamis
+          color: containerBg, 
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: separatorColor), // 👈 Dinamis
+          border: Border.all(color: separatorColor), 
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -36,7 +35,7 @@ class PushNotificationTabWidget extends StatelessWidget {
             Text(
               "Send New Notification",
               style: TextStyle(
-                color: textColor, // 👈 Dinamis
+                color: textColor, 
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
@@ -71,7 +70,7 @@ class PushNotificationTabWidget extends StatelessWidget {
               child: ElevatedButton(
                 onPressed: () {},
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.primaryColor, // 👈 Seragam Cyan
+                  backgroundColor: AppColors.primaryColor, 
                   padding: const EdgeInsets.symmetric(vertical: 20),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -94,7 +93,7 @@ class PushNotificationTabWidget extends StatelessWidget {
 
   Widget _buildLabel(String text, Color? color) => Text(
     text,
-    style: TextStyle(color: color), // 👈 Dinamis
+    style: TextStyle(color: color), 
   );
 
   Widget _buildTextField(
@@ -114,12 +113,12 @@ class PushNotificationTabWidget extends StatelessWidget {
 
     return TextField(
       maxLines: maxLines,
-      style: TextStyle(color: textColor), // 👈 Dinamis
+      style: TextStyle(color: textColor), 
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: hintColor),
         filled: true,
-        fillColor: fillColor, // 👈 Dinamis
+        fillColor: fillColor, 
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(color: borderColor),

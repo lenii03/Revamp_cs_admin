@@ -1,16 +1,17 @@
 import 'package:el_csadmin/data/local/session_service.dart';
-import 'package:el_csadmin/injector.dart';
 import 'package:dartz/dartz.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'approve_opening_event.dart';
 import 'approve_opening_state.dart';
-import '../../../../../shared/features/api_datafeed/domain/repositories/api_datafeed_repository.dart';
+import '../../domain/usecases/approve_opening_usecases.dart';
 import '../../data/models/approve_opening_account_model.dart';
 
 class ApproveOpeningBloc
     extends Bloc<ApproveOpeningEvent, ApproveOpeningState> {
-  final ApiDatafeedRepository repository;
+  final GetOpeningAccountsUseCase _getAccounts;
+  final SendOpeningAccountEmailUseCase _sendEmail;
+  final SessionService _sessionService;
   final List<ApproveOpeningAccountModel> _stagedAccounts = [];
   ApproveOpeningAccountModel? _selectedAccount;
 
@@ -25,8 +26,14 @@ class ApproveOpeningBloc
 
   List<ApproveOpeningAccountModel> apiAccountsList = [];
 
-  ApproveOpeningBloc({required this.repository})
-    : super(const ApproveOpeningLoaded([])) {
+  ApproveOpeningBloc({
+    required GetOpeningAccountsUseCase getAccounts,
+    required SendOpeningAccountEmailUseCase sendEmail,
+    required SessionService sessionService,
+  }) : _getAccounts = getAccounts,
+       _sendEmail = sendEmail,
+       _sessionService = sessionService,
+       super(const ApproveOpeningLoaded([])) {
     _loadApiDataInBackground();
 
     on<AddToStaging>((event, emit) {
@@ -119,7 +126,7 @@ class ApproveOpeningBloc
   }
 
   Future<Either<String, void>> _send(ApproveOpeningAccountModel account) {
-    final csLoginId = locator<SessionService>().read(SessionKey.loginId);
+    final csLoginId = _sessionService.read(SessionKey.loginId);
     if (csLoginId.isEmpty) {
       return Future.value(
         const Left<String, void>(
@@ -137,7 +144,7 @@ class ApproveOpeningBloc
         const Left<String, void>('The selected Account ID is invalid.'),
       );
     }
-    return repository.sendEmailOpeningAccount({
+    return _sendEmail({
       'LoginId': account.loginId,
       'CustId': account.custId,
       'CSLoginId': csLoginId,
@@ -162,7 +169,7 @@ class ApproveOpeningBloc
   }
 
   Future<void> _loadApiDataInBackground() async {
-    final result = await repository.fetchOpeningAccounts(size: 30);
+    final result = await _getAccounts(size: 30);
     result.fold(
       (error) => debugPrint("Failed to pre-fetch data: $error"),
       (data) => apiAccountsList = data,

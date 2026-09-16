@@ -1,3 +1,9 @@
-abstract class DashboardEvent {}
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-class FetchDashboardMetricsEvent extends DashboardEvent {}
+part 'dashboard_event.freezed.dart';
+
+@freezed
+abstract class DashboardEvent with _$DashboardEvent {
+  const factory DashboardEvent.fetchDashboardMetrics() =
+      FetchDashboardMetricsEvent;
+}

@@ -1,6 +1,6 @@
 import 'package:dartz/dartz.dart';
-import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
-import 'package:el_csadmin/features/online/online_id/data/models/account_link_model.dart';
+import '../../data/models/account_link_model.dart';
+import '../../data/models/online_id_model.dart';
 
 abstract class OnlineIdRepository {
   Future<Either<String, List<OnlineIdModel>>> fetchOnlineIds({

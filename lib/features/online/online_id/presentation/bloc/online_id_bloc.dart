@@ -1,8 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
-import 'package:el_csadmin/injector.dart';
-import 'package:el_csadmin/features/online/online_id/data/repositories/online_id_repository.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
+import 'package:el_csadmin/features/online/online_id/domain/usecases/online_id_usecases.dart';
 import 'package:el_csadmin/features/user_communication/send_email/data/models/send_email_forgot_model.dart';
 import 'package:el_csadmin/features/user_communication/send_email/data/repositories/send_email_queue_repository.dart';
 
@@ -10,17 +9,33 @@ import 'online_id_event.dart';
 import 'online_id_state.dart';
 
 class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
-  final OnlineIdRepository repository;
   final SendEmailQueueRepository queueRepository;
+  final GetOnlineIdsUseCase _getOnlineIds;
+  final SaveOnlineIdUseCase _saveOnlineId;
+  final ResetOnlineIdUseCase _resetOnlineId;
+  final SessionService _sessionService;
   int currentPage = 1;
   int perPage = 30;
   String currentSearch = '';
+  bool _isLoadingMore = false;
+  bool _hasReachedEnd = false;
+  int _requestVersion = 0;
 
-  OnlineIdBloc({required this.repository, required this.queueRepository})
-    : super(const OnlineIdState.initial()) {
+  OnlineIdBloc({
+    required GetOnlineIdsUseCase getOnlineIds,
+    required SaveOnlineIdUseCase saveOnlineId,
+    required ResetOnlineIdUseCase resetOnlineId,
+    required SessionService sessionService,
+    required this.queueRepository,
+  }) : _getOnlineIds = getOnlineIds,
+       _saveOnlineId = saveOnlineId,
+       _resetOnlineId = resetOnlineId,
+       _sessionService = sessionService,
+       super(const OnlineIdState.initial()) {
     on<OnlineIdEvent>((event, emit) async {
       await event.when(
         fetchOnlineIds: () async => await _onFetchOnlineIds(emit),
+        loadMoreOnlineIds: () async => await _onLoadMoreOnlineIds(emit),
         addOnlineId: (data) async => await _onAddOnlineId(data, emit),
         editOnlineId: (data) async => await _onEditOnlineId(data, emit),
         deleteOnlineId: (loginId) async =>
@@ -46,24 +61,84 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
   }
 
   Future<void> _onFetchOnlineIds(Emitter<OnlineIdState> emit) async {
+    final requestVersion = ++_requestVersion;
     OnlineIdModel? previousSelectedUser;
     state.maybeMap(
       loaded: (s) => previousSelectedUser = s.selectedUser,
       orElse: () {},
     );
 
+    _isLoadingMore = false;
+    _hasReachedEnd = false;
     emit(const OnlineIdState.loading());
-    final result = await repository.fetchOnlineIds(
+    final result = await _getOnlineIds(
       search: currentSearch,
       page: currentPage,
       size: perPage,
     );
     result.fold(
-      (error) => emit(OnlineIdState.error(error)),
-      (data) => emit(
-        OnlineIdState.loaded(data: data, selectedUser: previousSelectedUser),
-      ),
+      (error) {
+        if (requestVersion != _requestVersion) return;
+        emit(OnlineIdState.error(error));
+      },
+      (data) {
+        if (requestVersion != _requestVersion) return;
+        _hasReachedEnd = data.length < perPage;
+        emit(
+          OnlineIdState.loaded(
+            data: data,
+            selectedUser: previousSelectedUser,
+            hasReachedEnd: _hasReachedEnd,
+          ),
+        );
+      },
     );
+  }
+
+  Future<void> _onLoadMoreOnlineIds(Emitter<OnlineIdState> emit) async {
+    if (_isLoadingMore || _hasReachedEnd) return;
+
+    final loadedState = state.mapOrNull(loaded: (value) => value);
+    if (loadedState == null || loadedState.data.isEmpty) return;
+
+    _isLoadingMore = true;
+    emit(loadedState.copyWith(isLoadingMore: true));
+
+    final nextPage = currentPage + 1;
+    final requestVersion = _requestVersion;
+    final result = await _getOnlineIds(
+      search: currentSearch,
+      page: nextPage,
+      size: perPage,
+    );
+
+    result.fold(
+      (_) {
+        if (requestVersion != _requestVersion) return;
+        emit(loadedState.copyWith(isLoadingMore: false));
+      },
+      (nextPageData) {
+        if (requestVersion != _requestVersion) return;
+        final existingLoginIds = loadedState.data
+            .map((user) => user.loginId)
+            .toSet();
+        final newUsers = nextPageData
+            .where((user) => existingLoginIds.add(user.loginId))
+            .toList();
+
+        currentPage = nextPage;
+        _hasReachedEnd = nextPageData.length < perPage || newUsers.isEmpty;
+        emit(
+          loadedState.copyWith(
+            data: [...loadedState.data, ...newUsers],
+            isLoadingMore: false,
+            hasReachedEnd: _hasReachedEnd,
+          ),
+        );
+      },
+    );
+
+    _isLoadingMore = false;
   }
 
   void _onSelectOnlineId(
@@ -83,11 +158,11 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
     Emitter<OnlineIdState> emit,
   ) async {
     emit(const OnlineIdState.loading());
-    final result = await repository.addOnlineUser1(data);
-    result.fold(
-      (error) => emit(OnlineIdState.error(error)),
-      (_) => add(const OnlineIdEvent.fetchOnlineIds()),
-    );
+    final result = await _saveOnlineId(data);
+    result.fold((error) => emit(OnlineIdState.error(error)), (_) {
+      currentPage = 1;
+      add(const OnlineIdEvent.fetchOnlineIds());
+    });
   }
 
   Future<void> _onEditOnlineId(
@@ -95,11 +170,11 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
     Emitter<OnlineIdState> emit,
   ) async {
     emit(const OnlineIdState.loading());
-    final result = await repository.addOnlineUser1(data);
-    result.fold(
-      (error) => emit(OnlineIdState.error(error)),
-      (_) => add(const OnlineIdEvent.fetchOnlineIds()),
-    );
+    final result = await _saveOnlineId(data);
+    result.fold((error) => emit(OnlineIdState.error(error)), (_) {
+      currentPage = 1;
+      add(const OnlineIdEvent.fetchOnlineIds());
+    });
   }
 
   Future<void> _onDeleteOnlineId(
@@ -115,11 +190,11 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
       "ArrayAccountUnLink": [],
     };
 
-    final result = await repository.addOnlineUser1(payload);
-    result.fold(
-      (error) => emit(OnlineIdState.error(error)),
-      (_) => add(const OnlineIdEvent.fetchOnlineIds()),
-    );
+    final result = await _saveOnlineId(payload);
+    result.fold((error) => emit(OnlineIdState.error(error)), (_) {
+      currentPage = 1;
+      add(const OnlineIdEvent.fetchOnlineIds());
+    });
   }
 
   Future<void> _onResetOnlineId(
@@ -144,8 +219,7 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
 
     try {
       final int actionType = resetType == "password" ? 0 : 1;
-      final sessionService = locator<SessionService>();
-      final modifiedBy = sessionService.read(SessionKey.loginId);
+      final modifiedBy = _sessionService.read(SessionKey.loginId);
       if (modifiedBy.isEmpty) {
         emit(
           const OnlineIdState.error(
@@ -158,8 +232,7 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
       // Catat request lebih dahulu. Backend reset dapat mengirim email tetapi
       // responsnya terlambat/timeout; request tetap harus terlihat di antrean.
       final now = DateTime.now();
-      final requestId =
-          '${now.microsecondsSinceEpoch}-$loginId-$actionType';
+      final requestId = '${now.microsecondsSinceEpoch}-$loginId-$actionType';
       await queueRepository.enqueue(
         SendEmailForgotModel(
           actionType: actionType,
@@ -173,7 +246,7 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
         ),
       );
 
-      final resetResult = await repository.resetPasswordOrPin({
+      final resetResult = await _resetOnlineId({
         'LoginId': loginId,
         'ModifiedBy': modifiedBy,
         'ActionType': actionType,
@@ -188,6 +261,7 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
       }
 
       await queueRepository.markAsSentByRequestId(requestId);
+      currentPage = 1;
       add(const OnlineIdEvent.fetchOnlineIds());
     } catch (e) {
       emit(

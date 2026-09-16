@@ -65,7 +65,6 @@ class _CreateSchedulerDialogState extends State<CreateSchedulerDialog> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: () {
-                  /* TODO: Panggil BLoC CreateScheduler */
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF6C5CE7),

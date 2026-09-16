@@ -1,14 +1,16 @@
 import 'package:el_csadmin/features/online/approval/data/models/approval_screen_model.dart';
 import 'package:el_csadmin/features/online/approval/presentation/bloc/approval_state.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
-import 'package:el_csadmin/injector.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../../../../../shared/features/api_datafeed/domain/repositories/api_datafeed_repository.dart';
+import '../../domain/usecases/approval_usecases.dart';
 import 'approval_event.dart';
 
 class ApprovalScreenBloc
     extends Bloc<ApprovalScreenEvent, ApprovalScreenState> {
-  final ApiDatafeedRepository repository;
+  final GetApprovalsUseCase _getApprovals;
+  final UpdateApprovalStatusUseCase _updateApprovalStatus;
+  final GetApprovalLinkedAccountsDetailUseCase _getLinkedAccountsDetail;
+  final SessionService _sessionService;
   String? currentSearch;
   int? currentActionType;
   int? currentStatus;
@@ -24,8 +26,16 @@ class ApprovalScreenBloc
     add(const ApprovalScreenEvent.fetchApprovals());
   }
 
-  ApprovalScreenBloc({required this.repository})
-    : super(const ApprovalScreenState.initial()) {
+  ApprovalScreenBloc({
+    required GetApprovalsUseCase getApprovals,
+    required UpdateApprovalStatusUseCase updateApprovalStatus,
+    required GetApprovalLinkedAccountsDetailUseCase getLinkedAccountsDetail,
+    required SessionService sessionService,
+  }) : _getApprovals = getApprovals,
+       _updateApprovalStatus = updateApprovalStatus,
+       _getLinkedAccountsDetail = getLinkedAccountsDetail,
+       _sessionService = sessionService,
+       super(const ApprovalScreenState.initial()) {
     on<ApprovalScreenEvent>((event, emit) async {
       await event.map(
         fetchApprovals: (_) async => await _onFetchApprovals(emit),
@@ -38,7 +48,7 @@ class ApprovalScreenBloc
   Future<void> _onFetchApprovals(Emitter<ApprovalScreenState> emit) async {
     emit(const ApprovalScreenState.loading());
 
-    final result = await repository.fetchApprovals(
+    final result = await _getApprovals(
       search: currentSearch,
       actionType: currentActionType,
       status: currentStatus,
@@ -52,16 +62,25 @@ class ApprovalScreenBloc
     );
   }
 
+  Future<Map<String, dynamic>> getLinkedAccountsDetail(
+    String loginId,
+    String approvalId,
+  ) async {
+    final result = await _getLinkedAccountsDetail(
+      loginId: loginId,
+      approvalId: approvalId,
+    );
+    return result.fold(
+      (_) => const <String, dynamic>{'old': [], 'new': []},
+      (detail) => detail,
+    );
+  }
+
   Future<void> _onApproveItem(
     ApprovalScreenModel data,
     Emitter<ApprovalScreenState> emit,
   ) async {
-    await _updateApproval(
-      data,
-      status: 2,
-      actionName: 'approve',
-      emit: emit,
-    );
+    await _updateApproval(data, status: 2, actionName: 'approve', emit: emit);
   }
 
   Future<void> _onRejectItem(
@@ -89,7 +108,7 @@ class ApprovalScreenBloc
       return;
     }
 
-    final approvedBy = locator<SessionService>().read(SessionKey.loginId);
+    final approvedBy = _sessionService.read(SessionKey.loginId);
     if (approvedBy.isEmpty) {
       emit(
         ApprovalScreenState.error(
@@ -106,7 +125,7 @@ class ApprovalScreenBloc
       actionTypeId = 3;
     }
 
-    final result = await repository.updateApprovalStatus({
+    final result = await _updateApprovalStatus({
       'ApprovalId': approvalId,
       'ApprovedBy': approvedBy,
       'Email': data.email == '-' ? '' : data.email,

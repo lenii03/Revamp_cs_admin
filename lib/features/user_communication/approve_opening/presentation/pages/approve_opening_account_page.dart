@@ -10,7 +10,6 @@ class ApproveOpeningAccountPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Ambil warna teks dinamis berdasarkan tema
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
 
     return BlocProvider(
@@ -23,7 +22,7 @@ class ApproveOpeningAccountPage extends StatelessWidget {
             Text(
               'Approval Opening Accounts',
               style: TextStyle(
-                color: textColor, // 👈 Berubah jadi dinamis
+                color: textColor, 
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               ),

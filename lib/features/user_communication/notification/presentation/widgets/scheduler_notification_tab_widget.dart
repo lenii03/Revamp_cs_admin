@@ -8,7 +8,6 @@ class SchedulerNotificationTabWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Ambil tema dinamis
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final containerBg = Theme.of(
       context,
@@ -36,7 +35,7 @@ class SchedulerNotificationTabWidget extends StatelessWidget {
             style: TextStyle(color: Colors.white),
           ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryColor, // 👈 Seragam Cyan
+            backgroundColor: AppColors.primaryColor, 
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           ),
         ),
@@ -45,14 +44,14 @@ class SchedulerNotificationTabWidget extends StatelessWidget {
           child: Container(
             width: double.infinity,
             decoration: BoxDecoration(
-              color: containerBg, // 👈 Dinamis
+              color: containerBg, 
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: separatorColor), // 👈 Dinamis
+              border: Border.all(color: separatorColor),
             ),
             child: Center(
               child: Text(
                 "The Scheduler table (TrinaGrid) will appear here",
-                style: TextStyle(color: labelColor), // 👈 Dinamis
+                style: TextStyle(color: labelColor), 
               ),
             ),
           ),

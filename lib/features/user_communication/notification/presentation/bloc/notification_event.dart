@@ -1,24 +1,17 @@
-import 'package:equatable/equatable.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class NotificationEvent extends Equatable {
-  const NotificationEvent();
-  @override
-  List<Object> get props => [];
-}
+part 'notification_event.freezed.dart';
 
-class FetchSchedulers extends NotificationEvent {}
+@freezed
+abstract class NotificationEvent with _$NotificationEvent {
+  const factory NotificationEvent.fetchSchedulers() = FetchSchedulers;
 
-class SendPushNotif extends NotificationEvent {
-  final String title;
-  final String subtitle;
-  const SendPushNotif({required this.title, required this.subtitle});
-  @override
-  List<Object> get props => [title, subtitle];
-}
+  const factory NotificationEvent.sendPushNotif({
+    required String title,
+    required String subtitle,
+  }) = SendPushNotif;
 
-class CreateScheduler extends NotificationEvent {
-  final Map<String, dynamic> payload;
-  const CreateScheduler(this.payload);
-  @override
-  List<Object> get props => [payload];
+  const factory NotificationEvent.createScheduler(
+    Map<String, dynamic> payload,
+  ) = CreateScheduler;
 }

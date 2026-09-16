@@ -4,7 +4,7 @@ import '../../data/models/approval_screen_model.dart';
 part 'approval_state.freezed.dart';
 
 @freezed
-class ApprovalScreenState with _$ApprovalScreenState {
+abstract class ApprovalScreenState with _$ApprovalScreenState {
   const factory ApprovalScreenState.initial() = _Initial;
 
   const factory ApprovalScreenState.loading() = _Loading;

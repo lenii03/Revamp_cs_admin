@@ -1,17 +1,27 @@
-import '../../data/models/cs_user_model.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class ManageCsState {}
+import '../../domain/entities/manage_cs_user.dart';
 
-class ManageCsInitial extends ManageCsState {}
+part 'manage_cs_state.freezed.dart';
 
-class ManageCsLoading extends ManageCsState {}
+enum ManageCsStatus { initial, loading, success, failure }
 
-class ManageCsLoaded extends ManageCsState {
-  final List<ManageCsUsersModel> csUsers;
-  ManageCsLoaded(this.csUsers);
-}
+@freezed
+abstract class ManageCsState with _$ManageCsState {
+  const factory ManageCsState({
+    @Default(ManageCsStatus.initial) ManageCsStatus status,
+    @Default(<ManageCsUser>[]) List<ManageCsUser> allUsers,
+    @Default(<ManageCsUser>[]) List<ManageCsUser> csUsers,
+    @Default('') String query,
+    @Default(1) int page,
+    @Default(30) int pageSize,
+    @Default('') String errorMessage,
+  }) = _ManageCsState;
 
-class ManageCsError extends ManageCsState {
-  final String message;
-  ManageCsError(this.message);
+  const ManageCsState._();
+
+  bool get isLoading => status == ManageCsStatus.loading;
+  bool get hasError => status == ManageCsStatus.failure;
+  bool get canGoPrevious => page > 1;
+  bool get canGoNext => true;
 }

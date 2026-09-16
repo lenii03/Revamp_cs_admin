@@ -161,7 +161,7 @@ class LoginUserModel {
     _parsePermissions();
   }
 
-  // Method to extract permissions from the integer using bitwise operations
+  
   void _parsePermissions() {
     createCsLogin = (permissions & (1 << 0)) != 0 ? 1 : 0;
     createUserLogin = (permissions & (1 << 1)) != 0 ? 1 : 0;
@@ -189,7 +189,7 @@ class LoginUserModel {
   }
 
   Map<String, dynamic> toMap() {
-    _updatePermissions(); // Update the permissions before converting to map
+    _updatePermissions(); 
     return <String, dynamic>{
       'LoginId': loginId,
       'EmployeeId': employeeId,
@@ -207,7 +207,7 @@ class LoginUserModel {
       status: map['Status'],
       permissions: map['Permissions'],
     );
-    user._parsePermissions(); // Parse the permissions after loading from map
+    user._parsePermissions();
     return user;
   }
 

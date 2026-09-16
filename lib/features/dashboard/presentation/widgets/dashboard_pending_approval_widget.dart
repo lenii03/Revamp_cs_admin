@@ -119,9 +119,7 @@ class _DashboardPendingApprovalWidgetState
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  success
-                      ? Icons.check_circle_outline
-                      : Icons.error_outline,
+                  success ? Icons.check_circle_outline : Icons.error_outline,
                   size: 18,
                   color: success
                       ? const Color(0xFF5DE0D0)
@@ -146,11 +144,7 @@ class _DashboardPendingApprovalWidgetState
                   borderRadius: BorderRadius.circular(12),
                   child: const Padding(
                     padding: EdgeInsets.all(2),
-                    child: Icon(
-                      Icons.close,
-                      color: Colors.white70,
-                      size: 16,
-                    ),
+                    child: Icon(Icons.close, color: Colors.white70, size: 16),
                   ),
                 ),
               ],
@@ -291,7 +285,11 @@ class _DashboardPendingApprovalWidgetState
                   ),
                   loaded: (data) {
                     final pendingList = data
-                        .where((e) => e.status.toLowerCase() == 'pending' || e.status == '1')
+                        .where(
+                          (e) =>
+                              e.status.toLowerCase() == 'pending' ||
+                              e.status == '1',
+                        )
                         .toList();
 
                     if (pendingList.isEmpty) {
@@ -427,6 +425,9 @@ class _DashboardPendingApprovalWidgetState
                                           approve: false,
                                         );
                                       },
+                                      loadLinkedAccounts: context
+                                          .read<ApprovalScreenBloc>()
+                                          .getLinkedAccountsDetail,
                                     ),
                                   );
                                 },

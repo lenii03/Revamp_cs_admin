@@ -55,7 +55,7 @@ class _LoginPageState extends State<LoginPage> {
       final packageInfo = await PackageInfo.fromPlatform();
       appVersion = packageInfo.version;
     } catch (_) {
-      // The login page remains usable if package metadata cannot be read.
+      
     }
     final savedBaseUrl = await ServerConfig.getBaseUrl();
     if (!mounted) return;

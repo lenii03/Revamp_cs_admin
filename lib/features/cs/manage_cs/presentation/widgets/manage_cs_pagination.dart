@@ -5,20 +5,14 @@ import '../../../../../core/theme/src/app_colors.dart';
 import '../bloc/manage_cs_bloc.dart';
 import '../bloc/manage_cs_event.dart';
 
-class ManageCsPaginationWidget extends StatefulWidget {
+class ManageCsPaginationWidget extends StatelessWidget {
   const ManageCsPaginationWidget({super.key});
 
-  @override
-  State<ManageCsPaginationWidget> createState() =>
-      _ManageCsPaginationWidgetState();
-}
-
-class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
-  final List<int> _perPageOptions = [10, 20, 30, 50];
+  static const List<int> _perPageOptions = [10, 20, 30, 50];
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.watch<ManageCsBloc>();
+    final state = context.watch<ManageCsBloc>().state;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = Theme.of(context).textTheme.bodyLarge?.color;
     final subTextColor = Theme.of(
@@ -50,7 +44,7 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
-                    value: bloc.perPage,
+                    value: state.pageSize,
                     dropdownColor: containerColor,
                     icon: Icon(Icons.arrow_drop_down, color: textColor),
                     style: TextStyle(
@@ -66,19 +60,17 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
                     }).toList(),
                     onChanged: (newValue) {
                       if (newValue != null) {
-                        setState(() {
-                          bloc.perPage = newValue;
-                          bloc.currentPage = 1;
-                        });
-                        bloc.add(FetchCsList());
+                        context.read<ManageCsBloc>().add(
+                          ChangeCsPageSize(newValue),
+                        );
                       }
                     },
                   ),
                 ),
               ),
               const SizedBox(width: 12),
-              const Text(
-                "1 - 16 of 16 entries",
+              Text(
+                '${state.csUsers.length} entries',
                 style: TextStyle(
                   color: AppColors.secondaryTextColorDark,
                   fontSize: 13,
@@ -90,21 +82,23 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
           Row(
             children: [
               _buildNavButton(
+                context: context,
                 icon: Icons.first_page_rounded,
-                isEnabled: bloc.currentPage > 1,
+                isEnabled: state.canGoPrevious,
                 onTap: () {
-                  setState(() => bloc.currentPage = 1);
-                  bloc.add(FetchCsList());
+                  context.read<ManageCsBloc>().add(const ChangeCsPage(1));
                 },
               ),
               const SizedBox(width: 4),
               // Tombol Previous (<)
               _buildNavButton(
+                context: context,
                 icon: Icons.keyboard_arrow_left_rounded,
-                isEnabled: bloc.currentPage > 1,
+                isEnabled: state.canGoPrevious,
                 onTap: () {
-                  setState(() => bloc.currentPage--);
-                  bloc.add(FetchCsList());
+                  context.read<ManageCsBloc>().add(
+                    ChangeCsPage(state.page - 1),
+                  );
                 },
               ),
               const SizedBox(width: 8),
@@ -119,7 +113,7 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  "${bloc.currentPage} of 1",
+                  'Page ${state.page}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -130,16 +124,19 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
               const SizedBox(width: 8),
               // Tombol Next (>)
               _buildNavButton(
+                context: context,
                 icon: Icons.keyboard_arrow_right_rounded,
-                isEnabled: false,
+                isEnabled: state.canGoNext,
                 onTap: () {
-                  setState(() => bloc.currentPage++);
-                  bloc.add(FetchCsList());
+                  context.read<ManageCsBloc>().add(
+                    ChangeCsPage(state.page + 1),
+                  );
                 },
               ),
               const SizedBox(width: 4),
               // Tombol Last Page (>|)
               _buildNavButton(
+                context: context,
                 icon: Icons.last_page_rounded,
                 isEnabled: false,
                 onTap: () {},
@@ -152,6 +149,7 @@ class _ManageCsPaginationWidgetState extends State<ManageCsPaginationWidget> {
   }
 
   Widget _buildNavButton({
+    required BuildContext context,
     required IconData icon,
     required bool isEnabled,
     required VoidCallback onTap,

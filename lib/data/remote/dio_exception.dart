@@ -3,9 +3,6 @@ import 'package:dio/dio.dart' show DioException, DioExceptionType;
 
 import '../../core/constants/app_string.dart';
 
-/*
-handling error dio
- */
 class DioExceptions implements Exception {
   late String message;
 

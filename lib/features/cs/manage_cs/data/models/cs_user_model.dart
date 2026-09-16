@@ -1,3 +1,5 @@
+import '../../domain/entities/manage_cs_user.dart';
+
 class ManageCsUsersModel {
   final String loginId;
   final String employeeId;
@@ -67,4 +69,19 @@ class ManageCsUsersModel {
   bool get hasReports => (permissions & 16) != 0;
   bool get hasSendDisclaimer => (permissions & 32) != 0;
   bool get hasCustomerRatio => (permissions & 64) != 0;
+
+  ManageCsUser toEntity() => ManageCsUser(
+    loginId: loginId,
+    employeeId: employeeId,
+    email: email,
+    isActive: isActive,
+    isCs: isCs,
+    isOnline: isOnline,
+    permissions: permissions,
+    created: created,
+    lastModified: lastModified,
+    lastLogin: lastLogin,
+    createdBy: createdBy,
+    modifiedBy: modifiedBy,
+  );
 }

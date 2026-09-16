@@ -1,26 +1,29 @@
-import 'package:equatable/equatable.dart';
-import '../../data/models/cs_log_model.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-abstract class CsLogsState extends Equatable {
-  const CsLogsState();
-  @override
-  List<Object> get props => [];
-}
+import '../../domain/entities/cs_log.dart';
 
-class CsLogsInitial extends CsLogsState {}
+part 'cs_logs_state.freezed.dart';
 
-class CsLogsLoading extends CsLogsState {}
+enum CsLogsStatus { initial, loading, success, failure }
 
-class CsLogsLoaded extends CsLogsState {
-  final List<CsLogModel> logs;
-  const CsLogsLoaded(this.logs);
-  @override
-  List<Object> get props => [logs];
-}
+@freezed
+abstract class CsLogsState with _$CsLogsState {
+  const factory CsLogsState({
+    @Default(CsLogsStatus.initial) CsLogsStatus status,
+    @Default(<CsLog>[]) List<CsLog> logs,
+    @Default('') String loginId,
+    @Default('') String targetId,
+    @Default(-1) int logType,
+    @Default(1) int page,
+    @Default(30) int pageSize,
+    @Default('') String errorMessage,
+  }) = _CsLogsState;
 
-class CsLogsError extends CsLogsState {
-  final String message;
-  const CsLogsError(this.message);
-  @override
-  List<Object> get props => [message];
+  const CsLogsState._();
+
+  bool get isLoading => status == CsLogsStatus.loading;
+  bool get hasError => status == CsLogsStatus.failure;
+  bool get canGoPrevious => page > 1;
+  // Kept enabled to match the previous pagination control behaviour.
+  bool get canGoNext => true;
 }

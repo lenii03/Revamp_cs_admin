@@ -31,18 +31,88 @@ class ApprovalTableWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: separatorColor),
       ),
-      child: BlocBuilder<ApprovalScreenBloc, ApprovalScreenState>(
+      child: BlocConsumer<ApprovalScreenBloc, ApprovalScreenState>(
+        listener: (context, state) {
+          state.maybeWhen(
+            error: (message) {
+              final cleanMessage = message.replaceAll('Exception: ', '');
+
+              showDialog(
+                context: context,
+                builder: (dialogContext) {
+                  return Dialog(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    backgroundColor: Theme.of(
+                      dialogContext,
+                    ).extension<ThemeColors>()?.appContainerBackground,
+                    child: Padding(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.warning_rounded,
+                            color: Colors.amber,
+                            size: 72,
+                          ),
+                          const SizedBox(height: 16),
+                          const Text(
+                            'Notice',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            cleanMessage,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              color: Colors.white70,
+                              height: 1.5,
+                            ),
+                          ),
+                          const SizedBox(height: 28),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primaryColor,
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 14,
+                                horizontal: 48,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            onPressed: () => Navigator.of(dialogContext).pop(),
+                            child: const Text(
+                              'Close',
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+            orElse: () {},
+          );
+        },
         builder: (context, state) {
           return state.maybeWhen(
             loading: () => const Center(
               child: CircularProgressIndicator(color: AppColors.primaryColor),
             ),
-            error: (message) => Center(
-              child: Text(
-                'An Error Occurred:\n$message',
-                textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.destructiveRedDark),
-              ),
+            error: (_) => _buildEmptyState(
+              context,
+              'Unable to complete the approval request.',
             ),
             loaded: (data) {
               if (data.isEmpty) {
@@ -75,13 +145,26 @@ class ApprovalTableWidget extends StatelessWidget {
     );
   }
 
+  Widget _buildEmptyState(BuildContext context, String message) {
+    return Center(
+      child: Text(
+        message,
+        style: TextStyle(
+          color: Theme.of(context).extension<ThemeColors>()?.unselectedLabel,
+        ),
+      ),
+    );
+  }
+
   Widget _buildTable(BuildContext context, List<ApprovalScreenModel> dataList) {
     String normalizeStatus(String status) {
       if (status == '1' || status.toLowerCase() == 'pending') return 'Pending';
       if (status == '2' || status.toLowerCase() == 'approved') {
         return 'Approved';
       }
-      if (status == '0' || status == '3' || status.toLowerCase() == 'rejected') {
+      if (status == '0' ||
+          status == '3' ||
+          status.toLowerCase() == 'rejected') {
         return 'Rejected';
       }
       return status;
@@ -123,6 +206,9 @@ class ApprovalTableWidget extends StatelessWidget {
                   ApprovalScreenEvent.rejectItem(selectedRowData),
                 );
               },
+              loadLinkedAccounts: context
+                  .read<ApprovalScreenBloc>()
+                  .getLinkedAccountsDetail,
             ),
           );
         },

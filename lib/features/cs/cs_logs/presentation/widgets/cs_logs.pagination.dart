@@ -5,19 +5,14 @@ import '../../../../../core/theme/theme.dart'; // Wajib ada untuk memanggil Them
 import '../bloc/cs_logs_bloc.dart';
 import '../bloc/cs_logs_event.dart';
 
-class CsLogsPaginationWidget extends StatefulWidget {
+class CsLogsPaginationWidget extends StatelessWidget {
   const CsLogsPaginationWidget({super.key});
 
-  @override
-  State<CsLogsPaginationWidget> createState() => _CsLogsPaginationWidgetState();
-}
-
-class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
-  final List<int> _perPageOptions = [10, 20, 30, 50];
+  static const List<int> _perPageOptions = [10, 20, 30, 50];
 
   @override
   Widget build(BuildContext context) {
-    final bloc = context.watch<CsLogsBloc>();
+    final state = context.watch<CsLogsBloc>().state;
 
     // Variabel warna dinamis
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -51,7 +46,7 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
                 ),
                 child: DropdownButtonHideUnderline(
                   child: DropdownButton<int>(
-                    value: bloc.perPage,
+                    value: state.pageSize,
                     dropdownColor: containerColor,
                     icon: Icon(Icons.arrow_drop_down, color: textColor),
                     style: TextStyle(
@@ -67,11 +62,9 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
                     }).toList(),
                     onChanged: (newValue) {
                       if (newValue != null) {
-                        setState(() {
-                          bloc.perPage = newValue;
-                          bloc.currentPage = 1;
-                        });
-                        bloc.add(const FetchCsLogsEvent());
+                        context.read<CsLogsBloc>().add(
+                          ChangeCsLogsPageSize(newValue),
+                        );
                       }
                     },
                   ),
@@ -79,7 +72,7 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
               ),
               const SizedBox(width: 12),
               Text(
-                "Data entries",
+                '${state.logs.length} entries',
                 style: TextStyle(color: subTextColor, fontSize: 13),
               ),
             ],
@@ -87,20 +80,22 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
           Row(
             children: [
               _buildNavButton(
+                context: context,
                 icon: Icons.first_page_rounded,
-                isEnabled: bloc.currentPage > 1,
+                isEnabled: state.canGoPrevious,
                 onTap: () {
-                  setState(() => bloc.currentPage = 1);
-                  bloc.add(const FetchCsLogsEvent());
+                  context.read<CsLogsBloc>().add(const ChangeCsLogsPage(1));
                 },
               ),
               const SizedBox(width: 4),
               _buildNavButton(
+                context: context,
                 icon: Icons.keyboard_arrow_left_rounded,
-                isEnabled: bloc.currentPage > 1,
+                isEnabled: state.canGoPrevious,
                 onTap: () {
-                  setState(() => bloc.currentPage--);
-                  bloc.add(const FetchCsLogsEvent());
+                  context.read<CsLogsBloc>().add(
+                    ChangeCsLogsPage(state.page - 1),
+                  );
                 },
               ),
               const SizedBox(width: 8),
@@ -114,7 +109,7 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
-                  "${bloc.currentPage}",
+                  '${state.page}',
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 13,
@@ -124,11 +119,13 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
               ),
               const SizedBox(width: 8),
               _buildNavButton(
+                context: context,
                 icon: Icons.keyboard_arrow_right_rounded,
-                isEnabled: true,
+                isEnabled: state.canGoNext,
                 onTap: () {
-                  setState(() => bloc.currentPage++);
-                  bloc.add(const FetchCsLogsEvent());
+                  context.read<CsLogsBloc>().add(
+                    ChangeCsLogsPage(state.page + 1),
+                  );
                 },
               ),
             ],
@@ -139,6 +136,7 @@ class _CsLogsPaginationWidgetState extends State<CsLogsPaginationWidget> {
   }
 
   Widget _buildNavButton({
+    required BuildContext context,
     required IconData icon,
     required bool isEnabled,
     required VoidCallback onTap,

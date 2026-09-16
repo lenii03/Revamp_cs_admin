@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../../../core/theme/src/app_colors.dart';
 import '../../../../core/theme/theme.dart';
 import '../../../../injector.dart';
-import '../../../online/online_id/data/repositories/online_id_repository.dart';
+import '../../../online/online_id/domain/repositories/online_id_repository.dart';
 import '../../../online/online_id/presentation/widgets/add_edit_online_id_dialog.dart';
-import '../../data/models/incomplete_credential_item.dart';
+import '../../domain/entities/incomplete_credential.dart';
 
 class IncompleteCredentialsDialog extends StatefulWidget {
   const IncompleteCredentialsDialog({
@@ -14,7 +14,7 @@ class IncompleteCredentialsDialog extends StatefulWidget {
     required this.onUpdated,
   });
 
-  final List<IncompleteCredentialItem> users;
+  final List<IncompleteCredential> users;
   final VoidCallback onUpdated;
 
   @override
@@ -34,7 +34,7 @@ class _IncompleteCredentialsDialogState
     super.dispose();
   }
 
-  List<IncompleteCredentialItem> get _filteredUsers {
+  List<IncompleteCredential> get _filteredUsers {
     final query = _query.trim().toLowerCase();
     if (query.isEmpty) return widget.users;
     return widget.users.where((user) {
@@ -47,7 +47,7 @@ class _IncompleteCredentialsDialogState
     }).toList();
   }
 
-  void _openEditDialog(IncompleteCredentialItem user) {
+  void _openEditDialog(IncompleteCredential user) {
     showDialog<void>(
       context: context,
       builder: (_) => AddEditOnlineIdDialog(
@@ -71,7 +71,7 @@ class _IncompleteCredentialsDialogState
   }
 
   Future<void> _saveUser(
-    IncompleteCredentialItem user,
+    IncompleteCredential user,
     Map<String, dynamic> payload,
   ) async {
     if (_savingLoginId != null) return;
@@ -169,10 +169,7 @@ class _IncompleteCredentialsDialogState
                         const SizedBox(height: 3),
                         Text(
                           '${widget.users.length} users require credential updates',
-                          style: TextStyle(
-                            color: secondaryColor,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: secondaryColor, fontSize: 12),
                         ),
                       ],
                     ),
@@ -262,7 +259,7 @@ class _CredentialUserRow extends StatelessWidget {
     required this.onEdit,
   });
 
-  final IncompleteCredentialItem user;
+  final IncompleteCredential user;
   final Color separatorColor;
   final Color? secondaryColor;
   final bool saving;

@@ -56,11 +56,12 @@ extension OnlineIdEventPatterns on OnlineIdEvent {
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchOnlineIds value)?  fetchOnlineIds,TResult Function( _AddOnlineId value)?  addOnlineId,TResult Function( _EditOnlineId value)?  editOnlineId,TResult Function( _DeleteOnlineId value)?  deleteOnlineId,TResult Function( _ResetOnlineId value)?  resetOnlineId,TResult Function( _SelectOnlineId value)?  selectOnlineId,TResult Function( _SearchOnlineIds value)?  searchOnlineIds,required TResult orElse(),}){
+@optionalTypeArgs TResult maybeMap<TResult extends Object?>({TResult Function( _FetchOnlineIds value)?  fetchOnlineIds,TResult Function( _LoadMoreOnlineIds value)?  loadMoreOnlineIds,TResult Function( _AddOnlineId value)?  addOnlineId,TResult Function( _EditOnlineId value)?  editOnlineId,TResult Function( _DeleteOnlineId value)?  deleteOnlineId,TResult Function( _ResetOnlineId value)?  resetOnlineId,TResult Function( _SelectOnlineId value)?  selectOnlineId,TResult Function( _SearchOnlineIds value)?  searchOnlineIds,required TResult orElse(),}){
 final _that = this;
 switch (_that) {
 case _FetchOnlineIds() when fetchOnlineIds != null:
-return fetchOnlineIds(_that);case _AddOnlineId() when addOnlineId != null:
+return fetchOnlineIds(_that);case _LoadMoreOnlineIds() when loadMoreOnlineIds != null:
+return loadMoreOnlineIds(_that);case _AddOnlineId() when addOnlineId != null:
 return addOnlineId(_that);case _EditOnlineId() when editOnlineId != null:
 return editOnlineId(_that);case _DeleteOnlineId() when deleteOnlineId != null:
 return deleteOnlineId(_that);case _ResetOnlineId() when resetOnlineId != null:
@@ -84,11 +85,12 @@ return searchOnlineIds(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchOnlineIds value)  fetchOnlineIds,required TResult Function( _AddOnlineId value)  addOnlineId,required TResult Function( _EditOnlineId value)  editOnlineId,required TResult Function( _DeleteOnlineId value)  deleteOnlineId,required TResult Function( _ResetOnlineId value)  resetOnlineId,required TResult Function( _SelectOnlineId value)  selectOnlineId,required TResult Function( _SearchOnlineIds value)  searchOnlineIds,}){
+@optionalTypeArgs TResult map<TResult extends Object?>({required TResult Function( _FetchOnlineIds value)  fetchOnlineIds,required TResult Function( _LoadMoreOnlineIds value)  loadMoreOnlineIds,required TResult Function( _AddOnlineId value)  addOnlineId,required TResult Function( _EditOnlineId value)  editOnlineId,required TResult Function( _DeleteOnlineId value)  deleteOnlineId,required TResult Function( _ResetOnlineId value)  resetOnlineId,required TResult Function( _SelectOnlineId value)  selectOnlineId,required TResult Function( _SearchOnlineIds value)  searchOnlineIds,}){
 final _that = this;
 switch (_that) {
 case _FetchOnlineIds():
-return fetchOnlineIds(_that);case _AddOnlineId():
+return fetchOnlineIds(_that);case _LoadMoreOnlineIds():
+return loadMoreOnlineIds(_that);case _AddOnlineId():
 return addOnlineId(_that);case _EditOnlineId():
 return editOnlineId(_that);case _DeleteOnlineId():
 return deleteOnlineId(_that);case _ResetOnlineId():
@@ -111,11 +113,12 @@ return searchOnlineIds(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchOnlineIds value)?  fetchOnlineIds,TResult? Function( _AddOnlineId value)?  addOnlineId,TResult? Function( _EditOnlineId value)?  editOnlineId,TResult? Function( _DeleteOnlineId value)?  deleteOnlineId,TResult? Function( _ResetOnlineId value)?  resetOnlineId,TResult? Function( _SelectOnlineId value)?  selectOnlineId,TResult? Function( _SearchOnlineIds value)?  searchOnlineIds,}){
+@optionalTypeArgs TResult? mapOrNull<TResult extends Object?>({TResult? Function( _FetchOnlineIds value)?  fetchOnlineIds,TResult? Function( _LoadMoreOnlineIds value)?  loadMoreOnlineIds,TResult? Function( _AddOnlineId value)?  addOnlineId,TResult? Function( _EditOnlineId value)?  editOnlineId,TResult? Function( _DeleteOnlineId value)?  deleteOnlineId,TResult? Function( _ResetOnlineId value)?  resetOnlineId,TResult? Function( _SelectOnlineId value)?  selectOnlineId,TResult? Function( _SearchOnlineIds value)?  searchOnlineIds,}){
 final _that = this;
 switch (_that) {
 case _FetchOnlineIds() when fetchOnlineIds != null:
-return fetchOnlineIds(_that);case _AddOnlineId() when addOnlineId != null:
+return fetchOnlineIds(_that);case _LoadMoreOnlineIds() when loadMoreOnlineIds != null:
+return loadMoreOnlineIds(_that);case _AddOnlineId() when addOnlineId != null:
 return addOnlineId(_that);case _EditOnlineId() when editOnlineId != null:
 return editOnlineId(_that);case _DeleteOnlineId() when deleteOnlineId != null:
 return deleteOnlineId(_that);case _ResetOnlineId() when resetOnlineId != null:
@@ -138,10 +141,11 @@ return searchOnlineIds(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchOnlineIds,TResult Function( Map<String, dynamic> data)?  addOnlineId,TResult Function( Map<String, dynamic> data)?  editOnlineId,TResult Function( String loginId)?  deleteOnlineId,TResult Function( String loginId,  String resetType)?  resetOnlineId,TResult Function( OnlineIdModel selectedUser)?  selectOnlineId,TResult Function( String query)?  searchOnlineIds,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  fetchOnlineIds,TResult Function()?  loadMoreOnlineIds,TResult Function( Map<String, dynamic> data)?  addOnlineId,TResult Function( Map<String, dynamic> data)?  editOnlineId,TResult Function( String loginId)?  deleteOnlineId,TResult Function( String loginId,  String resetType)?  resetOnlineId,TResult Function( OnlineIdModel selectedUser)?  selectOnlineId,TResult Function( String query)?  searchOnlineIds,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _FetchOnlineIds() when fetchOnlineIds != null:
-return fetchOnlineIds();case _AddOnlineId() when addOnlineId != null:
+return fetchOnlineIds();case _LoadMoreOnlineIds() when loadMoreOnlineIds != null:
+return loadMoreOnlineIds();case _AddOnlineId() when addOnlineId != null:
 return addOnlineId(_that.data);case _EditOnlineId() when editOnlineId != null:
 return editOnlineId(_that.data);case _DeleteOnlineId() when deleteOnlineId != null:
 return deleteOnlineId(_that.loginId);case _ResetOnlineId() when resetOnlineId != null:
@@ -165,10 +169,11 @@ return searchOnlineIds(_that.query);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchOnlineIds,required TResult Function( Map<String, dynamic> data)  addOnlineId,required TResult Function( Map<String, dynamic> data)  editOnlineId,required TResult Function( String loginId)  deleteOnlineId,required TResult Function( String loginId,  String resetType)  resetOnlineId,required TResult Function( OnlineIdModel selectedUser)  selectOnlineId,required TResult Function( String query)  searchOnlineIds,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  fetchOnlineIds,required TResult Function()  loadMoreOnlineIds,required TResult Function( Map<String, dynamic> data)  addOnlineId,required TResult Function( Map<String, dynamic> data)  editOnlineId,required TResult Function( String loginId)  deleteOnlineId,required TResult Function( String loginId,  String resetType)  resetOnlineId,required TResult Function( OnlineIdModel selectedUser)  selectOnlineId,required TResult Function( String query)  searchOnlineIds,}) {final _that = this;
 switch (_that) {
 case _FetchOnlineIds():
-return fetchOnlineIds();case _AddOnlineId():
+return fetchOnlineIds();case _LoadMoreOnlineIds():
+return loadMoreOnlineIds();case _AddOnlineId():
 return addOnlineId(_that.data);case _EditOnlineId():
 return editOnlineId(_that.data);case _DeleteOnlineId():
 return deleteOnlineId(_that.loginId);case _ResetOnlineId():
@@ -191,10 +196,11 @@ return searchOnlineIds(_that.query);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchOnlineIds,TResult? Function( Map<String, dynamic> data)?  addOnlineId,TResult? Function( Map<String, dynamic> data)?  editOnlineId,TResult? Function( String loginId)?  deleteOnlineId,TResult? Function( String loginId,  String resetType)?  resetOnlineId,TResult? Function( OnlineIdModel selectedUser)?  selectOnlineId,TResult? Function( String query)?  searchOnlineIds,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  fetchOnlineIds,TResult? Function()?  loadMoreOnlineIds,TResult? Function( Map<String, dynamic> data)?  addOnlineId,TResult? Function( Map<String, dynamic> data)?  editOnlineId,TResult? Function( String loginId)?  deleteOnlineId,TResult? Function( String loginId,  String resetType)?  resetOnlineId,TResult? Function( OnlineIdModel selectedUser)?  selectOnlineId,TResult? Function( String query)?  searchOnlineIds,}) {final _that = this;
 switch (_that) {
 case _FetchOnlineIds() when fetchOnlineIds != null:
-return fetchOnlineIds();case _AddOnlineId() when addOnlineId != null:
+return fetchOnlineIds();case _LoadMoreOnlineIds() when loadMoreOnlineIds != null:
+return loadMoreOnlineIds();case _AddOnlineId() when addOnlineId != null:
 return addOnlineId(_that.data);case _EditOnlineId() when editOnlineId != null:
 return editOnlineId(_that.data);case _DeleteOnlineId() when deleteOnlineId != null:
 return deleteOnlineId(_that.loginId);case _ResetOnlineId() when resetOnlineId != null:
@@ -213,7 +219,7 @@ return searchOnlineIds(_that.query);case _:
 
 class _FetchOnlineIds implements OnlineIdEvent {
   const _FetchOnlineIds();
-  
+
 
 
 
@@ -243,9 +249,41 @@ String toString() {
 /// @nodoc
 
 
+class _LoadMoreOnlineIds implements OnlineIdEvent {
+  const _LoadMoreOnlineIds();
+
+
+
+
+
+
+
+@override
+bool operator ==(Object other) {
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _LoadMoreOnlineIds);
+}
+
+
+@override
+int get hashCode => runtimeType.hashCode;
+
+@override
+String toString() {
+  return 'OnlineIdEvent.loadMoreOnlineIds()';
+}
+
+
+}
+
+
+
+
+/// @nodoc
+
+
 class _AddOnlineId implements OnlineIdEvent {
   const _AddOnlineId( Map<String, dynamic> data): _data = data;
-  
+
 
  final  Map<String, dynamic> _data;
  Map<String, dynamic> get data {
@@ -317,7 +355,7 @@ as Map<String, dynamic>,
 
 class _EditOnlineId implements OnlineIdEvent {
   const _EditOnlineId( Map<String, dynamic> data): _data = data;
-  
+
 
  final  Map<String, dynamic> _data;
  Map<String, dynamic> get data {
@@ -389,7 +427,7 @@ as Map<String, dynamic>,
 
 class _DeleteOnlineId implements OnlineIdEvent {
   const _DeleteOnlineId(this.loginId);
-  
+
 
  final  String loginId;
 
@@ -455,7 +493,7 @@ as String,
 
 class _ResetOnlineId implements OnlineIdEvent {
   const _ResetOnlineId({required this.loginId, required this.resetType});
-  
+
 
  final  String loginId;
  final  String resetType;
@@ -523,7 +561,7 @@ as String,
 
 class _SelectOnlineId implements OnlineIdEvent {
   const _SelectOnlineId(this.selectedUser);
-  
+
 
  final  OnlineIdModel selectedUser;
 
@@ -589,7 +627,7 @@ as OnlineIdModel,
 
 class _SearchOnlineIds implements OnlineIdEvent {
   const _SearchOnlineIds(this.query);
-  
+
 
  final  String query;
 

@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:trina_grid/trina_grid.dart';
 import '../../../../../core/theme/src/app_colors.dart';
 import '../../../../../shared/widgets/app_data_grid.dart';
-import '../../data/models/cs_log_model.dart';
+import '../../domain/entities/cs_log.dart';
 import '../bloc/cs_logs_bloc.dart';
 import '../bloc/cs_logs_state.dart';
 
@@ -28,18 +28,18 @@ class CsLogsTableWidget extends StatelessWidget {
       ),
       child: BlocBuilder<CsLogsBloc, CsLogsState>(
         builder: (context, state) {
-          if (state is CsLogsLoading || state is CsLogsInitial) {
+          if (state.isLoading && state.logs.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primaryDark),
             );
-          } else if (state is CsLogsError) {
+          } else if (state.hasError && state.logs.isEmpty) {
             return Center(
               child: Text(
-                state.message,
+                state.errorMessage,
                 style: const TextStyle(color: AppColors.destructiveRedDark),
               ),
             );
-          } else if (state is CsLogsLoaded) { 
+          } else {
             if (state.logs.isEmpty) {
               return const Center(
                 child: Text(
@@ -55,13 +55,12 @@ class CsLogsTableWidget extends StatelessWidget {
               },
             );
           }
-          return const SizedBox.shrink();
         },
       ),
     );
   }
 
-  Widget _buildLogTable(List<CsLogModel> logs, double maxWidth) {
+  Widget _buildLogTable(List<CsLog> logs, double maxWidth) {
     double wLoginId = maxWidth * 0.14;
     double wOnlineId = maxWidth * 0.14;
     double wLogTime = maxWidth * 0.18;

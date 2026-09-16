@@ -1,14 +1,14 @@
 import 'package:dartz/dartz.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/online_id_model.dart';
 import 'package:el_csadmin/features/online/online_id/data/models/account_link_model.dart';
-import 'package:el_csadmin/features/online/online_id/data/repositories/online_id_repository.dart';
-import 'package:el_csadmin/shared/features/api_datafeed/data/datasources/api_datafeed_network_data_source.dart';
+import 'package:el_csadmin/features/online/online_id/domain/repositories/online_id_repository.dart';
+import 'package:el_csadmin/features/online/online_id/data/datasources/online_id_remote_data_source.dart';
 
 class OnlineIdRepositoryImpl implements OnlineIdRepository {
-  final ApiDatafeedNetworkDataSource _networkDataSource;
+  final OnlineIdRemoteDataSource _remoteDataSource;
   List<AccountLinkModel>? _accountLinksCache;
 
-  OnlineIdRepositoryImpl(this._networkDataSource);
+  OnlineIdRepositoryImpl(this._remoteDataSource);
 
   @override
   Future<Either<String, List<OnlineIdModel>>> fetchOnlineIds({
@@ -17,7 +17,7 @@ class OnlineIdRepositoryImpl implements OnlineIdRepository {
     int? size,
   }) async {
     try {
-      final result = await _networkDataSource.fetchOnlineIds(
+      final result = await _remoteDataSource.fetchOnlineIds(
         search: search,
         page: page,
         size: size,
@@ -33,7 +33,7 @@ class OnlineIdRepositoryImpl implements OnlineIdRepository {
     Map<String, dynamic> payload,
   ) async {
     try {
-      final result = await _networkDataSource.postAddOnlineUser(payload);
+      final result = await _remoteDataSource.saveOnlineId(payload);
       return Right(result);
     } catch (e) {
       return Left(e.toString());
@@ -46,7 +46,7 @@ class OnlineIdRepositoryImpl implements OnlineIdRepository {
       final cached = _accountLinksCache;
       if (cached != null) return Right(List.unmodifiable(cached));
 
-      final data = await _networkDataSource.fetchAccountLinks();
+      final data = await _remoteDataSource.fetchAccountLinks();
       _accountLinksCache = List.of(data);
       return Right(List.unmodifiable(data));
     } catch (e) {
@@ -59,7 +59,7 @@ class OnlineIdRepositoryImpl implements OnlineIdRepository {
     String loginId,
   ) async {
     try {
-      return Right(await _networkDataSource.fetchLinkedAccounts(loginId));
+      return Right(await _remoteDataSource.fetchLinkedAccounts(loginId));
     } catch (e) {
       return Left(e.toString().replaceFirst('Exception: ', ''));
     }
@@ -71,7 +71,7 @@ class OnlineIdRepositoryImpl implements OnlineIdRepository {
   ) async {
     try {
       payload['ActionType'] = 3;
-      final result = await _networkDataSource.postAddOnlineUser(payload);
+      final result = await _remoteDataSource.saveOnlineId(payload);
       return Right(result);
     } catch (e) {
       return Left(e.toString());
@@ -83,7 +83,7 @@ class OnlineIdRepositoryImpl implements OnlineIdRepository {
     Map<String, dynamic> payload,
   ) async {
     try {
-      final result = await _networkDataSource.resetOnlinePasswordOrPin(payload);
+      final result = await _remoteDataSource.resetPasswordOrPin(payload);
       return Right(result);
     } catch (e) {
       return Left(e.toString());

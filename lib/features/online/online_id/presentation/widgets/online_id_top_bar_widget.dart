@@ -1,5 +1,7 @@
 import 'dart:async'; // 👈 Tambahan import untuk Timer debouncer
 import 'package:el_csadmin/core/theme/theme.dart';
+import 'package:el_csadmin/features/online/online_id/domain/repositories/online_id_repository.dart';
+import 'package:el_csadmin/injector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -80,7 +82,7 @@ class _OnlineIdTopBarWidgetState extends State<OnlineIdTopBarWidget> {
           onPressed: () => showDialog<void>(
             context: context,
             builder: (_) => OnlineIdPrintDialog(
-              repository: context.read<OnlineIdBloc>().repository,
+              repository: locator<OnlineIdRepository>(),
             ),
           ),
           icon: Icon(Icons.print, color: iconColor),

@@ -129,12 +129,12 @@ return error(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<OnlineIdModel> data,  OnlineIdModel? selectedUser)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>({TResult Function()?  initial,TResult Function()?  loading,TResult Function( List<OnlineIdModel> data,  OnlineIdModel? selectedUser,  bool isLoadingMore,  bool hasReachedEnd)?  loaded,TResult Function( String message)?  error,required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.data,_that.selectedUser);case _Error() when error != null:
+return loaded(_that.data,_that.selectedUser,_that.isLoadingMore,_that.hasReachedEnd);case _Error() when error != null:
 return error(_that.message);case _:
   return orElse();
 
@@ -153,12 +153,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<OnlineIdModel> data,  OnlineIdModel? selectedUser)  loaded,required TResult Function( String message)  error,}) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>({required TResult Function()  initial,required TResult Function()  loading,required TResult Function( List<OnlineIdModel> data,  OnlineIdModel? selectedUser,  bool isLoadingMore,  bool hasReachedEnd)  loaded,required TResult Function( String message)  error,}) {final _that = this;
 switch (_that) {
 case _Initial():
 return initial();case _Loading():
 return loading();case _Loaded():
-return loaded(_that.data,_that.selectedUser);case _Error():
+return loaded(_that.data,_that.selectedUser,_that.isLoadingMore,_that.hasReachedEnd);case _Error():
 return error(_that.message);case _:
   throw StateError('Unexpected subclass');
 
@@ -176,12 +176,12 @@ return error(_that.message);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<OnlineIdModel> data,  OnlineIdModel? selectedUser)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>({TResult? Function()?  initial,TResult? Function()?  loading,TResult? Function( List<OnlineIdModel> data,  OnlineIdModel? selectedUser,  bool isLoadingMore,  bool hasReachedEnd)?  loaded,TResult? Function( String message)?  error,}) {final _that = this;
 switch (_that) {
 case _Initial() when initial != null:
 return initial();case _Loading() when loading != null:
 return loading();case _Loaded() when loaded != null:
-return loaded(_that.data,_that.selectedUser);case _Error() when error != null:
+return loaded(_that.data,_that.selectedUser,_that.isLoadingMore,_that.hasReachedEnd);case _Error() when error != null:
 return error(_that.message);case _:
   return null;
 
@@ -258,7 +258,7 @@ String toString() {
 
 
 class _Loaded implements OnlineIdState {
-  const _Loaded({required  List<OnlineIdModel> data, this.selectedUser}): _data = data;
+  const _Loaded({required  List<OnlineIdModel> data, this.selectedUser, this.isLoadingMore = false, this.hasReachedEnd = false}): _data = data;
   
 
  final  List<OnlineIdModel> _data;
@@ -269,6 +269,8 @@ class _Loaded implements OnlineIdState {
 }
 
  final  OnlineIdModel? selectedUser;
+@JsonKey() final  bool isLoadingMore;
+@JsonKey() final  bool hasReachedEnd;
 
 /// Create a copy of OnlineIdState
 /// with the given fields replaced by the non-null parameter values.
@@ -280,16 +282,16 @@ _$LoadedCopyWith<_Loaded> get copyWith => __$LoadedCopyWithImpl<_Loaded>(this, _
 
 @override
 bool operator ==(Object other) {
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._data, _data)&&(identical(other.selectedUser, selectedUser) || other.selectedUser == selectedUser));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is _Loaded&&const DeepCollectionEquality().equals(other._data, _data)&&(identical(other.selectedUser, selectedUser) || other.selectedUser == selectedUser)&&(identical(other.isLoadingMore, isLoadingMore) || other.isLoadingMore == isLoadingMore)&&(identical(other.hasReachedEnd, hasReachedEnd) || other.hasReachedEnd == hasReachedEnd));
 }
 
 
 @override
-int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_data),selectedUser);
+int get hashCode => Object.hash(runtimeType,const DeepCollectionEquality().hash(_data),selectedUser,isLoadingMore,hasReachedEnd);
 
 @override
 String toString() {
-  return 'OnlineIdState.loaded(data: $data, selectedUser: $selectedUser)';
+  return 'OnlineIdState.loaded(data: $data, selectedUser: $selectedUser, isLoadingMore: $isLoadingMore, hasReachedEnd: $hasReachedEnd)';
 }
 
 
@@ -300,7 +302,7 @@ abstract mixin class _$LoadedCopyWith<$Res> implements $OnlineIdStateCopyWith<$R
   factory _$LoadedCopyWith(_Loaded value, $Res Function(_Loaded) _then) = __$LoadedCopyWithImpl;
 @useResult
 $Res call({
- List<OnlineIdModel> data, OnlineIdModel? selectedUser
+ List<OnlineIdModel> data, OnlineIdModel? selectedUser, bool isLoadingMore, bool hasReachedEnd
 });
 
 
@@ -317,11 +319,13 @@ class __$LoadedCopyWithImpl<$Res>
 
 /// Create a copy of OnlineIdState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') $Res call({Object? data = null,Object? selectedUser = freezed,}) {
+@pragma('vm:prefer-inline') $Res call({Object? data = null,Object? selectedUser = freezed,Object? isLoadingMore = null,Object? hasReachedEnd = null,}) {
   return _then(_Loaded(
 data: null == data ? _self._data : data // ignore: cast_nullable_to_non_nullable
 as List<OnlineIdModel>,selectedUser: freezed == selectedUser ? _self.selectedUser : selectedUser // ignore: cast_nullable_to_non_nullable
-as OnlineIdModel?,
+as OnlineIdModel?,isLoadingMore: null == isLoadingMore ? _self.isLoadingMore : isLoadingMore // ignore: cast_nullable_to_non_nullable
+as bool,hasReachedEnd: null == hasReachedEnd ? _self.hasReachedEnd : hasReachedEnd // ignore: cast_nullable_to_non_nullable
+as bool,
   ));
 }
 

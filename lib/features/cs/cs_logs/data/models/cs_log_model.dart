@@ -1,3 +1,5 @@
+import '../../domain/entities/cs_log.dart';
+
 class CsLogModel {
   final String csLoginId;
   final String onlineLoginId;
@@ -69,4 +71,13 @@ class CsLogModel {
       descriptions: descVal,
     );
   }
+
+  CsLog toEntity() => CsLog(
+    csLoginId: csLoginId,
+    onlineLoginId: onlineLoginId,
+    logTime: logTime,
+    approvalId: approvalId,
+    logType: logType,
+    descriptions: descriptions,
+  );
 }
