@@ -64,16 +64,14 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    // 👇 Menangkap status tema saat ini (Dark atau Light)
+  Widget build(BuildContext context) { 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textColor = isDark ? Colors.white : AppColors.black;
     final dialogBgColor = isDark
         ? AppColors.systemBackgroundDark
         : AppColors.white;
 
-    return Dialog(
-      // 👇 Gunakan warna dinamis
+    return Dialog( 
       backgroundColor: dialogBgColor,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Container(
@@ -81,8 +79,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
         padding: const EdgeInsets.all(24),
         child: Column(
           mainAxisSize: MainAxisSize.min,
-          children: [
-            // --- HEADER ---
+          children: [ 
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -92,7 +89,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
-                    color: textColor, // 👇 Teks dinamis
+                    color: textColor,  
                   ),
                 ),
                 IconButton(
@@ -185,8 +182,6 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                         textColor,
                       ),
                       const SizedBox(height: 16),
-
-                      // --- PERMISSIONS GRID ---
                       _buildFormRow(
                         "Permissions",
                         Wrap(
@@ -238,7 +233,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                 OutlinedButton(
                   onPressed: () => Navigator.of(context).pop(),
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: textColor, // 👇 Teks tombol dinamis
+                    foregroundColor: textColor,  
                     side: const BorderSide(color: Colors.grey),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -294,7 +289,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
                     "Save",
                     style: TextStyle(
                       color: Colors.white,
-                    ), // Save button tetap putih (karena background cyan)
+                    ),  
                   ),
                 ),
               ],
@@ -316,7 +311,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
             child: Text(
               label,
               style: TextStyle(
-                color: textColor, // 👇 Dinamis
+                color: textColor,  
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
               ),
@@ -351,7 +346,7 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
         Expanded(
           child: Text(
             label,
-            style: TextStyle(color: textColor, fontSize: 12), // 👇 Dinamis
+            style: TextStyle(color: textColor, fontSize: 12),  
           ),
         ),
       ],
@@ -381,25 +376,25 @@ class _AddCsUserDialogState extends State<AddCsUserDialog> {
       inputFormatters: inputFormatters,
       keyboardType: keyboardType,
       autovalidateMode: AutovalidateMode.onUserInteraction,
-      style: TextStyle(color: textColor, fontSize: 13), // 👇 Dinamis
+      style: TextStyle(color: textColor, fontSize: 13),  
       decoration: InputDecoration(
         isDense: true,
         hintText: hint,
         hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
         counterText: '',
         filled: true,
-        fillColor: fillColor, // 👇 Dinamis
+        fillColor: fillColor,  
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 12,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: borderColor), // 👇 Dinamis
+          borderSide: BorderSide(color: borderColor),  
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
-          borderSide: BorderSide(color: borderColor), // 👇 Dinamis
+          borderSide: BorderSide(color: borderColor),  
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),

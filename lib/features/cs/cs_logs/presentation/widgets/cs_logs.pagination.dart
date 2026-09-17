@@ -105,7 +105,7 @@ class CsLogsPaginationWidget extends StatelessWidget {
                   vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.primaryColor, // Warna cyan
+                  color: AppColors.primaryColor,  
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(

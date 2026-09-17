@@ -15,7 +15,6 @@ class ApprovalTableWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Siapkan warna dinamis
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final containerColor = Theme.of(
       context,
@@ -173,8 +172,6 @@ class ApprovalTableWidget extends StatelessWidget {
     Widget actionRenderer(TrinaColumnRendererContext renderContext) {
       final action = renderContext.cell.value.toString();
       final isDark = Theme.of(context).brightness == Brightness.dark;
-
-      // Penyesuaian warna teks Action agar terbaca di Light Mode
       Color textColor = AppColors.textColorDark;
       if (action.toLowerCase() == 'add') {
         textColor = isDark ? Colors.greenAccent : const Color(0xFF4CAF50);

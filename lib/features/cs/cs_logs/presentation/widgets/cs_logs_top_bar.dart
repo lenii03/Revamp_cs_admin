@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
-import '../../../../../core/theme/theme.dart'; // Wajib ada untuk memanggil ThemeColors
+import '../../../../../core/theme/theme.dart';  
 import '../bloc/cs_logs_bloc.dart';
 import '../bloc/cs_logs_event.dart';
 
@@ -46,7 +46,6 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
 
   @override
   Widget build(BuildContext context) {
-    // Variabel warna dinamis
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final containerColor = Theme.of(
       context,
@@ -60,8 +59,7 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
     ).extension<ThemeColors>()?.unselectedLabel;
 
     return Row(
-      children: [
-        // 1. Kotak Pencarian CS Login ID
+      children: [ 
         Expanded(
           flex: 2,
           child: Container(
@@ -89,9 +87,7 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
             ),
           ),
         ),
-        const SizedBox(width: 16),
-
-        // 2. Kotak Pencarian Target ID
+        const SizedBox(width: 16), 
         Expanded(
           flex: 2,
           child: Container(
@@ -119,8 +115,6 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
           ),
         ),
         const SizedBox(width: 16),
-
-        // 3. Dropdown Option
         Expanded(
           flex: 2,
           child: Container(
@@ -153,8 +147,6 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
           ),
         ),
         const SizedBox(width: 16),
-
-        // 4. Tombol Search
         ElevatedButton(
           onPressed: () {
             int selectedIndex = _logTypeOptions.indexOf(_selectedOption);
@@ -170,7 +162,7 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
             );
           },
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryColor, // Warna cyan
+            backgroundColor: AppColors.primaryColor, 
             padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(8),
@@ -180,7 +172,7 @@ class _CsLogsTopBarState extends State<CsLogsTopBar> {
             "Search",
             style: TextStyle(
               fontWeight: FontWeight.bold,
-              color: Colors.white, // Teks putih
+              color: Colors.white,  
             ),
           ),
         ),

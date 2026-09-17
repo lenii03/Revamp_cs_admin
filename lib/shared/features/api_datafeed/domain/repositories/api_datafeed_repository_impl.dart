@@ -94,9 +94,9 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   ) async {
     try {
       await _networkDataSource.addCsUser(requestData);
-      return const Right(null); // Sukses
+      return const Right(null); 
     } catch (e) {
-      return Left(e.toString()); // Gagal
+      return Left(e.toString()); 
     }
   }
 
@@ -105,7 +105,7 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
     try {
       await _networkDataSource.deleteCsUser(
         loginId,
-      ); // Sesuaikan nama method di DataSource
+      ); 
       return const Right(null);
     } catch (e) {
       return Left(e.toString());
@@ -119,7 +119,7 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
     try {
       await _networkDataSource.editCsUser(
         requestData,
-      ); // Sesuaikan nama method di DataSource
+      ); 
       return const Right(null);
     } catch (e) {
       return Left(e.toString());

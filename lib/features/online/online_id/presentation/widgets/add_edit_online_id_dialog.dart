@@ -353,7 +353,6 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                         return 'Phone number is too long';
                       }
 
-                      // Wajib diawali 08
                       final regex = RegExp(r'^08\d{8,13}$');
                       if (!regex.hasMatch(digitsOnly)) {
                         return 'Must start with 08 and be a valid number';

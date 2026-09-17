@@ -228,9 +228,6 @@ class OnlineIdBloc extends Bloc<OnlineIdEvent, OnlineIdState> {
         );
         return;
       }
-
-      // Catat request lebih dahulu. Backend reset dapat mengirim email tetapi
-      // responsnya terlambat/timeout; request tetap harus terlihat di antrean.
       final now = DateTime.now();
       final requestId = '${now.microsecondsSinceEpoch}-$loginId-$actionType';
       await queueRepository.enqueue(

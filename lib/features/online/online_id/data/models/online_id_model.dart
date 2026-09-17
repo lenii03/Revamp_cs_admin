@@ -56,12 +56,9 @@ class OnlineIdModel {
   });
 
   factory OnlineIdModel.fromMap(Map<String, dynamic> map) {
-    // Ubah semua key API menjadi huruf kecil agar mudah dicari
     final lowerMap = map.map(
       (key, value) => MapEntry(key.toLowerCase(), value),
     );
-
-    // 💡 Helper untuk mengatasi data null ATAU string kosong ("")
     String parseString(String key, String fallback) {
       final value = lowerMap[key]?.toString();
       if (value == null || value.trim().isEmpty) {
@@ -71,7 +68,6 @@ class OnlineIdModel {
     }
 
     return OnlineIdModel(
-      // Menggunakan helper agar string "" otomatis berubah jadi "Never Expired"
       accountExpired: parseString('accountexpired', 'Never Expired'),
       approvedBy: parseString('approvedby', '-'),
       emailApprovedAt: parseString('emailapprovedat', '-'),
@@ -79,8 +75,6 @@ class OnlineIdModel {
       created: parseString('created', '-'),
       createdBy: parseString('createdby', '-'),
       email: parseString('email', '-'),
-
-      // 👈 INI KUNCI UTAMANYA: Mengambil data dari 'phonenumber' sesuai JSON Server
       handphoneNo: parseString('phonenumber', '-'),
       handphone: parseString('handphone', '-'),
 

@@ -2,6 +2,7 @@ import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:el_csadmin/core/theme/theme_cubit.dart';
 import 'package:el_csadmin/core/network/server_config.dart';
 import 'package:el_csadmin/core/notifications/dashboard_notification_center.dart';
+import 'package:el_csadmin/core/window_manager/windows_manage_helper.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/data/repositories/login_repository.dart';
 import 'package:el_csadmin/features/authentication/presentation/pages/login_page.dart';
@@ -54,6 +55,12 @@ class _MainLayoutState extends State<MainLayout> {
     super.initState();
     _loadAppVersion();
     _loadServerUrl();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future<void>.delayed(const Duration(milliseconds: 250));
+      if (mounted) {
+        await WindowsManageHelper.setFullScreen();
+      }
+    });
   }
 
   Future<void> _loadAppVersion() async {
@@ -90,7 +97,6 @@ class _MainLayoutState extends State<MainLayout> {
         await locator<LoginRepository>().logOut({'LoginId': loginId});
       }
     } catch (_) {
-      // Logout lokal tetap harus berjalan walaupun server tidak dapat diakses.
     } finally {
       await sessionService.remove(SessionKey.token);
       await sessionService.remove(SessionKey.loginId);

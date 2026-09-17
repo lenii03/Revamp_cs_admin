@@ -107,7 +107,6 @@ class _ApprovalTopBarWidgetState extends State<ApprovalTopBarWidget> {
         ),
         const SizedBox(width: 16),
 
-        // 2. Dropdown Action
         Text('Action', style: TextStyle(color: hintColor, fontSize: 13)),
         const SizedBox(width: 8),
         Expanded(
@@ -126,8 +125,6 @@ class _ApprovalTopBarWidgetState extends State<ApprovalTopBarWidget> {
           ),
         ),
         const SizedBox(width: 16),
-
-        // 3. Dropdown Status
         Text('Status', style: TextStyle(color: hintColor, fontSize: 13)),
         const SizedBox(width: 8),
         Expanded(

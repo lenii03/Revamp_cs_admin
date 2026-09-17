@@ -232,7 +232,6 @@ class _AddOpeningAccountDialogState extends State<AddOpeningAccountDialog> {
 
   @override
   Widget build(BuildContext context) {
-    // 👇 Ambil tema dinamis
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final dialogBgColor = isDark
         ? AppColors.systemGroupedBackgroundDark

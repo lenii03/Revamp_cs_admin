@@ -24,6 +24,5 @@ abstract class CsLogsState with _$CsLogsState {
   bool get isLoading => status == CsLogsStatus.loading;
   bool get hasError => status == CsLogsStatus.failure;
   bool get canGoPrevious => page > 1;
-  // Kept enabled to match the previous pagination control behaviour.
   bool get canGoNext => true;
 }

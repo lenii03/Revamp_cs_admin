@@ -8,6 +8,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 
 import '../../../../core/network/server_config.dart';
 import '../../../../core/theme/src/app_colors.dart';
+import '../../../../core/window_manager/windows_manage_helper.dart';
 import '../../../../shared/widgets/custom_button.dart';
 import '../../../../shared/widgets/custom_text_field.dart';
 import '../../../../shared/widgets/app_drag_to_move_area.dart';
@@ -45,6 +46,9 @@ class _LoginPageState extends State<LoginPage> {
   void initState() {
     super.initState();
     _loadSavedConfig();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WindowsManageHelper.setLoginWindow();
+    });
   }
 
   Future<void> _loadSavedConfig() async {
@@ -160,7 +164,6 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header dengan Icon
                       Row(
                         children: [
                           Container(
@@ -192,7 +195,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 16),
 
-                      // Deskripsi
                       const Text(
                         'Enter your username. A new password will be sent to the email address registered to your account.',
                         style: TextStyle(
@@ -204,7 +206,6 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 32),
 
-                      // Label Form
                       const Text(
                         "USERNAME",
                         style: TextStyle(
@@ -272,8 +273,6 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                       const SizedBox(height: 32),
-
-                      // Aksi / Tombol
                       Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children: [

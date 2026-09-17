@@ -28,7 +28,6 @@ class ApproveOpeningAccountPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            // TODO: Tambahkan TopBar (Search Box) di sini nanti
             const Expanded(child: ApproveOpeningTableWidget()),
             const SizedBox(height: 24),
             const ApproveOpeningActionWidget(),

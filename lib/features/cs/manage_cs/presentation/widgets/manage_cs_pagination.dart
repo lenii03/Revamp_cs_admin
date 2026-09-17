@@ -90,7 +90,6 @@ class ManageCsPaginationWidget extends StatelessWidget {
                 },
               ),
               const SizedBox(width: 4),
-              // Tombol Previous (<)
               _buildNavButton(
                 context: context,
                 icon: Icons.keyboard_arrow_left_rounded,
@@ -102,7 +101,6 @@ class ManageCsPaginationWidget extends StatelessWidget {
                 },
               ),
               const SizedBox(width: 8),
-              // Nomor Halaman Aktif
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
@@ -122,7 +120,6 @@ class ManageCsPaginationWidget extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              // Tombol Next (>)
               _buildNavButton(
                 context: context,
                 icon: Icons.keyboard_arrow_right_rounded,
@@ -134,7 +131,6 @@ class ManageCsPaginationWidget extends StatelessWidget {
                 },
               ),
               const SizedBox(width: 4),
-              // Tombol Last Page (>|)
               _buildNavButton(
                 context: context,
                 icon: Icons.last_page_rounded,

@@ -71,8 +71,6 @@ abstract class ApiDatafeedNetworkDataSource {
 }
 
 class CsUserModel {}
-
-// 2. IMPLEMENTASI REAL API
 class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
   final DioClient _client;
   const ApiDatafeedNetworkDataSourceImpl(this._client);
@@ -211,7 +209,6 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
           .map((e) => LinkAccountInfoModel.fromMap(e))
           .toList();
     } catch (_) {
-      // The old-link endpoint is optional for an approval detail.
     }
     try {
       final responseNew = await _client.get(
@@ -223,9 +220,7 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       newLinks = rawNewLinks
           .map((e) => NewLinkAccountInfoModel.fromMap(e))
           .toList();
-      // ignore: empty_catches
     } catch (_) {
-      // The new-link endpoint is optional for an approval detail.
     }
 
     return {'old': oldLinks, 'new': newLinks};
@@ -515,8 +510,6 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     }
   }
 }
-
-// 3. IMPLEMENTASI MOCK
 class ApiDatafeedNetworkDataSourceMockImpl
     implements ApiDatafeedNetworkDataSource {
   const ApiDatafeedNetworkDataSourceMockImpl();

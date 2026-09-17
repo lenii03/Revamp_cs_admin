@@ -272,7 +272,6 @@ class SendEmailQueueRepository {
         if (existingIndex >= 0) {
           queue[existingIndex] = legacyJson;
         } else {
-          // Aplikasi lama menambahkan request baru ke bagian akhir.
           queue.add(legacyJson);
         }
 

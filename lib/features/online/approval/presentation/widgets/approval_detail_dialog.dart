@@ -7,8 +7,6 @@ import '../../../../../core/theme/src/app_colors.dart';
 
 class ApprovalDetailDialog extends StatelessWidget {
   final ApprovalScreenModel data;
-
-  // 👇 Tambahkan dua parameter callback ini
   final VoidCallback onApprove;
   final VoidCallback onReject;
   final Future<Map<String, dynamic>> Function(String loginId, String approvalId)
@@ -17,8 +15,8 @@ class ApprovalDetailDialog extends StatelessWidget {
   const ApprovalDetailDialog({
     super.key,
     required this.data,
-    required this.onApprove, // 👈 Wajib diisi saat dialog dipanggil
-    required this.onReject, // 👈 Wajib diisi saat dialog dipanggil
+    required this.onApprove, 
+    required this.onReject, 
     required this.loadLinkedAccounts,
   });
 
@@ -53,7 +51,6 @@ class ApprovalDetailDialog extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // HEADER
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -75,8 +72,6 @@ class ApprovalDetailDialog extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 24),
-
-              // DETAILS
               _buildInfoRow(
                 'Action',
                 _buildActionText(data.action, isDark),
@@ -135,8 +130,6 @@ class ApprovalDetailDialog extends StatelessWidget {
                 _buildStatusBadge(data.status),
                 textColor,
               ),
-
-              // PERMISSIONS
               _buildInfoRow(
                 'Permissions',
                 Column(
@@ -235,7 +228,6 @@ class ApprovalDetailDialog extends StatelessWidget {
 
                   return Column(
                     children: [
-                      // Accordion Linked Account (Lama)
                       Theme(
                         data: Theme.of(
                           context,
@@ -322,8 +314,6 @@ class ApprovalDetailDialog extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 12),
-
-                      // Accordion New Linked Account (Baru)
                       Theme(
                         data: Theme.of(
                           context,
@@ -423,8 +413,6 @@ class ApprovalDetailDialog extends StatelessWidget {
               ),
 
               const SizedBox(height: 32),
-
-              // BUTTONS
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -476,8 +464,6 @@ class ApprovalDetailDialog extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-
-                  // 👇 FUNGSI REJECT DIPANGGIL DI SINI
                   ElevatedButton(
                     onPressed: () async {
                       if (!_isPending) {

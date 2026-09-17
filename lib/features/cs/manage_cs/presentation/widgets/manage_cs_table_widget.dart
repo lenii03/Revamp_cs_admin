@@ -459,8 +459,6 @@ class ManageCsTableWidget extends StatelessWidget {
                           ),
                         ),
                       ),
-
-                      // 👇 2. Pasang controller ke text field 👇
                       _buildFormRow(
                         'Employee Id',
                         _buildTextField(
@@ -780,7 +778,6 @@ class ManageCsTableWidget extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header
                     Stack(
                       alignment: Alignment.center,
                       children: [
@@ -808,8 +805,6 @@ class ManageCsTableWidget extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 32),
-
-                    // Fields
                     _buildFormRow(
                       'Login Id',
                       Text(
@@ -890,7 +885,6 @@ class ManageCsTableWidget extends StatelessWidget {
                     ),
 
                     const SizedBox(height: 24),
-                    // Buttons
                     Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -935,7 +929,7 @@ class ManageCsTableWidget extends StatelessWidget {
                           style: ElevatedButton.styleFrom(
                             backgroundColor: const Color(
                               0xFF06B6D4,
-                            ), // Cyan seragam
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),

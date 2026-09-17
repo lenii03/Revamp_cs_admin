@@ -133,3 +133,4 @@ class _WindowControlButtonState extends State<_WindowControlButton> {
     );
   }
 }
+

@@ -29,7 +29,6 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // --- 1. TITLE & PRINT ICON ---
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -53,8 +52,6 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
             ],
           ),
           const SizedBox(height: 24),
-
-          // --- 2. FILTERS (YEAR, MONTH, SEARCH) ---
           Row(
             children: [
               Expanded(
@@ -156,17 +153,13 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
             ],
           ),
           const SizedBox(height: 24),
-
-          // --- 3. DATA TABLE ---
           Expanded(
-            child: _buildTable([]), // Sementara list kosong
+            child: _buildTable([]), 
           ),
         ],
       ),
     );
   }
-
-  // --- WIDGET PEMBANTU ---
   Widget _buildFilterContainer({required Widget child}) {
     return Container(
       height: 45,
@@ -181,7 +174,6 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
   }
 
   Widget _buildTable(List<ReportSendPwdPinModel> dataList) {
-    // 1. Definisikan Kolom
     final List<TrinaColumn> columns = [
       TrinaColumn(title: 'No', field: 'no', type: TrinaColumnType.text()),
       TrinaColumn(
@@ -215,8 +207,6 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
         type: TrinaColumnType.text(),
       ),
     ];
-
-    // 2. Definisikan Baris
     final List<TrinaRow> rows = dataList.map((data) {
       return TrinaRow(
         cells: {
@@ -230,8 +220,6 @@ class _ReportSendPwdPinPageState extends State<ReportSendPwdPinPage> {
         },
       );
     }).toList();
-
-    // 3. Panggil Widget Reusable
     return AppDataGrid(columns: columns, rows: rows);
   }
 }

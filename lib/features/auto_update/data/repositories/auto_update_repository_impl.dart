@@ -55,7 +55,7 @@ class AutoUpdateRepositoryImpl implements AutoUpdateRepository {
         onReceiveProgress: onReceiveProgress,
         options: Options(
           responseType:
-              ResponseType.bytes, // Wajib bytes agar tidak terbaca String
+              ResponseType.bytes, 
           headers: {'Content-Type': 'application/octet-stream'},
         ),
       );
@@ -94,37 +94,25 @@ class AutoUpdateRepositoryImpl implements AutoUpdateRepository {
     if (buf.isEmpty) {
       return;
     }
-
-    // ====================================================
-    // MEMULAI ISOLATE
-    // ====================================================
-
-    // Siapkan 'penerima pesan' di Main Thread
     final receivePort = ReceivePort();
 
-    // Luncurkan pekerja latar belakang (Isolate)
     await Isolate.spawn(
       processAndWriteFileInIsolate,
       IsolateWriteArgs(
-        // Server dummy mengirim payload file secara langsung tanpa byte flag.
         rawData: buf,
         filePath: savePath,
         flagCompress: 0,
         sendPort: receivePort.sendPort,
       ),
     );
-
-    // Dengarkan pesan yang dikirim dari Isolate
     await for (var message in receivePort) {
       if (message is Map) {
         if (message["status"] == "progress") {
-          // Update UI Progress Bar
           onWriteProgress(message["write"], message["total"]);
         } else if (message["status"] == "done") {
-          // Tutup port komunikasi dan panggil onFinish
           receivePort.close();
           onFinishDownload();
-          break; // Keluar dari perulangan await for
+          break; 
         } else if (message["status"] == "error") {
           receivePort.close();
           throw Exception(message["message"]);
@@ -182,7 +170,6 @@ class EncryptControl {
     try {
       while (fileSize > 0) {
         final chunkSize = fileSize > constantChunk ? constantChunk : fileSize;
-        // Perbaikan indexing sublist agar tidak out of range
         final chunk = binaryData.sublist(nWrites, nWrites + chunkSize);
 
         if (onWriteProgress != null) {
