@@ -19,7 +19,7 @@ class LoginRepository extends DioApiBase<LoginUserModel> {
     cancelToken = CancelToken();
     locator<DioClient>();
     return makeLoginRequestC(
-      apiRequest: _dioClient.dio.post(
+      apiRequest: _dioClient.post(
         Endpoint.signIn,
         data: jsonEncode(form),
         cancelToken: cancelToken,
@@ -33,13 +33,13 @@ class LoginRepository extends DioApiBase<LoginUserModel> {
   ) async {
     locator<DioClient>();
     return makeSingleRequest(
-      apiRequest: _dioClient.dio.post(Endpoint.resetPasswordCs, data: postData),
+      apiRequest: _dioClient.post(Endpoint.resetPasswordCs, data: postData),
     );
   }
 
   Future<Either<String, String>> logOut(Map<String, dynamic> form) async {
     return makeSingleRequest(
-      apiRequest: _dioClient.dio.post(Endpoint.signOut, data: jsonEncode(form)),
+      apiRequest: _dioClient.post(Endpoint.signOut, data: jsonEncode(form)),
     );
   }
 
@@ -161,7 +161,6 @@ class LoginUserModel {
     _parsePermissions();
   }
 
-  
   void _parsePermissions() {
     createCsLogin = (permissions & (1 << 0)) != 0 ? 1 : 0;
     createUserLogin = (permissions & (1 << 1)) != 0 ? 1 : 0;
@@ -189,7 +188,7 @@ class LoginUserModel {
   }
 
   Map<String, dynamic> toMap() {
-    _updatePermissions(); 
+    _updatePermissions();
     return <String, dynamic>{
       'LoginId': loginId,
       'EmployeeId': employeeId,

@@ -4,50 +4,34 @@ import 'dart:typed_data';
 
 import 'package:dartz/dartz.dart';
 import 'package:dio/dio.dart';
+import 'package:el_csadmin/core/constants/api_config.dart';
+import 'package:el_csadmin/core/constants/endpoint.dart';
 import 'package:el_csadmin/data/remote/dio_client.dart';
 import 'package:el_csadmin/data/remote/dio_exception.dart';
 import 'package:el_csadmin/features/auto_update/data/models/file_hash_model.dart';
 import 'package:el_csadmin/features/auto_update/data/repositories/isolatewrite_args.dart';
 import 'package:el_csadmin/features/auto_update/domain/repositories/auto_update_repository.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
 class AutoUpdateRepositoryImpl implements AutoUpdateRepository {
-  final DioClient dioClient;
-
-  AutoUpdateRepositoryImpl({required this.dioClient});
+  const AutoUpdateRepositoryImpl();
 
   @override
   Future<Either<String, List<FileHashModel>>> getListHashBinaryFile() async {
     try {
-      final dioClientLocal = DioClient();
-      dioClientLocal.dio.options = BaseOptions(
-        baseUrl: 'http://localhost:9008',
-        connectTimeout: const Duration(seconds: 15),
-        receiveTimeout: const Duration(seconds: 15),
+      final client = DioClient.local(
+        baseUrl: ApiConfig.autoUpdateBaseUrl,
         responseType: ResponseType.json,
       );
-      dioClientLocal.dio.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          request: true,
-          responseBody: true,
-          responseHeader: false,
-          logPrint: (object) => debugPrint(object.toString()),
-        ),
-      );
-      final response = await dioClientLocal.dio.get(
-        '/csAdmin/auto-update/get-list-hash-binary-file',
-      );
+      final response = await client.get(Endpoint.getAppFileHash);
       final List<dynamic> data = response.data['data'] ?? [];
       final listHash = data
           .map((json) => FileHashModel.fromJson(json))
           .toList();
 
       return Right(listHash);
-    } on DioException catch (e) {
-      return Left(DioExceptions.fromDioError(e).toString());
+    } on DioExceptions catch (e) {
+      return Left(e.message);
     } catch (e) {
       return Left(e.toString());
     }
@@ -61,10 +45,9 @@ class AutoUpdateRepositoryImpl implements AutoUpdateRepository {
     Function(int received, int total)? onReceiveProgress,
   }) async {
     try {
-      final dioClientLocal = DioClient();
-      final response = await dioClientLocal.dio.get(
-        'http://localhost:9008/csAdmin/auto-update/get-binary-file',
-        // savePath,
+      final client = DioClient.local(baseUrl: ApiConfig.autoUpdateBaseUrl);
+      final response = await client.get(
+        Endpoint.getAppFile,
         queryParameters: {
           'fileName': fileName,
           'isCompressPackage': isCompressPackage,
@@ -93,8 +76,8 @@ class AutoUpdateRepositoryImpl implements AutoUpdateRepository {
         return Left('Failed to download file: ${response.statusCode}');
       }
       return Right(savePath);
-    } on DioException catch (e) {
-      return Left(DioExceptions.fromDioError(e).toString());
+    } on DioExceptions catch (e) {
+      return Left(e.message);
     } catch (e) {
       return Left(e.toString());
     }

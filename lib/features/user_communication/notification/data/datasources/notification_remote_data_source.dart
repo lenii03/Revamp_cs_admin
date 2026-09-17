@@ -1,4 +1,5 @@
-import 'package:dio/dio.dart';
+import 'package:el_csadmin/core/constants/endpoint.dart';
+import 'package:el_csadmin/data/remote/dio_client.dart';
 
 abstract class NotificationRemoteDataSource {
   Future<List<dynamic>> fetchSchedulers();
@@ -7,17 +8,18 @@ abstract class NotificationRemoteDataSource {
 }
 
 class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
-  const NotificationRemoteDataSourceImpl(this._dio);
-  final Dio _dio;
+  const NotificationRemoteDataSourceImpl(this._client);
+  final DioClient _client;
   @override
   Future<List<dynamic>> fetchSchedulers() async {
     try {
-      final response = await _dio.get(
-        '/cs/get-list-scheduler-notification',
+      final response = await _client.get(
+        Endpoint.getListScheulerNotification,
         queryParameters: const {'page': 1, 'size': 10},
       );
-      if (response.statusCode == 200)
+      if (response.statusCode == 200) {
         return response.data['data'] as List<dynamic>;
+      }
       throw Exception(
         response.data['message'] ?? 'Failed to load scheduler data',
       );
@@ -28,20 +30,25 @@ class NotificationRemoteDataSourceImpl implements NotificationRemoteDataSource {
 
   @override
   Future<void> sendPush(Map<String, dynamic> payload) async {
-    final response = await _dio.post('/cs/push-notification', data: payload);
-    if (response.statusCode != 200 && response.statusCode != 201)
+    final response = await _client.post(
+      Endpoint.pushNotification,
+      data: payload,
+    );
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception(
         response.data['message'] ?? 'Failed to send push notification',
       );
+    }
   }
 
   @override
   Future<void> createScheduler(Map<String, dynamic> payload) async {
-    final response = await _dio.post(
-      '/cs/create-scheduler-notification',
+    final response = await _client.post(
+      Endpoint.createSchedulerNotification,
       data: payload,
     );
-    if (response.statusCode != 200 && response.statusCode != 201)
+    if (response.statusCode != 200 && response.statusCode != 201) {
       throw Exception(response.data['message'] ?? 'Failed to create scheduler');
+    }
   }
 }

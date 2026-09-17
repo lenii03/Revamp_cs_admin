@@ -1,6 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:el_csadmin/core/constants/endpoint.dart';
-import 'package:el_csadmin/core/network/server_config.dart';
+import 'package:el_csadmin/data/remote/dio_client.dart';
 import '../models/link_account_model.dart';
 import '../models/approval_screen_model.dart';
 
@@ -20,14 +19,8 @@ abstract class ApprovalRemoteDataSource {
 }
 
 class ApprovalRemoteDataSourceImpl implements ApprovalRemoteDataSource {
-  const ApprovalRemoteDataSourceImpl(this._dio);
-  final Dio _dio;
-
-  Future<void> _configureBaseUrl() async {
-    final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
-    _dio.options.baseUrl = baseUrl;
-  }
+  const ApprovalRemoteDataSourceImpl(this._client);
+  final DioClient _client;
 
   @override
   Future<List<ApprovalScreenModel>> fetchApprovals({
@@ -37,7 +30,6 @@ class ApprovalRemoteDataSourceImpl implements ApprovalRemoteDataSource {
     required int page,
     required int size,
   }) async {
-    await _configureBaseUrl();
     final query = <String, dynamic>{'page': page, 'size': size};
     if (actionType != null) query['actionType'] = actionType;
     if (status != null) query['status'] = status;
@@ -49,7 +41,7 @@ class ApprovalRemoteDataSourceImpl implements ApprovalRemoteDataSource {
         query['createdBy'] = parts.skip(1).join(' - ').trim();
       }
     }
-    final response = await _dio.get(
+    final response = await _client.get(
       Endpoint.getApprovalList,
       queryParameters: query,
     );
@@ -63,8 +55,7 @@ class ApprovalRemoteDataSourceImpl implements ApprovalRemoteDataSource {
 
   @override
   Future<void> updateApprovalStatus(Map<String, dynamic> payload) async {
-    await _configureBaseUrl();
-    final response = await _dio.post(
+    final response = await _client.post(
       Endpoint.updateStatusApprovalUser,
       data: payload,
     );
@@ -78,13 +69,10 @@ class ApprovalRemoteDataSourceImpl implements ApprovalRemoteDataSource {
     required String loginId,
     required String approvalId,
   }) async {
-    final baseUrl = await ServerConfig.getBaseUrl();
-    _dio.options.baseUrl = baseUrl;
-
     List<LinkAccountInfoModel> oldLinks = [];
     List<NewLinkAccountInfoModel> newLinks = [];
     try {
-      final response = await _dio.get(
+      final response = await _client.get(
         Endpoint.getLinkedInfoAccount,
         queryParameters: {'loginId': loginId},
       );
@@ -92,11 +80,10 @@ class ApprovalRemoteDataSourceImpl implements ApprovalRemoteDataSource {
       oldLinks = (data is List ? data : const <dynamic>[])
           .map((item) => LinkAccountInfoModel.fromMap(item))
           .toList();
-    } catch (_) {
-    }
+    } catch (_) {}
 
     try {
-      final response = await _dio.get(
+      final response = await _client.get(
         Endpoint.getLinkedInfoAccountApproval,
         queryParameters: {'approvalId': approvalId},
       );
@@ -107,8 +94,7 @@ class ApprovalRemoteDataSourceImpl implements ApprovalRemoteDataSource {
       newLinks = (data is List ? data : const <dynamic>[])
           .map((item) => NewLinkAccountInfoModel.fromMap(item))
           .toList();
-    } catch (_) {
-    }
+    } catch (_) {}
 
     return {'old': oldLinks, 'new': newLinks};
   }

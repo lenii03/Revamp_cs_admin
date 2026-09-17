@@ -1,5 +1,4 @@
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
 import '../../domain/entities/manage_cs_user.dart';
 import '../../domain/repositories/manage_cs_repository.dart';
 import '../datasources/manage_cs_remote_data_source.dart';
@@ -59,11 +58,6 @@ class ManageCsRepositoryImpl implements ManageCsRepository {
   }
 
   String _errorMessage(Object error) {
-    if (error is DioException) {
-      final data = error.response?.data;
-      if (data is Map && data['message'] != null) return data['message'].toString();
-      return error.message ?? 'A network error occurred.';
-    }
     return error.toString().replaceFirst('Exception: ', '');
   }
 }

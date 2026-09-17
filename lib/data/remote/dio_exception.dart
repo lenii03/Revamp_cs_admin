@@ -4,48 +4,54 @@ import 'package:dio/dio.dart' show DioException, DioExceptionType;
 import '../../core/constants/app_string.dart';
 
 class DioExceptions implements Exception {
-  late String message;
+  const DioExceptions._({
+    required this.message,
+    this.statusCode,
+    this.responseData,
+  });
 
-  DioExceptions.fromDioError(DioException dioException) {
-    switch (dioException.type) {
-      case DioExceptionType.cancel:
-        message = AppString.cancelRequest;
-        break;
-      case DioExceptionType.connectionTimeout:
-        message = AppString.connectionTimeOut;
-        break;
-      case DioExceptionType.receiveTimeout:
-        message = AppString.receiveTimeOut;
-        break;
-      case DioExceptionType.badResponse:
-        message = _handleError(
-          dioException.response?.statusCode,
-          dioException.response?.data,
-        );
-        break;
-      case DioExceptionType.sendTimeout:
-        message = AppString.sendTimeOut;
-        break;
-      case DioExceptionType.connectionError:
-        message = AppString.connectionError;
-        break;
-      case DioExceptionType.unknown:
-        if (dioException.error is SocketException) {
-          message = AppString.socketException;
-          break;
-        }
-        message = "${AppString.unexpectedError}$dioException";
-        break;
-      default:
-        message = AppString.unknownError;
-        break;
-    }
+  factory DioExceptions.fromDioError(DioException dioException) {
+    final message = switch (dioException.type) {
+      DioExceptionType.cancel => AppString.cancelRequest,
+      DioExceptionType.connectionTimeout => AppString.connectionTimeOut,
+      DioExceptionType.receiveTimeout => AppString.receiveTimeOut,
+      DioExceptionType.badResponse => _handleError(
+        dioException.response?.statusCode,
+        dioException.response?.data,
+      ),
+      DioExceptionType.sendTimeout => AppString.sendTimeOut,
+      DioExceptionType.connectionError => AppString.connectionError,
+      DioExceptionType.unknown =>
+        dioException.error is SocketException
+            ? AppString.socketException
+            : '${AppString.unexpectedError}$dioException',
+      _ => AppString.unknownError,
+    };
+
+    return DioExceptions._(
+      message: message,
+      statusCode: dioException.response?.statusCode,
+      responseData: dioException.response?.data,
+    );
   }
 
-  String _handleError(int? statusCode, dynamic error) {
+  final String message;
+  final int? statusCode;
+  final dynamic responseData;
+
+  static String _handleError(int? statusCode, dynamic error) {
     String serverErrorMessage = '';
-    if (error is Map<String, dynamic> && error.containsKey('message')) {
-      serverErrorMessage = error['message'];
+    if (error is Map) {
+      final directMessage = error['message'];
+      final metaMessage = error['meta'] is Map
+          ? error['meta']['message']
+          : null;
+      final dataMessage = error['data'] is Map
+          ? error['data']['message']
+          : null;
+      serverErrorMessage =
+          (directMessage ?? metaMessage ?? dataMessage)?.toString().trim() ??
+          '';
     }
     String statusMessage;
     switch (statusCode) {
@@ -61,7 +67,7 @@ class DioExceptions implements Exception {
       case 404:
         statusMessage = AppString.notFound;
         break;
-      case 409: 
+      case 409:
         statusMessage = AppString.conflict;
         break;
       case 422:
@@ -77,11 +83,9 @@ class DioExceptions implements Exception {
         statusMessage = AppString.unknownError;
         break;
     }
-    if (serverErrorMessage.isNotEmpty) {
-      return '$statusMessage - $serverErrorMessage';
-    } else {
-      return statusMessage;
-    }
+    return serverErrorMessage.isEmpty
+        ? statusMessage
+        : '$statusMessage - $serverErrorMessage';
   }
 
   @override

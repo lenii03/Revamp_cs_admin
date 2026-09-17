@@ -1,4 +1,6 @@
 import 'package:dio/dio.dart';
+import 'package:el_csadmin/data/remote/dio_client.dart';
+import 'package:el_csadmin/data/remote/dio_exception.dart';
 
 import '../../../../core/constants/endpoint.dart';
 import '../models/dashboard_metrics_model.dart';
@@ -9,28 +11,28 @@ abstract class DashboardRemoteDataSource {
 }
 
 class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
-  const DashboardRemoteDataSourceImpl(this._dio);
+  const DashboardRemoteDataSourceImpl(this._client);
 
-  final Dio _dio;
+  final DioClient _client;
 
   @override
   Future<DashboardMetricsModel> fetchMetrics() async {
     final incompleteFuture = _fetchIncompleteCredentials();
     final results = await Future.wait([
       _fetchTotal(
-        _dio.get(
+        _client.get(
           Endpoint.getCSList,
           queryParameters: const {'page': 1, 'size': 1},
         ),
       ),
       _fetchTotal(
-        _dio.get(
+        _client.get(
           Endpoint.getOnlineUser,
           queryParameters: const {'page': 1, 'size': 1},
         ),
       ),
       _fetchTotal(
-        _dio.get(
+        _client.get(
           Endpoint.getApprovalList,
           queryParameters: const {'page': 1, 'size': 1, 'status': '1'},
         ),
@@ -64,7 +66,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
   _fetchIncompleteCredentials() async {
     try {
       const pageSize = 500;
-      final firstResponse = await _dio.get(
+      final firstResponse = await _client.get(
         Endpoint.getOnlineUser,
         queryParameters: const {'page': 1, 'size': pageSize},
       );
@@ -86,7 +88,7 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       );
 
       for (var page = 2; page <= totalPages; page++) {
-        final response = await _dio.get(
+        final response = await _client.get(
           Endpoint.getOnlineUser,
           queryParameters: {'page': page, 'size': pageSize},
         );
@@ -96,8 +98,8 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       final users = _buildIncompleteCredentialUsers(allRows);
       return (value: users.length.toString(), error: null, users: users);
     } catch (error) {
-      if (error is DioException &&
-          _isEmptyCollectionResponse(error.response?.data)) {
+      if (error is DioExceptions &&
+          _isEmptyCollectionResponse(error.responseData)) {
         return (
           value: '0',
           error: null,
@@ -209,8 +211,8 @@ class DashboardRemoteDataSourceImpl implements DashboardRemoteDataSource {
       }
       return (value: total, error: null);
     } catch (error) {
-      if (error is DioException &&
-          _isEmptyCollectionResponse(error.response?.data)) {
+      if (error is DioExceptions &&
+          _isEmptyCollectionResponse(error.responseData)) {
         return (value: '0', error: null);
       }
 

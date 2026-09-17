@@ -1,6 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:el_csadmin/core/constants/endpoint.dart';
-import 'package:el_csadmin/core/network/server_config.dart';
+import 'package:el_csadmin/data/remote/dio_client.dart';
 import '../models/cs_user_model.dart';
 
 abstract class ManageCsRemoteDataSource {
@@ -16,23 +16,16 @@ abstract class ManageCsRemoteDataSource {
 }
 
 class ManageCsRemoteDataSourceImpl implements ManageCsRemoteDataSource {
-  const ManageCsRemoteDataSourceImpl(this._dio);
+  const ManageCsRemoteDataSourceImpl(this._client);
 
-  final Dio _dio;
-
-  Future<void> _configureBaseUrl() async {
-    final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
-    _dio.options.baseUrl = baseUrl;
-  }
+  final DioClient _client;
 
   @override
   Future<List<ManageCsUsersModel>> fetchUsers({
     required int page,
     required int pageSize,
   }) async {
-    await _configureBaseUrl();
-    final response = await _dio.get(
+    final response = await _client.get(
       Endpoint.getCSList,
       queryParameters: const {'page': 1, 'size': 30},
     );
@@ -40,21 +33,21 @@ class ManageCsRemoteDataSourceImpl implements ManageCsRemoteDataSource {
     final users = data is List ? data : const <dynamic>[];
     return users
         .whereType<Map>()
-        .map((item) => ManageCsUsersModel.fromMap(Map<String, dynamic>.from(item)))
+        .map(
+          (item) => ManageCsUsersModel.fromMap(Map<String, dynamic>.from(item)),
+        )
         .toList();
   }
 
   @override
   Future<void> addUser(Map<String, dynamic> payload) async {
-    await _configureBaseUrl();
-    final response = await _dio.post(Endpoint.postAddCs, data: payload);
+    final response = await _client.post(Endpoint.postAddCs, data: payload);
     _ensureSuccess(response, 'Failed to add CS user');
   }
 
   @override
   Future<void> editUser(Map<String, dynamic> payload) async {
-    await _configureBaseUrl();
-    final response = await _dio.put(Endpoint.putEditCs, data: payload);
+    final response = await _client.put(Endpoint.putEditCs, data: payload);
     _ensureSuccess(response, 'Failed to update CS user');
   }
 
@@ -63,8 +56,7 @@ class ManageCsRemoteDataSourceImpl implements ManageCsRemoteDataSource {
     required String loginId,
     required String deletedBy,
   }) async {
-    await _configureBaseUrl();
-    final response = await _dio.delete(
+    final response = await _client.delete(
       Endpoint.deleteCs,
       queryParameters: {'loginId': loginId, 'deletedBy': deletedBy},
     );
@@ -73,8 +65,7 @@ class ManageCsRemoteDataSourceImpl implements ManageCsRemoteDataSource {
 
   @override
   Future<void> resetPassword(Map<String, dynamic> payload) async {
-    await _configureBaseUrl();
-    final response = await _dio.put(Endpoint.putResetPw, data: payload);
+    final response = await _client.put(Endpoint.putResetPw, data: payload);
     _ensureSuccess(response, 'Failed to reset CS user password');
   }
 

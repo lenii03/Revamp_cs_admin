@@ -1,5 +1,5 @@
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart';
+import 'package:el_csadmin/data/remote/dio_exception.dart';
 import 'package:el_csadmin/features/online/approval/data/models/approval_screen_model.dart';
 import 'package:el_csadmin/features/cs/cs_logs/data/models/cs_log_model.dart';
 import 'package:el_csadmin/features/cs/manage_cs/data/models/cs_user_model.dart';
@@ -19,8 +19,8 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
     try {
       final result = await _networkDataSource.fetchCsList();
       return Right(result.cast<ManageCsUsersModel>());
-    } on DioException catch (e) {
-      return Left("Failed to retrieve data. Status: ${e.response?.statusCode}");
+    } on DioExceptions catch (e) {
+      return Left("Failed to retrieve data. Status: ${e.statusCode}");
     } catch (e) {
       return Left(e.toString());
     }

@@ -1,6 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:el_csadmin/core/constants/endpoint.dart';
-import 'package:el_csadmin/core/network/server_config.dart';
+import 'package:el_csadmin/data/remote/dio_client.dart';
 import '../models/cs_log_model.dart';
 
 abstract class CsLogsRemoteDataSource {
@@ -13,9 +12,10 @@ abstract class CsLogsRemoteDataSource {
   });
 }
 
+
 class CsLogsRemoteDataSourceImpl implements CsLogsRemoteDataSource {
-  const CsLogsRemoteDataSourceImpl(this._dio);
-  final Dio _dio;
+  const CsLogsRemoteDataSourceImpl(this._client);
+  final DioClient _client;
 
   @override
   Future<List<CsLogModel>> fetchLogs({
@@ -25,11 +25,7 @@ class CsLogsRemoteDataSourceImpl implements CsLogsRemoteDataSource {
     required int page,
     required int pageSize,
   }) async {
-    final baseUrl = await ServerConfig.getBaseUrl();
-    if (baseUrl.isEmpty) throw Exception('Server IP is not configured.');
-    _dio.options.baseUrl = baseUrl;
-
-    final response = await _dio.get(
+    final response = await _client.get(
       Endpoint.getCsLogs,
       queryParameters: {
         'page': page,

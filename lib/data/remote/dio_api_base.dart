@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:dartz/dartz.dart';
-import 'package:dio/dio.dart' show Response, DioException;
+import 'package:dio/dio.dart' show Response;
 
 import '../../features/cs/manage_cs/data/models/cs_user_model.dart';
 import '../../injector.dart';
@@ -20,6 +20,13 @@ class DioApiBase<T> {
     return fallbackMessage;
   }
 
+  String _requestErrorMessage(DioExceptions error) {
+    if (error.statusCode == 401) {
+      _handleUnauthorized();
+    }
+    return _extractErrorMessage(error.responseData, error.message);
+  }
+
   Future<Either<String, LoginUserModel>> makeLoginRequest({
     required Future<Response<dynamic>> apiRequest,
     required Future<T> Function(Map<String, dynamic> rawData) decoder,
@@ -28,11 +35,11 @@ class DioApiBase<T> {
       final Response response = await apiRequest;
       T dataList = await decoder(json.decode(response.data));
       return right((dataList as LoginUserModel));
-    } on DioException catch (e) {
-      String errorMessage = DioExceptions.fromDioError(e).toString();
-      final errorCode = e.response?.statusCode ?? 0;
+    } on DioExceptions catch (e) {
+      String errorMessage = e.message;
+      final errorCode = e.statusCode ?? 0;
       if (errorCode >= 400 && errorCode < 500 && errorCode != 404) {
-        String rawResponse = e.response?.data.toString() ?? '';
+        String rawResponse = e.responseData.toString();
         errorMessage = rawResponse;
         if (rawResponse.contains('"')) {
           errorMessage = rawResponse.replaceAll('"', '');
@@ -52,14 +59,8 @@ class DioApiBase<T> {
       final loginUser = await decoder(response.data);
 
       return right(loginUser as LoginUserModel);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 
@@ -75,13 +76,8 @@ class DioApiBase<T> {
         success = rawResponse["message"] ?? 'success';
       }
       return right(success);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 
@@ -92,14 +88,8 @@ class DioApiBase<T> {
       await apiRequest;
       String success = 'success';
       return right(success);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 
@@ -117,13 +107,12 @@ class DioApiBase<T> {
         result = await decoder(jsonDecode(response.data));
       }
       return right(result);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = fallback;
+    } on DioExceptions catch (e) {
+      String errorMessage = e.message;
 
-      if (e.response?.statusCode == 409) {
-        if (e.response?.data is String) {
-          var rawResponse = jsonDecode(e.response!.data);
+      if (e.statusCode == 409) {
+        if (e.responseData is String) {
+          var rawResponse = jsonDecode(e.responseData);
           errorMessage = rawResponse?["message"] ?? 'Conflict, data exist';
         }
       }
@@ -144,15 +133,8 @@ class DioApiBase<T> {
       } else {
         return left('Unexpected response format');
       }
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 
@@ -164,14 +146,8 @@ class DioApiBase<T> {
       final Response response = await apiRequest;
       if (response.statusCode == 200) {}
       return right(emptyObject);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 
@@ -184,10 +160,8 @@ class DioApiBase<T> {
       final Response response = await apiRequest;
       final List<T> dataList = await decoder(json.decode(response.data));
       return right(dataList);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 
@@ -200,14 +174,8 @@ class DioApiBase<T> {
       final Response response = await apiRequest;
       final List<T> dataList = await decoder(response.data);
       return right(dataList);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 
@@ -220,36 +188,10 @@ class DioApiBase<T> {
       final Response response = await apiRequest;
       final List<T> dataList = await decoder(response);
       return right(dataList);
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
-
-  // Future<Either<String, LinkAccountModel>> makeRequestLinkAccount({
-  //   required Future<Response<dynamic>> apiRequest,
-  //   required Future<LinkAccountModel> Function(Map<String, dynamic> rawData)
-  //   decoder,
-  // }) async {
-  //   try {
-  //     final Response response = await apiRequest;
-  //     final LinkAccountModel data = await decoder(json.decode(response.data));
-  //     return right(data);
-  //   } on DioException catch (e) {
-  //     String fallback = DioExceptions.fromDioError(e).toString();
-  //     String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-  //     if (e.response?.statusCode == 401) {
-  //       _handleUnauthorized();
-  //     }
-  //     return left(errorMessage);
-  //   }
-  // }
 
   Future<Either<String, ManageCsUsersModel>> makeAddCs({
     required Future<Response<dynamic>> apiRequest,
@@ -273,14 +215,8 @@ class DioApiBase<T> {
           modifiedBy: '-',
         ),
       );
-    } on DioException catch (e) {
-      String fallback = DioExceptions.fromDioError(e).toString();
-      String errorMessage = _extractErrorMessage(e.response?.data, fallback);
-
-      if (e.response?.statusCode == 401) {
-        _handleUnauthorized();
-      }
-      return left(errorMessage);
+    } on DioExceptions catch (e) {
+      return left(_requestErrorMessage(e));
     }
   }
 

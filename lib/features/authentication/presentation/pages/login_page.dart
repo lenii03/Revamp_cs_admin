@@ -66,7 +66,7 @@ class _LoginPageState extends State<LoginPage> {
       _activeServerUrl = savedBaseUrl.replaceFirst(RegExp(r'/$'), '');
     });
     if (savedBaseUrl.isNotEmpty) {
-      locator<DioClient>().dio.options.baseUrl = savedBaseUrl;
+      locator<DioClient>().setBaseUrl(savedBaseUrl);
     }
   }
 
@@ -420,7 +420,7 @@ class _LoginPageState extends State<LoginPage> {
               final portInput = _portController.text.trim();
               await ServerConfig.saveServer(hostInput, portInput);
               final newBaseUrl = await ServerConfig.getBaseUrl();
-              locator<DioClient>().dio.options.baseUrl = newBaseUrl;
+              locator<DioClient>().setBaseUrl(newBaseUrl);
 
               if (context.mounted) {
                 setState(() {

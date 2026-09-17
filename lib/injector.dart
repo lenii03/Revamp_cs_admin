@@ -58,29 +58,29 @@ Future<void> setupLocator() async {
   await dioClient.init();
   locator.registerSingleton<DioClient>(dioClient);
   locator.registerLazySingleton<ManageCsRemoteDataSourceImpl>(
-    () => ManageCsRemoteDataSourceImpl(locator<DioClient>().dio),
+    () => ManageCsRemoteDataSourceImpl(locator<DioClient>()),
   );
   locator.registerLazySingleton<CsLogsRemoteDataSourceImpl>(
-    () => CsLogsRemoteDataSourceImpl(locator<DioClient>().dio),
+    () => CsLogsRemoteDataSourceImpl(locator<DioClient>()),
   );
   locator.registerLazySingleton<OnlineIdRemoteDataSourceImpl>(
-    () => OnlineIdRemoteDataSourceImpl(locator<DioClient>().dio),
+    () => OnlineIdRemoteDataSourceImpl(locator<DioClient>()),
   );
   locator.registerLazySingleton<ApprovalRemoteDataSourceImpl>(
-    () => ApprovalRemoteDataSourceImpl(locator<DioClient>().dio),
+    () => ApprovalRemoteDataSourceImpl(locator<DioClient>()),
   );
   locator.registerLazySingleton<ApproveOpeningRemoteDataSourceImpl>(
-    () => ApproveOpeningRemoteDataSourceImpl(locator<DioClient>().dio),
+    () => ApproveOpeningRemoteDataSourceImpl(locator<DioClient>()),
   );
   locator.registerLazySingleton<NotificationRemoteDataSourceImpl>(
-    () => NotificationRemoteDataSourceImpl(locator<DioClient>().dio),
+    () => NotificationRemoteDataSourceImpl(locator<DioClient>()),
   );
   locator.registerLazySingleton<DashboardRemoteDataSourceImpl>(
-    () => DashboardRemoteDataSourceImpl(locator<DioClient>().dio),
+    () => DashboardRemoteDataSourceImpl(locator<DioClient>()),
   );
 
   locator.registerLazySingleton<ApiDatafeedNetworkDataSource>(
-    () => ApiDatafeedNetworkDataSourceImpl(locator<DioClient>().dio),
+    () => ApiDatafeedNetworkDataSourceImpl(locator<DioClient>()),
   );
   locator.registerLazySingleton<ApiDatafeedNetworkDataSourceMockImpl>(
     () => const ApiDatafeedNetworkDataSourceMockImpl(),
@@ -259,7 +259,7 @@ Future<void> setupLocator() async {
     ),
   );
   locator.registerLazySingleton<AutoUpdateRepository>(
-    () => AutoUpdateRepositoryImpl(dioClient: locator()),
+    () => const AutoUpdateRepositoryImpl(),
   );
   locator.registerFactory(() => AutoUpdateBloc(repository: locator()));
 }
