@@ -2,11 +2,9 @@ import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:el_csadmin/core/theme/theme_cubit.dart';
 import 'package:el_csadmin/features/splash/presentation/pages/splash_screen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:window_manager/window_manager.dart';
 import 'core/navigation/app_navigator.dart';
-import 'features/authentication/presentation/pages/login_page.dart';
 import 'features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'injector.dart';
 
@@ -54,11 +52,7 @@ class MainApp extends StatelessWidget {
             theme: lightTheme(),
             darkTheme: darkTheme(),
             themeMode: themeMode,
-            home: kReleaseMode || _forceUpdateSplash
-                ? SplashScreen(
-                    simulateUpdate: !kReleaseMode && _forceUpdateSplash,
-                  )
-                : const LoginPage(),
+            home: const SplashScreen(simulateUpdate: _forceUpdateSplash),
           );
         },
       ),

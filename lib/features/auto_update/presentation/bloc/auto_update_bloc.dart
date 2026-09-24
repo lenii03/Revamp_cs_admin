@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:el_csadmin/features/auto_update/data/models/file_hash_model.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:io';
@@ -73,7 +74,9 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         return;
       }
 
-      emit(AutoUpdateLoading("Checking update files in the temporary folder..."));
+      emit(
+        AutoUpdateLoading("Checking update files in the temporary folder..."),
+      );
       try {
         for (final file in filesToUpdate) {
           final tempFile = File(_resolveTempPath(file.fileName));
@@ -88,7 +91,9 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
           }
         }
       } catch (error) {
-        emit(AutoUpdateFailure("Failed to inspect the temporary folder: $error"));
+        emit(
+          AutoUpdateFailure("Failed to inspect the temporary folder: $error"),
+        );
         return;
       }
 
@@ -124,7 +129,6 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         final result = await repository.downloadBinaryFile(
           fileName: file.fileName,
           savePath: savePath,
-          isCompressPackage: true,
           onReceiveProgress: (received, total) {
             if (total != -1) {
               final progress = received / total;
@@ -163,6 +167,9 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         }
 
         final downloadedHash = await _calculateFileHash(downloadedFile);
+        debugPrint(
+          '[AutoUpdate] File: ${file.fileName}, Expected: ${file.fileHash}, Downloaded: $downloadedHash',
+        );
         if (!_hashesMatch(downloadedHash, file.fileHash)) {
           await downloadedFile.delete();
           emit(
@@ -178,7 +185,9 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
     });
     on<InstallUpdateStarted>((event, emit) async {
       emit(
-        AutoUpdateLoading("Running the updater and restarting the application..."),
+        AutoUpdateLoading(
+          "Running the updater and restarting the application...",
+        ),
       );
       try {
         final exePath = Platform.resolvedExecutable;
@@ -186,9 +195,21 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         final appExeName = p.basename(exePath);
         final tempUpdater = File(_resolveTempPath('update.exe'));
         final installedUpdater = File(p.join(appDir, 'update.exe'));
-        final updaterFile = await tempUpdater.exists()
-            ? tempUpdater
-            : installedUpdater;
+
+        if (await tempUpdater.exists()) {
+          try {
+            await tempUpdater.copy(installedUpdater.path);
+          } catch (e) {
+            debugPrint(
+              '[AutoUpdate] Could not copy temp updater to appDir: $e',
+            );
+          }
+        }
+
+        final updaterFile = await installedUpdater.exists()
+            ? installedUpdater
+            : tempUpdater;
+
         if (!await updaterFile.exists()) {
           emit(
             AutoUpdateFailure(
@@ -200,7 +221,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
 
         await Process.start(
           'cmd',
-          ['/c', 'start', '""', 'update.exe', '\\temp', appExeName],
+          ['/c', 'start', '""', updaterFile.path, '\\temp', appExeName],
           workingDirectory: appDir,
           mode: ProcessStartMode.detached,
         );

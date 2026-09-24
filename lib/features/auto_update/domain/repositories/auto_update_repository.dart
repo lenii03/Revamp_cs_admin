@@ -6,7 +6,6 @@ abstract class AutoUpdateRepository {
   Future<Either<String, String>> downloadBinaryFile({
     required String fileName,
     required String savePath,
-    bool isCompressPackage = true,
     Function(int received, int total)? onReceiveProgress,
   });
 }

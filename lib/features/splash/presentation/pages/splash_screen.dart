@@ -6,10 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:lottie/lottie.dart';
 
+import '../../../../core/network/server_config.dart';
 import '../../../../core/theme/src/app_colors.dart';
 import '../../../../injector.dart';
 import '../../../../shared/widgets/app_drag_to_move_area.dart';
 import '../../../../shared/widgets/app_window_controls.dart';
+import '../../../../shared/widgets/server_config_dialog.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key, this.simulateUpdate = false});
@@ -33,23 +35,57 @@ class _SplashScreenState extends State<SplashScreen> {
     if (widget.simulateUpdate) {
       _runUpdateSimulation();
     } else {
-      _autoUpdateBloc.add(CheckForUpdateStarted());
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _checkAndStartUpdate();
+      });
+    }
+  }
+
+  Future<void> _checkAndStartUpdate({bool showConfigIfFailed = true}) async {
+    if (!mounted) return;
+    _downloadStarted = false;
+    _installStarted = false;
+
+    _setSimulatedState(
+      AutoUpdateLoading('Menghubungi server update (localhost:9008)...'),
+    );
+
+    final isConnected = await ServerConfig.checkConnection(
+      host: 'localhost',
+      port: '9008',
+    );
+
+    if (!isConnected) {
+      if (!mounted) return;
+      _setSimulatedState(
+        AutoUpdateFailure(
+          'Tidak dapat terhubung ke server update dummy (localhost:9008). Pastikan auto-update-server.exe aktif.',
+        ),
+      );
+      return;
+    }
+
+    if (!mounted) return;
+    setState(() => _simulatedState = null);
+    _autoUpdateBloc.add(CheckForUpdateStarted());
+  }
+
+  Future<void> _openServerConfig() async {
+    final saved = await ServerConfigDialog.show(context, isDismissible: true);
+    if (saved == true && mounted) {
+      _checkAndStartUpdate(showConfigIfFailed: true);
     }
   }
 
   Future<void> _runUpdateSimulation() async {
-    _setSimulatedState(
-      AutoUpdateLoading('Checking simulated update...'),
-    );
+    _setSimulatedState(AutoUpdateLoading('Checking simulated update...'));
     await Future<void>.delayed(const Duration(milliseconds: 900));
 
     const totalFiles = 3;
     for (var file = 1; file <= totalFiles; file++) {
       for (var step = 0; step <= 10; step++) {
         if (!mounted) return;
-        _setSimulatedState(
-          AutoUpdateDownloading(file, totalFiles, step / 10),
-        );
+        _setSimulatedState(AutoUpdateDownloading(file, totalFiles, step / 10));
         await Future<void>.delayed(const Duration(milliseconds: 90));
       }
     }
@@ -91,9 +127,16 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _retry() {
-    _downloadStarted = false;
     _installStarted = false;
-    _autoUpdateBloc.add(CheckForUpdateStarted());
+    _downloadStarted = false;
+    _checkAndStartUpdate(showConfigIfFailed: true);
+  }
+
+  void _triggerRestart() {
+    if (!_installStarted) {
+      _installStarted = true;
+      _autoUpdateBloc.add(InstallUpdateStarted());
+    }
   }
 
   @override
@@ -110,9 +153,6 @@ class _SplashScreenState extends State<SplashScreen> {
             _autoUpdateBloc.add(
               DownloadUpdateStarted(filesToUpdate: state.filesToDownload),
             );
-          } else if (state is AutoUpdateReadyToInstall && !_installStarted) {
-            _installStarted = true;
-            _autoUpdateBloc.add(InstallUpdateStarted());
           }
         },
         builder: (context, state) {
@@ -207,16 +247,18 @@ class _SplashScreenState extends State<SplashScreen> {
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
-                                  const SizedBox(height: 10),
-                                  Text(
-                                    view.description,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      color: Color(0xFF9EB0C2),
-                                      height: 1.5,
-                                      fontSize: 14,
+                                  if (view.description.isNotEmpty) ...[
+                                    const SizedBox(height: 10),
+                                    Text(
+                                      view.description,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Color(0xFF9EB0C2),
+                                        height: 1.5,
+                                        fontSize: 14,
+                                      ),
                                     ),
-                                  ),
+                                  ],
                                   if (effectiveState
                                       is AutoUpdateDownloading) ...[
                                     const SizedBox(height: 28),
@@ -251,11 +293,7 @@ class _SplashScreenState extends State<SplashScreen> {
                   height: 28,
                   child: AppDragToMoveArea(child: SizedBox.expand()),
                 ),
-                const Positioned(
-                  top: 0,
-                  right: 0,
-                  child: AppWindowControls(),
-                ),
+                const Positioned(top: 0, right: 0, child: AppWindowControls()),
               ],
             ),
           );
@@ -272,21 +310,34 @@ class _SplashScreenState extends State<SplashScreen> {
             child: OutlinedButton(
               onPressed: _navigateToLogin,
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 14),
                 foregroundColor: const Color(0xFF9EB0C2),
                 side: const BorderSide(color: Color(0xFF30445A)),
               ),
               child: const Text('Skip'),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 8),
+          Expanded(
+            child: OutlinedButton.icon(
+              onPressed: _openServerConfig,
+              icon: const Icon(Icons.settings_ethernet, size: 15),
+              label: const Text('Server IP', style: TextStyle(fontSize: 12)),
+              style: OutlinedButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                foregroundColor: AppColors.primaryColor,
+                side: const BorderSide(color: Color(0xFF30445A)),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
           Expanded(
             child: ElevatedButton(
               onPressed: _retry,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 foregroundColor: const Color(0xFF07111A),
-                padding: const EdgeInsets.symmetric(vertical: 15),
+                padding: const EdgeInsets.symmetric(vertical: 14),
               ),
               child: const Text(
                 'Try Again',
@@ -295,6 +346,27 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
           ),
         ],
+      );
+    }
+
+    if (state is AutoUpdateReadyToInstall) {
+      return SizedBox(
+        width: double.infinity,
+        child: ElevatedButton(
+          onPressed: _triggerRestart,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.primaryColor,
+            foregroundColor: const Color(0xFF07111A),
+            padding: const EdgeInsets.symmetric(vertical: 14),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          child: const Text(
+            'Restart',
+            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+          ),
+        ),
       );
     }
 
@@ -403,8 +475,9 @@ class _UpdateViewData {
     }
     if (state is AutoUpdateReadyToInstall) {
       return const _UpdateViewData(
-        title: 'Applying update',
-        description: 'The application will restart automatically.',
+        title: 'Pembaruan Berhasil Diunduh',
+        description: '',
+        animate: false,
       );
     }
     if (state is AutoUpdateFailure) {
@@ -417,7 +490,8 @@ class _UpdateViewData {
     if (state is AutoUpdateSuccess) {
       return const _UpdateViewData(
         title: 'Restarting application',
-        description: 'The update is complete. The application will reopen shortly.',
+        description:
+            'The update is complete. The application will reopen shortly.',
       );
     }
     return const _UpdateViewData(

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ServerConfig {
@@ -6,8 +7,8 @@ class ServerConfig {
 
   static Future<void> saveServer(String host, String port) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_hostKey, host);
-    await prefs.setString(_portKey, port);
+    await prefs.setString(_hostKey, host.trim());
+    await prefs.setString(_portKey, port.trim());
   }
 
   static Future<String> getHost() async {
@@ -29,5 +30,39 @@ class ServerConfig {
     return port.isNotEmpty
         ? 'http://$host:$port/csAdmin/'
         : 'http://$host/csAdmin/';
+  }
+
+  static Future<bool> checkConnection({
+    String? host,
+    String? port,
+    Duration timeout = const Duration(seconds: 3),
+  }) async {
+    final targetHost = (host ?? await getHost()).trim();
+    final targetPort = (port ?? await getPort()).trim();
+
+    if (targetHost.isEmpty) return false;
+
+    final url = targetPort.isNotEmpty
+        ? 'http://$targetHost:$targetPort/csAdmin/'
+        : 'http://$targetHost/csAdmin/';
+
+    try {
+      final dio = Dio(
+        BaseOptions(
+          connectTimeout: timeout,
+          receiveTimeout: timeout,
+          sendTimeout: timeout,
+        ),
+      );
+      await dio.get(url);
+      return true;
+    } on DioException catch (e) {
+      if (e.response != null || e.type == DioExceptionType.badResponse) {
+        return true;
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 }
