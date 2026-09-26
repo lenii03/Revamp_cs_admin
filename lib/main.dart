@@ -7,6 +7,7 @@ import 'package:window_manager/window_manager.dart';
 import 'core/navigation/app_navigator.dart';
 import 'features/authentication/presentation/bloc/authentication_bloc.dart';
 import 'injector.dart';
+import 'shared/widgets/app_window_resize_frame.dart';
 
 const bool _forceUpdateSplash = bool.fromEnvironment(
   'FORCE_UPDATE_SPLASH',
@@ -18,15 +19,15 @@ void main() async {
   await setupLocator();
   await windowManager.ensureInitialized();
   WindowOptions windowOptions = const WindowOptions(
-    size: Size(1040, 620),
-    minimumSize: Size(800, 520),
+    size: Size(800, 460),
     center: true,
-    backgroundColor: Color(0xFF081017),
+    backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.hidden,
   );
 
   windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.setAsFrameless();
     await windowManager.show();
     await windowManager.focus();
   });
@@ -49,6 +50,9 @@ class MainApp extends StatelessWidget {
             navigatorKey: AppNavigator.navigatorKey,
             title: 'CS Admin',
             debugShowCheckedModeBanner: false,
+            builder: (context, child) => AppWindowResizeFrame(
+              child: child ?? const SizedBox.shrink(),
+            ),
             theme: lightTheme(),
             darkTheme: darkTheme(),
             themeMode: themeMode,

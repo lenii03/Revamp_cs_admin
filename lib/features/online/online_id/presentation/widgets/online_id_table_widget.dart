@@ -307,14 +307,16 @@ class _OnlineIdTableWidgetState extends State<OnlineIdTableWidget> {
         title: 'Account Expired',
         field: 'accountExpired',
         type: TrinaColumnType.text(),
-        width: 100,
+        width: 150,
         readOnly: true,
       ),
       TrinaColumn(
         title: 'Created At',
         field: 'created',
         type: TrinaColumnType.text(),
-        width: 100,
+        // Reserve room for the complete API date-time value and the cell
+        // padding, rather than truncating the date with an ellipsis.
+        width: 180,
         readOnly: true,
       ),
       TrinaColumn(

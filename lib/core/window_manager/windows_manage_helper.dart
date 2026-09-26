@@ -19,23 +19,30 @@ class WindowsManageHelper {
     if (await windowManager.isMaximized()) {
       await windowManager.unmaximize();
     }
-    await windowManager.setMinimumSize(const Size(800, 520));
-    await windowManager.setSize(const Size(1040, 620));
+    await windowManager.setSize(const Size(800, 460));
     await windowManager.center();
     await windowManager.setResizable(true);
-    await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
+    await windowManager.setAsFrameless();
+    await windowManager.setBackgroundColor(Colors.transparent);
     await windowManager.show();
     await windowManager.focus();
   }
 
-  static Future<void> setFullScreen() async {
+  static Future<void> setMainWindow() async {
     if (!_isDesktop) return;
 
     await windowManager.ensureInitialized();
     await windowManager.waitUntilReadyToShow();
+    if (await windowManager.isMaximized()) {
+      await windowManager.unmaximize();
+    }
+    await windowManager.setSize(const Size(1280, 720));
+    await windowManager.center();
     await windowManager.setResizable(true);
-    await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
-    await windowManager.maximize();
+    await windowManager.setAsFrameless();
+    await windowManager.setBackgroundColor(Colors.transparent);
+    await windowManager.show();
+    await windowManager.focus();
   }
 
   static Future<void> toggleFullScreen() async {

@@ -81,7 +81,7 @@ class SessionExpiredHandler {
                         borderRadius: BorderRadius.circular(8),
                       ),
                       padding: const EdgeInsets.symmetric(vertical: 12),
-                    ),   
+                    ),
                     child: const Text(
                       'Log In Again',
                       style: TextStyle(fontWeight: FontWeight.bold),

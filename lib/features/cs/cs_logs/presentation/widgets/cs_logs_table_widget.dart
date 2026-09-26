@@ -28,6 +28,14 @@ class CsLogsTableWidget extends StatelessWidget {
       ),
       child: BlocBuilder<CsLogsBloc, CsLogsState>(
         builder: (context, state) {
+          final displayedLogs = state.logType < 0
+              ? state.logs
+              : state.logs
+                    .where(
+                      (log) => int.tryParse(log.logType) == state.logType,
+                    )
+                    .toList(growable: false);
+
           if (state.isLoading && state.logs.isEmpty) {
             return const Center(
               child: CircularProgressIndicator(color: AppColors.primaryDark),
@@ -40,10 +48,10 @@ class CsLogsTableWidget extends StatelessWidget {
               ),
             );
           } else {
-            if (state.logs.isEmpty) {
+            if (displayedLogs.isEmpty) {
               return const Center(
                 child: Text(
-                  "No Data",
+                  "No logs match the selected filter.",
                   style: TextStyle(color: AppColors.secondaryTextColorDark),
                 ),
               );
@@ -51,7 +59,7 @@ class CsLogsTableWidget extends StatelessWidget {
 
             return LayoutBuilder(
               builder: (context, constraints) {
-                return _buildLogTable(state.logs, constraints.maxWidth);
+                return _buildLogTable(displayedLogs, constraints.maxWidth);
               },
             );
           }
@@ -130,6 +138,25 @@ class CsLogsTableWidget extends StatelessWidget {
       );
     }).toList();
 
-    return AppDataGrid(columns: columns, rows: rows);
+    // TrinaGrid owns an internal row store. Recreate it when either the
+    // available width or the returned log content changes; otherwise a new
+    // search can remain visually stale until the window is resized.
+    final dataVersion = Object.hashAll(
+      logs.map(
+        (log) => Object.hash(
+          log.csLoginId,
+          log.onlineLoginId,
+          log.logTime,
+          log.approvalId,
+          log.logType,
+          log.descriptions,
+        ),
+      ),
+    );
+    return AppDataGrid(
+      key: ValueKey('cs-logs-${maxWidth.floor()}-$dataVersion'),
+      columns: columns,
+      rows: rows,
+    );
   }
 }

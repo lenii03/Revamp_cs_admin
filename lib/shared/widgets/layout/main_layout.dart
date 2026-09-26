@@ -34,6 +34,7 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   String _selectedRoute = 'dashboard';
   bool _isSidebarOpen = true;
+  bool _isCompactSidebarOpen = false;
   bool _isLoggingOut = false;
   String _appVersion = '';
   String _serverUrl = '';
@@ -56,9 +57,8 @@ class _MainLayoutState extends State<MainLayout> {
     _loadAppVersion();
     _loadServerUrl();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Future<void>.delayed(const Duration(milliseconds: 250));
       if (mounted) {
-        await WindowsManageHelper.setFullScreen();
+        await WindowsManageHelper.setMainWindow();
       }
     });
   }
@@ -128,10 +128,17 @@ class _MainLayoutState extends State<MainLayout> {
             height: 1.0,
           ),
         ),
-            leading: IconButton(
-          icon: Icon(Icons.menu, color: Theme.of(context).iconTheme.color),
-          onPressed: () => setState(() => _isSidebarOpen = !_isSidebarOpen),
-        ),
+            leading: MediaQuery.sizeOf(context).width < 800
+                ? IconButton(
+                    icon: Icon(
+                      Icons.menu,
+                      color: Theme.of(context).iconTheme.color,
+                    ),
+                    onPressed: () => setState(
+                      () => _isCompactSidebarOpen = !_isCompactSidebarOpen,
+                    ),
+                  )
+                : null,
             title: AppDragToMoveArea(
               child: SizedBox(
                 height: kToolbarHeight,
@@ -285,9 +292,27 @@ class _MainLayoutState extends State<MainLayout> {
           if (!compact) {
             return Row(
               children: [
-                if (_isSidebarOpen)
-                  SizedBox(width: 260, child: _buildSidebar()),
-                Expanded(child: page),
+                // One source of truth drives both the sidebar width and its
+                // content width. This avoids the former 60-to-260 animation
+                // being out of sync with an already-expanded child menu.
+                TweenAnimationBuilder<double>(
+                  duration: const Duration(milliseconds: 180),
+                  curve: Curves.easeOutCubic,
+                  tween: Tween<double>(end: _isSidebarOpen ? 260 : 60),
+                  builder: (context, sidebarWidth, _) {
+                    final showLabels = sidebarWidth >= 190;
+                    return SizedBox(
+                      width: sidebarWidth,
+                      child: RepaintBoundary(
+                        child: _buildSidebar(
+                          isExpanded: showLabels,
+                          expandedWidth: sidebarWidth,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                Expanded(child: RepaintBoundary(child: page)),
               ],
             );
           }
@@ -296,24 +321,31 @@ class _MainLayoutState extends State<MainLayout> {
           return Stack(
             children: [
               Positioned.fill(child: page),
-              if (_isSidebarOpen)
+              if (_isCompactSidebarOpen)
                 Positioned.fill(
                   child: GestureDetector(
-                    onTap: () => setState(() => _isSidebarOpen = false),
+                    onTap: () =>
+                        setState(() => _isCompactSidebarOpen = false),
                     child: Container(color: Colors.black38),
                   ),
                 ),
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeInOut,
-                left: _isSidebarOpen ? 0 : -sidebarWidth,
+                left: _isCompactSidebarOpen ? 0 : -sidebarWidth,
                 top: 0,
                 bottom: 0,
                 width: sidebarWidth,
                 child: Material(
                   elevation: 12,
                   color: Theme.of(context).scaffoldBackgroundColor,
-                  child: _buildSidebar(closeAfterSelection: true),
+                  child: _buildSidebar(
+                    closeAfterSelection: true,
+                    isExpanded: true,
+                    expandedWidth: sidebarWidth,
+                    onToggleRequested: () =>
+                        setState(() => _isCompactSidebarOpen = false),
+                  ),
                 ),
               ),
             ],
@@ -352,7 +384,12 @@ class _MainLayoutState extends State<MainLayout> {
     return Tooltip(message: tooltip ?? label, child: badge);
   }
 
-  Widget _buildSidebar({bool closeAfterSelection = false}) {
+  Widget _buildSidebar({
+    bool closeAfterSelection = false,
+    bool isExpanded = true,
+    double expandedWidth = 260,
+    VoidCallback? onToggleRequested,
+  }) {
     return Theme(
       data: Theme.of(context).copyWith(
         splashColor: Colors.transparent,
@@ -360,14 +397,22 @@ class _MainLayoutState extends State<MainLayout> {
         splashFactory: NoSplash.splashFactory,
       ),
       child: SizedBox(
-        width: 260,
+        width: expandedWidth,
         child: AppSidebar(
-          isOpen: _isSidebarOpen,
+          isOpen: isExpanded,
+          expandedWidth: expandedWidth,
           selectedRoute: _selectedRoute,
+          onExpandRequested: () => setState(() => _isSidebarOpen = true),
+          onToggleRequested:
+              onToggleRequested ??
+              () => setState(() => _isSidebarOpen = !_isSidebarOpen),
           onItemSelected: (route) {
             _onMenuSelected(route);
             if (closeAfterSelection && route != 'logout') {
-              setState(() => _isSidebarOpen = false);
+              setState(() {
+                _isSidebarOpen = false;
+                _isCompactSidebarOpen = false;
+              });
             }
           },
         ),

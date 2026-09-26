@@ -377,7 +377,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundDark,
+      backgroundColor: Colors.transparent,
       body: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Stack(
@@ -418,12 +418,13 @@ class _LoginPageState extends State<LoginPage> {
             ),
             LayoutBuilder(
               builder: (context, constraints) {
-                final compact = constraints.maxWidth < 900;
+                final compact = constraints.maxWidth < 760;
+                final shortWindow = constraints.maxHeight < 520;
                 return Row(
                   children: [
                     if (!compact)
                       Expanded(
-                        flex: 1,
+                        flex: 9,
                         child: Container(
                           padding: const EdgeInsets.all(36.0),
                           color: Colors.transparent,
@@ -504,12 +505,20 @@ class _LoginPageState extends State<LoginPage> {
                       ),
 
                     Expanded(
-                      flex: 1,
+                      flex: 11,
                       child: Container(
                         color: Colors.transparent,
-                        padding: EdgeInsets.all(compact ? 24 : 36),
+                        padding: EdgeInsets.fromLTRB(
+                          compact ? 24 : 36,
+                          shortWindow ? 16 : 36,
+                          compact ? 24 : 36,
+                          shortWindow ? 16 : 36,
+                        ),
                         child: Column(
                           children: [
+                            // Reserve the custom title-bar controls area on
+                            // the short 800 x 460 login window.
+                            if (shortWindow) const SizedBox(height: 20),
                             Align(
                               alignment: Alignment.topRight,
                               child: OutlinedButton.icon(
@@ -701,7 +710,7 @@ class _LoginPageState extends State<LoginPage> {
                               ),
                             ),
                             const Spacer(),
-                            const SizedBox(height: 34),
+                            SizedBox(height: shortWindow ? 0 : 34),
                           ],
                         ),
                       ),

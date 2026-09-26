@@ -14,20 +14,9 @@ class ManageCsTopBar extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Container(
-          width: 300,
-          height: 45,
-          decoration: BoxDecoration(
-            color: Theme.of(
-              context,
-            ).extension<ThemeColors>()?.appContainerBackground,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.separatorDark
-                  : AppColors.separatorLight,
-            ),
-          ),
+        SizedBox(
+          width: 320,
+          height: 48,
           child: TextField(
             style: TextStyle(
               color: Theme.of(context).textTheme.bodyLarge?.color,
@@ -36,6 +25,10 @@ class ManageCsTopBar extends StatelessWidget {
             onChanged: (value) =>
                 context.read<ManageCsBloc>().add(SearchCsUser(value)),
             decoration: InputDecoration(
+              filled: true,
+              fillColor: Theme.of(
+                context,
+              ).extension<ThemeColors>()?.appContainerBackground,
               hintText: 'Search',
               hintStyle: TextStyle(
                 color: Theme.of(
@@ -49,10 +42,30 @@ class ManageCsTopBar extends StatelessWidget {
                 ).extension<ThemeColors>()?.unselectedLabel,
                 size: 20,
               ),
-              border: InputBorder.none,
-              enabledBorder: InputBorder.none,
-              focusedBorder: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.separatorDark
+                      : AppColors.separatorLight,
+                ),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppColors.separatorDark
+                      : AppColors.separatorLight,
+                ),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: const BorderSide(
+                  color: AppColors.primaryColor,
+                  width: 1.5,
+                ),
+              ),
+              contentPadding: const EdgeInsets.symmetric(vertical: 14),
             ),
           ),
         ),

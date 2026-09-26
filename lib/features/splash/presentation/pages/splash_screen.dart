@@ -159,27 +159,33 @@ class _SplashScreenState extends State<SplashScreen> {
           final effectiveState = _simulatedState ?? state;
           final view = _UpdateViewData.fromState(effectiveState);
           return Scaffold(
-            backgroundColor: const Color(0xFF07111A),
-            body: Stack(
-              children: [
+            backgroundColor: Colors.transparent,
+            body: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              clipBehavior: Clip.antiAlias,
+              child: Stack(
+                children: [
                 const Positioned.fill(child: _SplashBackground()),
                 SafeArea(
                   child: LayoutBuilder(
                     builder: (context, constraints) {
+                      final compactHeight = constraints.maxHeight < 560;
+                      final outerPadding = compactHeight ? 12.0 : 24.0;
                       return SingleChildScrollView(
-                        padding: const EdgeInsets.all(24),
+                        padding: EdgeInsets.all(outerPadding),
                         child: ConstrainedBox(
                           constraints: BoxConstraints(
-                            minHeight: constraints.maxHeight - 48,
+                            minHeight:
+                                constraints.maxHeight - (outerPadding * 2),
                           ),
                           child: Center(
                             child: Container(
-                              width: 520,
-                              padding: const EdgeInsets.fromLTRB(
-                                40,
-                                32,
-                                40,
-                                36,
+                              width: compactHeight ? 500 : 520,
+                              padding: EdgeInsets.fromLTRB(
+                                compactHeight ? 28 : 40,
+                                compactHeight ? 18 : 32,
+                                compactHeight ? 28 : 40,
+                                compactHeight ? 20 : 36,
                               ),
                               decoration: BoxDecoration(
                                 color: const Color(
@@ -204,8 +210,8 @@ class _SplashScreenState extends State<SplashScreen> {
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Container(
-                                        width: 34,
-                                        height: 34,
+                                        width: compactHeight ? 30 : 34,
+                                        height: compactHeight ? 30 : 34,
                                         decoration: BoxDecoration(
                                           color: AppColors.primaryColor
                                               .withValues(alpha: 0.12),
@@ -213,25 +219,25 @@ class _SplashScreenState extends State<SplashScreen> {
                                             10,
                                           ),
                                         ),
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.admin_panel_settings_outlined,
                                           color: AppColors.primaryColor,
-                                          size: 21,
+                                          size: compactHeight ? 19 : 21,
                                         ),
                                       ),
                                       const SizedBox(width: 10),
-                                      const Text(
+                                      Text(
                                         'CS Admin',
                                         style: TextStyle(
                                           color: Colors.white,
-                                          fontSize: 18,
+                                          fontSize: compactHeight ? 17 : 18,
                                           fontWeight: FontWeight.w700,
                                         ),
                                       ),
                                     ],
                                   ),
                                   SizedBox(
-                                    height: 210,
+                                    height: compactHeight ? 120 : 210,
                                     child: Lottie.asset(
                                       'assets/animations/paperplane_loading.json',
                                       repeat: view.animate,
@@ -241,31 +247,31 @@ class _SplashScreenState extends State<SplashScreen> {
                                   Text(
                                     view.title,
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       color: Colors.white,
-                                      fontSize: 22,
+                                      fontSize: compactHeight ? 20 : 22,
                                       fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   if (view.description.isNotEmpty) ...[
-                                    const SizedBox(height: 10),
+                                    SizedBox(height: compactHeight ? 6 : 10),
                                     Text(
                                       view.description,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Color(0xFF9EB0C2),
-                                        height: 1.5,
-                                        fontSize: 14,
+                                      style: TextStyle(
+                                        color: const Color(0xFF9EB0C2),
+                                        height: compactHeight ? 1.35 : 1.5,
+                                        fontSize: compactHeight ? 13 : 14,
                                       ),
                                     ),
                                   ],
                                   if (effectiveState
                                       is AutoUpdateDownloading) ...[
-                                    const SizedBox(height: 28),
+                                    SizedBox(height: compactHeight ? 16 : 28),
                                     _DownloadProgress(state: effectiveState),
                                   ] else if (effectiveState
                                       is AutoUpdateLoading) ...[
-                                    const SizedBox(height: 28),
+                                    SizedBox(height: compactHeight ? 16 : 28),
                                     const LinearProgressIndicator(
                                       minHeight: 5,
                                       borderRadius: BorderRadius.all(
@@ -275,8 +281,11 @@ class _SplashScreenState extends State<SplashScreen> {
                                       backgroundColor: Color(0xFF203244),
                                     ),
                                   ],
-                                  const SizedBox(height: 28),
-                                  _buildActions(effectiveState),
+                                  SizedBox(height: compactHeight ? 16 : 28),
+                                  _buildActions(
+                                    effectiveState,
+                                    compact: compactHeight,
+                                  ),
                                 ],
                               ),
                             ),
@@ -293,8 +302,13 @@ class _SplashScreenState extends State<SplashScreen> {
                   height: 28,
                   child: AppDragToMoveArea(child: SizedBox.expand()),
                 ),
-                const Positioned(top: 0, right: 0, child: AppWindowControls()),
-              ],
+                  const Positioned(
+                    top: 0,
+                    right: 0,
+                    child: AppWindowControls(),
+                  ),
+                ],
+              ),
             ),
           );
         },
@@ -302,7 +316,7 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 
-  Widget _buildActions(AutoUpdateState state) {
+  Widget _buildActions(AutoUpdateState state, {required bool compact}) {
     if (state is AutoUpdateFailure) {
       return Row(
         children: [
@@ -310,7 +324,7 @@ class _SplashScreenState extends State<SplashScreen> {
             child: OutlinedButton(
               onPressed: _navigateToLogin,
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: compact ? 10 : 14),
                 foregroundColor: const Color(0xFF9EB0C2),
                 side: const BorderSide(color: Color(0xFF30445A)),
               ),
@@ -324,7 +338,7 @@ class _SplashScreenState extends State<SplashScreen> {
               icon: const Icon(Icons.settings_ethernet, size: 15),
               label: const Text('Server IP', style: TextStyle(fontSize: 12)),
               style: OutlinedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: compact ? 10 : 14),
                 foregroundColor: AppColors.primaryColor,
                 side: const BorderSide(color: Color(0xFF30445A)),
               ),
@@ -337,7 +351,7 @@ class _SplashScreenState extends State<SplashScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primaryColor,
                 foregroundColor: const Color(0xFF07111A),
-                padding: const EdgeInsets.symmetric(vertical: 14),
+                padding: EdgeInsets.symmetric(vertical: compact ? 10 : 14),
               ),
               child: const Text(
                 'Try Again',
@@ -357,7 +371,7 @@ class _SplashScreenState extends State<SplashScreen> {
           style: ElevatedButton.styleFrom(
             backgroundColor: AppColors.primaryColor,
             foregroundColor: const Color(0xFF07111A),
-            padding: const EdgeInsets.symmetric(vertical: 14),
+            padding: EdgeInsets.symmetric(vertical: compact ? 10 : 14),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

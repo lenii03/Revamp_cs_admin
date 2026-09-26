@@ -197,11 +197,13 @@ class ManageCsTableWidget extends StatelessWidget {
         field: 'action',
         type: TrinaColumnType.text(),
         width: 60,
+        readOnly: true,
         frozen: TrinaColumnFrozen.end,
         enableSorting: false,
         enableContextMenu: false,
         enableDropToResize: false,
         enableColumnDrag: false,
+        enableEditingMode: false,
         renderer: (rendererContext) {
           final loginIdStr =
               rendererContext.row.cells['loginId']?.value.toString() ?? '';
@@ -290,7 +292,13 @@ class ManageCsTableWidget extends StatelessWidget {
       );
     }).toList();
 
-    return AppDataGrid(key: ValueKey(dataList), columns: columns, rows: rows);
+    return AppDataGrid(
+      key: ValueKey(dataList),
+      columns: columns,
+      rows: rows,
+      enableHeaderTools: false,
+      selectingMode: TrinaGridSelectingMode.row,
+    );
   }
 
   void _showDeleteDialog(BuildContext context, String loginId) {

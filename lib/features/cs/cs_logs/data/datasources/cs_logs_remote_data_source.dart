@@ -30,9 +30,12 @@ class CsLogsRemoteDataSourceImpl implements CsLogsRemoteDataSource {
       queryParameters: {
         'page': page,
         'size': pageSize,
-        if (loginId != null && loginId.isNotEmpty) 'csLoginId': loginId,
-        if (targetId != null && targetId.isNotEmpty) 'loginId': targetId,
-        if (logType != null && logType >= 0) 'logType': logType,
+        // Keep the request contract identical to the legacy CS Admin.
+        // The API may distinguish an omitted filter from an explicit
+        // "Show All" value (-1) or an empty search field.
+        'csLoginId': loginId ?? '',
+        'loginId': targetId ?? '',
+        'logType': logType ?? -1,
       },
     );
     final data = response.data is Map ? response.data['data'] : null;

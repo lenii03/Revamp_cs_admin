@@ -146,6 +146,9 @@ class ApproveOpeningTableWidget extends StatelessWidget {
       mode: TrinaGridMode.selectWithOneTap,
       columns: columns,
       rows: rows,
+      // This table has a small, fixed set of fields. Scale the columns to
+      // fill the available desktop width instead of leaving an empty area.
+      autoSizeMode: TrinaAutoSizeMode.scale,
       onSelected: (event) {
         final loginId = event.row.cells['loginId']?.value.toString() ?? '';
         final custId = event.row.cells['custId']?.value.toString() ?? '';

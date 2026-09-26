@@ -351,7 +351,14 @@ class ApprovalTableWidget extends StatelessWidget {
       );
     }).toList();
 
-    return AppDataGrid(columns: columns, rows: rows);
+    return AppDataGrid(
+      columns: columns,
+      rows: rows,
+      // Unlike the very wide Manage CS table, this set of columns fits in a
+      // desktop view. Scale it to keep the table filled when the window size
+      // changes.
+      autoSizeMode: TrinaAutoSizeMode.scale,
+    );
   }
 
   String _getLoginTypeName(int type) {
