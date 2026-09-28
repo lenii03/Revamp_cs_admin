@@ -10,7 +10,6 @@ import 'package:el_csadmin/injector.dart';
 import '../../../../../core/constants/endpoint.dart';
 import '../../../../../features/online/approval/data/models/approval_screen_model.dart';
 import '../../../../../features/cs/manage_cs/data/models/cs_user_model.dart';
-import '../../../../../features/reports/reset_password_report/data/models/reset_password_report_model.dart';
 
 abstract class ApiDatafeedNetworkDataSource {
   Future<List<ManageCsUsersModel>> fetchCsList();
@@ -37,7 +36,6 @@ abstract class ApiDatafeedNetworkDataSource {
     String loginId,
     String approvalId,
   );
-  // Future<List<ResetPasswordReportModel>> fetchResetPasswordReports();
   Future<void> addCsUser(Map<String, dynamic> requestData);
   Future<void> deleteCsUser(String loginId);
   Future<void> editCsUser(Map<String, dynamic> requestData);
@@ -224,11 +222,6 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
     }
 
     return {'old': oldLinks, 'new': newLinks};
-  }
-
-  Future<List<ResetPasswordReportModel>> fetchResetPasswordReports() {
-    // TODO: implement fetchResetPasswordReports
-    throw UnimplementedError();
   }
 
   @override
@@ -687,67 +680,23 @@ class ApiDatafeedNetworkDataSourceMockImpl
     ];
   }
 
-  // @override
-  // Future<List<ResetPasswordReportModel>> fetchResetPasswordReports() async {
-  //   await Future.delayed(const Duration(milliseconds: 800));
-
-  //   return [
-  //     ResetPasswordReportModel(
-  //       no: '1',
-  //       clientCode: 'A001',
-  //       clientName: 'Budi Santoso',
-  //       requestDate: '2026-06-18 10:00',
-  //       reason: 'Forgot Password',
-  //       validation1: 'Valid',
-  //       validation2: 'Matched',
-  //       approveBy: 'admin',
-  //       approveDate: '2026-06-18 10:15',
-  //     ),
-  //     ResetPasswordReportModel(
-  //       no: '2',
-  //       clientCode: 'B005',
-  //       clientName: 'Siti Aminah',
-  //       requestDate: '2026-06-17 14:30',
-  //       reason: 'Locked Account',
-  //       validation1: 'Valid',
-  //       validation2: 'Matched',
-  //       approveBy: 'dimas2',
-  //       approveDate: '2026-06-17 15:00',
-  //     ),
-  //     ResetPasswordReportModel(
-  //       no: '3',
-  //       clientCode: 'C102',
-  //       clientName: 'Andi Wijaya',
-  //       requestDate: '2026-06-16 09:20',
-  //       reason: 'Forgot PIN',
-  //       validation1: 'Pending',
-  //       validation2: 'Pending',
-  //       approveBy: '-',
-  //       approveDate: '-',
-  //     ),
-  //   ];
-  // }
-
   @override
   Future<void> addCsUser(Map<String, dynamic> requestData) async {
     await Future.delayed(const Duration(milliseconds: 1000));
   }
 
   @override
-  Future<void> deleteCsUser(String loginId) {
-    // TODO: implement deleteCsUser
-    throw UnimplementedError();
+  Future<void> deleteCsUser(String loginId) async {
+    await Future.delayed(const Duration(milliseconds: 1000));
   }
 
   @override
   Future<void> editCsUser(Map<String, dynamic> requestData) {
-    // TODO: implement editCsUser
     throw UnimplementedError();
   }
 
   @override
   Future<void> resetPassword(Map<String, dynamic> requestData) {
-    // TODO: implement resetPassword
     throw UnimplementedError();
   }
 
@@ -756,8 +705,6 @@ class ApiDatafeedNetworkDataSourceMockImpl
     String loginId,
     String approvalId,
   ) {
-    // <-- Tambahkan parameter kedua di sini
-    // TODO: implement fetchLinkedAccountsDetail
     throw UnimplementedError();
   }
 
@@ -815,7 +762,6 @@ class ApiDatafeedNetworkDataSourceMockImpl
     String? custId,
     String? loginId,
   }) {
-    // TODO: implement fetchOpeningAccounts
     throw UnimplementedError();
   }
 
@@ -829,7 +775,6 @@ class ApiDatafeedNetworkDataSourceMockImpl
 
   @override
   Future<void> createSchedulerNotification(Map<String, dynamic> payload) {
-    // TODO: implement createSchedulerNotification
     throw UnimplementedError();
   }
 
@@ -838,13 +783,11 @@ class ApiDatafeedNetworkDataSourceMockImpl
     int page = 1,
     int size = 10,
   }) {
-    // TODO: implement fetchSchedulerNotifications
     throw UnimplementedError();
   }
 
   @override
   Future<void> sendPushNotification(Map<String, dynamic> payload) {
-    // TODO: implement sendPushNotification
     throw UnimplementedError();
   }
 
@@ -868,7 +811,6 @@ class ApiDatafeedNetworkDataSourceMockImpl
 
   @override
   Future<void> updateApprovalStatus(Map<String, dynamic> payload) {
-    // TODO: implement updateApprovalStatus
     throw UnimplementedError();
   }
 }

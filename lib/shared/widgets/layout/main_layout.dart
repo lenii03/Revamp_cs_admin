@@ -19,7 +19,6 @@ import '../../../features/user_communication/send_email/presentation/pages/send_
 import '../../../features/online/approval/presentation/pages/approval_screen_page.dart';
 import '../../../features/dashboard/presentation/pages/dashboard_page.dart';
 import '../../../features/cs/manage_cs/presentation/pages/manage_cs_page.dart';
-import '../../../features/reports/report_send_pwd_pin/presentation/pages/report_send_pwd_pin_page.dart';
 import 'app_sidebar.dart';
 import '../app_drag_to_move_area.dart';
 import '../app_window_controls.dart';
@@ -45,7 +44,6 @@ class _MainLayoutState extends State<MainLayout> {
     'show_cs_logs': const ShowCsLogsPage(),
     'create_online_id': const CreateOnlineIdPage(),
     'approval_screen': const ApprovalScreenPage(),
-    'report_send_pwd_pin': const ReportSendPwdPinPage(),
     'send_email_forgot': const SendEmailForgotPage(),
     'approve_opening': const ApproveOpeningAccountPage(),
     'notification': const NotificationPage(),
