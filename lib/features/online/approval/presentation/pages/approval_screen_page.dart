@@ -25,16 +25,25 @@ class ApprovalScreenPage extends StatelessWidget {
       ],
       child: Material(
         color: Theme.of(context).scaffoldBackgroundColor,
-        child: Padding(
-          padding: const EdgeInsets.all(32.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ApprovalTopBarWidget(showBackButton: showBackButton),
-              const SizedBox(height: 24),
-              const Expanded(child: ApprovalTableWidget()),
-            ],
-          ),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final compact =
+                constraints.maxHeight < 850 || constraints.maxWidth < 1100;
+            final padding = compact ? 16.0 : 32.0;
+            final spacing = compact ? 16.0 : 24.0;
+
+            return Padding(
+              padding: EdgeInsets.all(padding),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  ApprovalTopBarWidget(showBackButton: showBackButton),
+                  SizedBox(height: spacing),
+                  const Expanded(child: ApprovalTableWidget()),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );

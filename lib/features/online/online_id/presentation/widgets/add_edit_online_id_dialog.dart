@@ -10,6 +10,7 @@ import '../../../../../shared/widgets/app_notice_dialog.dart';
 
 class AddEditOnlineIdDialog extends StatefulWidget {
   final bool isEdit;
+  final bool demoOnly;
   final Map<String, dynamic>? initialData;
   final Function(Map<String, dynamic>) onSave;
 
@@ -17,6 +18,7 @@ class AddEditOnlineIdDialog extends StatefulWidget {
     super.key,
     required this.isEdit,
     required this.onSave,
+    this.demoOnly = false,
     this.initialData,
   });
 
@@ -80,6 +82,10 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
       text: _neverExpired ? '' : expDate,
     );
     _accountSearchCtrl = TextEditingController();
+
+    if (widget.demoOnly && !widget.isEdit) {
+      _loginType = 0;
+    }
 
     if (widget.initialData?['loginType'] != null) {
       final val = widget.initialData!['loginType'].toString();
@@ -964,7 +970,9 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
           dropdownColor: dropdownBgColor,
           icon: const Icon(Icons.arrow_drop_down, color: Colors.grey),
           style: TextStyle(color: textColor, fontSize: 13),
-          onChanged: (int? newValue) {
+          onChanged: widget.demoOnly && !widget.isEdit
+              ? null
+              : (int? newValue) {
             setState(() {
               _loginType = newValue ?? 0;
               if (_loginType != 1) {
@@ -975,14 +983,21 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
               }
             });
           },
-          items: const [
-            DropdownMenuItem(value: 0, child: Text("Demo Account")),
-            DropdownMenuItem(value: 1, child: Text("Client")),
-            DropdownMenuItem(value: 2, child: Text("Sales")),
-            DropdownMenuItem(value: 3, child: Text("Branch")),
-            DropdownMenuItem(value: 4, child: Text("CS View All Account")),
-            DropdownMenuItem(value: 5, child: Text("CS Branch")),
-          ],
+          items: widget.demoOnly && !widget.isEdit
+              ? const [
+                  DropdownMenuItem(value: 0, child: Text("Demo Account")),
+                ]
+              : const [
+                  DropdownMenuItem(value: 0, child: Text("Demo Account")),
+                  DropdownMenuItem(value: 1, child: Text("Client")),
+                  DropdownMenuItem(value: 2, child: Text("Sales")),
+                  DropdownMenuItem(value: 3, child: Text("Branch")),
+                  DropdownMenuItem(
+                    value: 4,
+                    child: Text("CS View All Account"),
+                  ),
+                  DropdownMenuItem(value: 5, child: Text("CS Branch")),
+                ],
         ),
       ),
     );

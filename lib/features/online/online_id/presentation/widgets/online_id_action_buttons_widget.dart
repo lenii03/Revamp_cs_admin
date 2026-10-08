@@ -7,6 +7,7 @@ import 'package:el_csadmin/features/online/online_id/presentation/widgets/link_a
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
+import '../../../../../core/authorization/app_permission.dart';
 
 class OnlineIdActionButtonsWidget extends StatelessWidget {
   const OnlineIdActionButtonsWidget({super.key});
@@ -114,10 +115,35 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
 
     return ElevatedButton.icon(
       onPressed: () {
+        final hasFullOnlineAccess = AppPermissionGate.canCreateOnlineUsers;
+        final hasDemoOnlyAccess =
+            !hasFullOnlineAccess && AppPermissionGate.canCreateDemoAccounts;
+        if (!hasFullOnlineAccess && !hasDemoOnlyAccess) {
+          _showAccessDenied(context, title);
+          return;
+        }
+
         if (title != "Add" && selectedUser == null) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text("Please select a user from the table first."),
+              backgroundColor: Colors.orange,
+            ),
+          );
+          return;
+        }
+
+        if (title == 'Link Account' && !hasFullOnlineAccess) {
+          _showAccessDenied(context, 'link accounts');
+          return;
+        }
+
+        if (hasDemoOnlyAccess &&
+            title != 'Add' &&
+            selectedUser!.loginType != 0) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('You can only manage Demo Account users.'),
               backgroundColor: Colors.orange,
             ),
           );
@@ -132,6 +158,7 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
             context: context,
             builder: (ctx) => AddEditOnlineIdDialog(
               isEdit: false,
+              demoOnly: hasDemoOnlyAccess,
               onSave: (data) => context.read<OnlineIdBloc>().add(
                 OnlineIdEvent.addOnlineId(data),
               ),
@@ -147,6 +174,7 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
             context: context,
             builder: (ctx) => AddEditOnlineIdDialog(
               isEdit: true,
+              demoOnly: hasDemoOnlyAccess,
               initialData: {
                 "loginId": loginId,
                 "email": email == '-' ? '' : email,
@@ -185,6 +213,15 @@ class OnlineIdActionButtonsWidget extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         elevation: 0,
+      ),
+    );
+  }
+
+  void _showAccessDenied(BuildContext context, String action) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('You do not have permission to $action.'),
+        backgroundColor: AppColors.destructiveRedDark,
       ),
     );
   }

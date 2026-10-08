@@ -1,4 +1,5 @@
 import 'package:el_csadmin/core/theme/theme.dart';
+import 'package:el_csadmin/core/authorization/app_permission.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../../../core/theme/src/app_colors.dart';
@@ -70,8 +71,9 @@ class ManageCsTopBar extends StatelessWidget {
           ),
         ),
 
-        ElevatedButton.icon(
-          onPressed: () {
+        if (AppPermissionGate.canManageCs)
+          ElevatedButton.icon(
+            onPressed: () {
             showDialog(
               context: context,
               builder: (dialogContext) {
@@ -84,20 +86,20 @@ class ManageCsTopBar extends StatelessWidget {
                 );
               },
             );
-          },
-          icon: const Icon(Icons.add, color: Colors.white, size: 20),
-          label: const Text(
-            "Add New User",
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-          ),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.primaryColor,
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
+            },
+            icon: const Icon(Icons.add, color: Colors.white, size: 20),
+            label: const Text(
+              "Add New User",
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primaryColor,
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
             ),
           ),
-        ),
       ],
     );
   }

@@ -63,6 +63,13 @@ class AppDataGrid extends StatelessWidget {
             // The grid provides horizontal scrolling when the content is wider.
             autoSizeMode: autoSizeMode,
           ),
+          scrollbar: TrinaGridScrollbarConfig(
+            isAlwaysShown: true,
+            thumbColor: AppColors.primaryColor.withValues(alpha: 0.65),
+            trackColor: Theme.of(
+              context,
+            ).colorScheme.outlineVariant.withValues(alpha: 0.45),
+          ),
           style: TrinaGridStyleConfig(
             columnHeight: _columnHeight,
             rowHeight: _rowHeight,

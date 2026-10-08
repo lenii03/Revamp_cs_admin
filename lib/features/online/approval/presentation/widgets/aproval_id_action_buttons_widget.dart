@@ -18,7 +18,6 @@ class ApprovalActionButtonsWidget extends StatelessWidget {
           loaded: (_, user, _, _) => user,
           orElse: () => null,
         );
-
         return Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

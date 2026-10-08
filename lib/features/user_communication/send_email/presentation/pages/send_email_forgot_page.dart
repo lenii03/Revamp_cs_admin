@@ -34,6 +34,8 @@ class SendEmailForgotPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
+          final titleColor = Theme.of(context).textTheme.bodyLarge?.color ??
+              AppColors.textColorDark;
           final pendingCount = state.dataList
               .where((item) => item.status == 1)
               .length;
@@ -46,8 +48,8 @@ class SendEmailForgotPage extends StatelessWidget {
                   children: [
                     Text(
                       "Send Email Forgot PIN & Password (${state.dataList.length})",
-                      style: const TextStyle(
-                        color: AppColors.textColorDark,
+                      style: TextStyle(
+                        color: titleColor,
                         fontSize: 20.0,
                         fontWeight: FontWeight.bold,
                       ),

@@ -376,23 +376,38 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final titleColor = isDark ? AppColors.textWhite : AppColors.textColorLight;
+    final secondaryColor = isDark
+        ? AppColors.textGrey
+        : AppColors.secondaryTextColorLight;
+    final borderColor = isDark
+        ? AppColors.textGrey.withValues(alpha: 0.5)
+        : AppColors.separatorLight;
+
     return Scaffold(
       backgroundColor: Colors.transparent,
       body: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: Stack(
           children: [
-            const Positioned.fill(
+            Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
-                    colors: [
-                      Color(0xFF07131B),
-                      Color(0xFF0A1721),
-                      Color(0xFF101D2A),
-                    ],
+                    colors: isDark
+                        ? const [
+                            Color(0xFF07131B),
+                            Color(0xFF0A1721),
+                            Color(0xFF101D2A),
+                          ]
+                        : const [
+                            Color(0xFFF8FAFC),
+                            Color(0xFFF1F5F9),
+                            Color(0xFFEAF4F8),
+                          ],
                     stops: [0, 0.48, 1],
                   ),
                 ),
@@ -405,7 +420,7 @@ class _LoginPageState extends State<LoginPage> {
               height: 170,
               child: IgnorePointer(
                 child: Opacity(
-                  opacity: 0.13,
+                  opacity: isDark ? 0.13 : 0.06,
                   child: Lottie.asset(
                     'assets/animations/moving_wave.json',
                     fit: BoxFit.fill,
@@ -523,12 +538,8 @@ class _LoginPageState extends State<LoginPage> {
                               alignment: Alignment.topRight,
                               child: OutlinedButton.icon(
                                 style: OutlinedButton.styleFrom(
-                                  foregroundColor: AppColors.textWhite,
-                                  side: BorderSide(
-                                    color: AppColors.textGrey.withValues(
-                                      alpha: 0.5,
-                                    ),
-                                  ),
+                                  foregroundColor: titleColor,
+                                  side: BorderSide(color: borderColor),
                                 ),
                                 onPressed: _showIpConfigDialog,
                                 icon: const Icon(
@@ -545,28 +556,28 @@ class _LoginPageState extends State<LoginPage> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     "Login Screen",
                                     style: TextStyle(
-                                      color: AppColors.textWhite,
+                                      color: titleColor,
                                       fontSize: 26,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 8),
-                                  const Text(
+                                  Text(
                                     "Enter your credentials to continue.",
                                     style: TextStyle(
-                                      color: AppColors.textGrey,
+                                      color: secondaryColor,
                                       fontSize: 14,
                                     ),
                                   ),
                                   const SizedBox(height: 24),
 
-                                  const Text(
+                                  Text(
                                     "USERNAME",
                                     style: TextStyle(
-                                      color: AppColors.textGrey,
+                                      color: secondaryColor,
                                       fontSize: 12,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -594,10 +605,10 @@ class _LoginPageState extends State<LoginPage> {
                                     mainAxisAlignment:
                                         MainAxisAlignment.spaceBetween,
                                     children: [
-                                      const Text(
+                                      Text(
                                         "PASSWORD",
                                         style: TextStyle(
-                                          color: AppColors.textGrey,
+                                          color: secondaryColor,
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -635,9 +646,7 @@ class _LoginPageState extends State<LoginPage> {
                                                   AppColors.primaryColor,
                                               checkColor:
                                                   AppColors.backgroundDark,
-                                              side: const BorderSide(
-                                                color: AppColors.textGrey,
-                                              ),
+                                              side: BorderSide(color: secondaryColor),
                                               onChanged: (value) {
                                                 setState(() {
                                                   _rememberMe = value ?? false;
@@ -646,10 +655,10 @@ class _LoginPageState extends State<LoginPage> {
                                             ),
                                           ),
                                           const SizedBox(width: 8),
-                                          const Text(
+                                          Text(
                                             "Remember me",
                                             style: TextStyle(
-                                              color: AppColors.textGrey,
+                                              color: secondaryColor,
                                               fontSize: 14,
                                             ),
                                           ),
@@ -730,8 +739,8 @@ class _LoginPageState extends State<LoginPage> {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   textAlign: TextAlign.center,
-                  style: const TextStyle(
-                    color: AppColors.textGrey,
+                  style: TextStyle(
+                    color: secondaryColor,
                     fontSize: 11,
                   ),
                 ),

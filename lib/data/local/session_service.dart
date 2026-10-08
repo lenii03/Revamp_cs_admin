@@ -75,6 +75,7 @@ class SessionKey {
   static String token = base64.encode("token".codeUnits);
   static String themeMode = base64.encode("themeMode".codeUnits);
   static String loginId = base64.encode("loginId".codeUnits);
+  static String permissions = base64.encode("permissions".codeUnits);
   static String baseUrl = base64.encode("baseUrl".codeUnits);
   static String emailSetting = base64.encode("emailSetting".codeUnits);
   static String fileHash = base64.encode("fileHash".codeUnits);

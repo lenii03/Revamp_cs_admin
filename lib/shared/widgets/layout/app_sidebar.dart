@@ -2,6 +2,7 @@ import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/theme/src/app_colors.dart';
+import '../../../core/authorization/app_permission.dart';
 
 class AppSidebar extends StatefulWidget {
   const AppSidebar({
@@ -46,8 +47,14 @@ class _AppSidebarState extends State<AppSidebar> {
             padding: const EdgeInsets.symmetric(vertical: 12),
             children: [
               _menu(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded, title: 'Dashboard', selected: widget.selectedRoute == 'dashboard', onTap: () => widget.onItemSelected('dashboard')),
-              _group(id: 'cs', icon: Icons.support_agent_outlined, title: 'CS', routes: const [_Route('Manage CS Users', 'manage_cs'), _Route('Show CS Logs', 'show_cs_logs')]),
-              _group(id: 'online', icon: Icons.public_outlined, title: 'Online', routes: const [_Route('Create Online Id', 'create_online_id'), _Route('Approval Screen', 'approval_screen')]),
+              _group(id: 'cs', icon: Icons.support_agent_outlined, title: 'CS', routes: [
+                _Route('Manage CS Users', 'manage_cs', enabled: AppPermissionGate.canManageCs),
+                _Route('Show CS Logs', 'show_cs_logs', enabled: AppPermissionGate.canViewCsLogs),
+              ]),
+              _group(id: 'online', icon: Icons.public_outlined, title: 'Online', routes: [
+                _Route('Create Online Id', 'create_online_id', enabled: AppPermissionGate.canAccessOnlineUsers),
+                _Route('Approval Screen', 'approval_screen', enabled: AppPermissionGate.canApproveOnlineUsers),
+              ]),
               _group(id: 'communication', icon: Icons.mail_outline_rounded, title: 'User Communication', routes: const [_Route('Send Email Forgot PIN', 'send_email_forgot'), _Route('Approve Opening Accounts', 'approve_opening')]),
             ],
           ),
@@ -80,20 +87,37 @@ class _AppSidebarState extends State<AppSidebar> {
         duration: _duration,
         curve: Curves.easeOutCubic,
         alignment: Alignment.topCenter,
-        child: expanded ? Column(children: routes.map((item) => _subMenu(title: item.title, route: item.route)).toList()) : const SizedBox.shrink(),
+        child: expanded
+            ? Column(
+                children: routes
+                    .map(
+                      (item) => _subMenu(
+                        title: item.title,
+                        route: item.route,
+                        enabled: item.enabled,
+                      ),
+                    )
+                    .toList(),
+              )
+            : const SizedBox.shrink(),
       ),
     ]);
   }
 
-  Widget _subMenu({required String title, required String route}) {
+  Widget _subMenu({
+    required String title,
+    required String route,
+    required bool enabled,
+  }) {
     final selected = widget.selectedRoute == route;
-    final color = selected ? AppColors.primaryColor : Theme.of(context).extension<ThemeColors>()!.unselectedLabel;
+    final baseColor = selected ? AppColors.primaryColor : Theme.of(context).extension<ThemeColors>()!.unselectedLabel;
+    final color = enabled ? baseColor : baseColor.withValues(alpha: 0.38);
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 12, bottom: 4),
       child: _SidebarInkItem(
-        selected: selected,
+        selected: selected && enabled,
         borderRadius: BorderRadius.circular(8),
-        onTap: () => widget.onItemSelected(route),
+        onTap: enabled ? () => widget.onItemSelected(route) : null,
         child: SizedBox(
           height: 38,
           child: Padding(
@@ -219,7 +243,8 @@ class _SidebarInkItem extends StatelessWidget {
 }
 
 class _Route {
-  const _Route(this.title, this.route);
+  const _Route(this.title, this.route, {this.enabled = true});
   final String title;
   final String route;
+  final bool enabled;
 }

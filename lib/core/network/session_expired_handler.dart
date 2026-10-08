@@ -22,6 +22,7 @@ class SessionExpiredHandler {
       await Future.wait([
         sessionService.remove(SessionKey.token),
         sessionService.remove(SessionKey.loginId),
+        sessionService.remove(SessionKey.permissions),
         sessionService.remove(SessionKey.password),
       ]);
 

@@ -126,6 +126,10 @@ class LoginRepository extends DioApiBase<LoginUserModel> {
       if (data.isNotEmpty) {
         final LoginUserModel loginUser = LoginUserModel.fromMap(data);
         await sessionService.write(SessionKey.loginId, loginUser.loginId);
+        await sessionService.write(
+          SessionKey.permissions,
+          loginUser.permissions.toString(),
+        );
         return loginUser;
       } else {
         throw Exception("No data available in response");

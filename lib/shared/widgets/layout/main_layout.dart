@@ -1,6 +1,7 @@
 import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:el_csadmin/core/theme/theme_cubit.dart';
 import 'package:el_csadmin/core/network/server_config.dart';
+import 'package:el_csadmin/core/authorization/app_permission.dart';
 import 'package:el_csadmin/core/notifications/dashboard_notification_center.dart';
 import 'package:el_csadmin/core/window_manager/windows_manage_helper.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
@@ -80,6 +81,16 @@ class _MainLayoutState extends State<MainLayout> {
 
   void _onMenuSelected(String route) {
     if (route == 'logout') return;
+    if (!AppPermissionGate.canAccessRoute(route)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('You do not have permission to access this feature.'),
+        backgroundColor: AppColors.destructiveRedDark,
+        behavior: SnackBarBehavior.floating,
+      ),
+      );
+      return;
+    }
     setState(() => _selectedRoute = route);
   }
 
@@ -98,6 +109,7 @@ class _MainLayoutState extends State<MainLayout> {
     } finally {
       await sessionService.remove(SessionKey.token);
       await sessionService.remove(SessionKey.loginId);
+      await sessionService.remove(SessionKey.permissions);
       await sessionService.remove(SessionKey.password);
 
       if (mounted) {
@@ -286,7 +298,9 @@ class _MainLayoutState extends State<MainLayout> {
             ),
             Expanded(
               child: RepaintBoundary(
-                child: _pages[_selectedRoute] ??
+                child: !AppPermissionGate.canAccessRoute(_selectedRoute)
+                    ? const _PermissionDeniedPage()
+                    : _pages[_selectedRoute] ??
                     const Center(
                       child: Text(
                         'This page is under development',
@@ -353,6 +367,22 @@ class _MainLayoutState extends State<MainLayout> {
           onItemSelected: (route) {
             _onMenuSelected(route);
           },
+        ),
+      ),
+    );
+  }
+}
+
+class _PermissionDeniedPage extends StatelessWidget {
+  const _PermissionDeniedPage();
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Text(
+        'You do not have permission to access this feature.',
+        style: TextStyle(
+          color: Theme.of(context).extension<ThemeColors>()?.unselectedLabel,
         ),
       ),
     );

@@ -287,7 +287,7 @@ class ApprovalTableWidget extends StatelessWidget {
         title: 'Status',
         field: 'status',
         type: TrinaColumnType.text(),
-        width: 100,
+        width: 116,
         renderer: statusRenderer,
         readOnly: true,
       ),
@@ -354,10 +354,9 @@ class ApprovalTableWidget extends StatelessWidget {
     return AppDataGrid(
       columns: columns,
       rows: rows,
-      // Unlike the very wide Manage CS table, this set of columns fits in a
-      // desktop view. Scale it to keep the table filled when the window size
-      // changes.
-      autoSizeMode: TrinaAutoSizeMode.scale,
+      // Preserve readable status badges and use horizontal scrolling instead
+      // of squeezing columns when the desktop window is not maximized.
+      autoSizeMode: TrinaAutoSizeMode.none,
     );
   }
 

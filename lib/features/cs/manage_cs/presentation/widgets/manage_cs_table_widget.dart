@@ -322,29 +322,32 @@ class ManageCsTableWidget extends StatelessWidget {
                 _showResetPasswordDialog(context, userObject);
               }
             },
-            itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-              const PopupMenuItem<String>(
+            itemBuilder: (BuildContext context) {
+              final textColor = Theme.of(context).textTheme.bodyLarge?.color;
+              return <PopupMenuEntry<String>>[
+              PopupMenuItem<String>(
                 value: 'Edit',
                 child: Text(
                   'Edit',
-                  style: TextStyle(color: AppColors.textColorDark),
+                  style: TextStyle(color: textColor),
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'Delete',
                 child: Text(
                   'Delete',
-                  style: TextStyle(color: AppColors.textColorDark),
+                  style: TextStyle(color: textColor),
                 ),
               ),
-              const PopupMenuItem<String>(
+              PopupMenuItem<String>(
                 value: 'Reset',
                 child: Text(
                   'Reset Password',
-                  style: TextStyle(color: AppColors.textColorDark),
+                  style: TextStyle(color: textColor),
                 ),
               ),
-            ],
+            ];
+            },
           );
         },
       ),
