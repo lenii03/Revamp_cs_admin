@@ -67,7 +67,7 @@ class SendEmailForgotTableWidget extends StatelessWidget {
         color = const Color(0xFFE58A9B);
         icon = Icons.schedule_rounded;
       } else if (status == 2) {
-        text = "Email Sent";
+        text = "Request Submitted";
         color = const Color(0xFF22C55E);
         icon = Icons.mark_email_read_outlined;
       } else if (status == 0) {
@@ -78,27 +78,33 @@ class SendEmailForgotTableWidget extends StatelessWidget {
 
       return Align(
         alignment: Alignment.centerLeft,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.14),
-            borderRadius: BorderRadius.circular(999),
-            border: Border.all(color: color.withValues(alpha: 0.45)),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color, size: 14),
-              const SizedBox(width: 6),
-              Text(
-                text,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: color.withValues(alpha: 0.45)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, color: color, size: 14),
+                const SizedBox(width: 4),
+                Text(
+                  text,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       );
@@ -180,9 +186,7 @@ class SendEmailForgotTableWidget extends StatelessWidget {
 
     return AppDataGrid(
       key: ValueKey(
-        data
-            .map((item) => '${item.loginId}:${item.actionType}:${item.status}')
-            .join('|'),
+        '${maxWidth.round()}:${data.map((item) => '${item.loginId}:${item.actionType}:${item.status}').join('|')}',
       ),
       columns: columns,
       rows: rows,

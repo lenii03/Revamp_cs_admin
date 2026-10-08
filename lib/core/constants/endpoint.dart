@@ -18,7 +18,6 @@ class Endpoint {
   static const String putResetPw =
       "cs/change-password-customer-service-account";
   static const String deleteCs = "cs/delete-customer-service-account";
-  static const String pushNotification = "/cs/push-notification";
   static const String createSchedulerNotification =
       "/cs/create-scheduler-notification";
   static const String getListScheulerNotification =

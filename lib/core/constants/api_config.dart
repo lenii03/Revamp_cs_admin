@@ -1,8 +1,8 @@
 class ApiConfig {
   ApiConfig._();
 
-  static String defaultBaseUrl = "192.168.10.10:8080"; //default
-  static String localBaseUrl = "192.168.10.10:8080"; //local
+  static String defaultBaseUrl = "192.168.10.10:8080"; 
+  static String localBaseUrl = "192.168.10.10:8080"; 
   static const String autoUpdateBaseUrl = 'http://localhost:9008/csAdmin/';
   static const Duration receiveTimeout = Duration(milliseconds: 15000);
   static const Duration connectionTimeout = Duration(milliseconds: 15000);

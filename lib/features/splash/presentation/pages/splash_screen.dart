@@ -8,6 +8,7 @@ import 'package:lottie/lottie.dart';
 
 import '../../../../core/network/server_config.dart';
 import '../../../../core/theme/src/app_colors.dart';
+import '../../../../core/window_manager/windows_manage_helper.dart';
 import '../../../../injector.dart';
 import '../../../../shared/widgets/app_drag_to_move_area.dart';
 import '../../../../shared/widgets/app_window_controls.dart';
@@ -32,6 +33,9 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     super.initState();
     _autoUpdateBloc = locator<AutoUpdateBloc>();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      WindowsManageHelper.setLoginWindow();
+    });
     if (widget.simulateUpdate) {
       _runUpdateSimulation();
     } else {
@@ -47,7 +51,7 @@ class _SplashScreenState extends State<SplashScreen> {
     _installStarted = false;
 
     _setSimulatedState(
-      AutoUpdateLoading('Menghubungi server update (localhost:9008)...'),
+      AutoUpdateLoading('Connecting to the update server (localhost:9008)...'),
     );
 
     final isConnected = await ServerConfig.checkConnection(
@@ -59,7 +63,7 @@ class _SplashScreenState extends State<SplashScreen> {
       if (!mounted) return;
       _setSimulatedState(
         AutoUpdateFailure(
-          'Tidak dapat terhubung ke server update dummy (localhost:9008). Pastikan auto-update-server.exe aktif.',
+          'Unable to connect to the update server (localhost:9008). Make sure auto-update-server.exe is running.',
         ),
       );
       return;
@@ -489,7 +493,7 @@ class _UpdateViewData {
     }
     if (state is AutoUpdateReadyToInstall) {
       return const _UpdateViewData(
-        title: 'Pembaruan Berhasil Diunduh',
+        title: 'Update Downloaded Successfully',
         description: '',
         animate: false,
       );

@@ -1,9 +1,11 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+abstract class SendEmailForgotEvent {
+  const SendEmailForgotEvent();
+}
 
-part 'send_email_event.freezed.dart';
+class FetchSendEmailData extends SendEmailForgotEvent {
+  const FetchSendEmailData();
+}
 
-@freezed
-abstract class SendEmailForgotEvent with _$SendEmailForgotEvent {
-  const factory SendEmailForgotEvent.fetchSendEmailData() =
-      FetchSendEmailData;
+class ClearPendingRequests extends SendEmailForgotEvent {
+  const ClearPendingRequests();
 }

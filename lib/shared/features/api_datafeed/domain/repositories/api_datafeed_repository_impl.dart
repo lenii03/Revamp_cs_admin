@@ -214,18 +214,6 @@ class ApiDatafeedRepositoryImpl implements ApiDatafeedRepository {
   }
 
   @override
-  Future<Either<String, String>> sendPushNotification(
-    Map<String, dynamic> payload,
-  ) async {
-    try {
-      await _networkDataSource.sendPushNotification(payload);
-      return const Right("Push notification sent successfully");
-    } catch (e) {
-      return Left(e.toString());
-    }
-  }
-
-  @override
   Future<Either<String, String>> createSchedulerNotification(
     Map<String, dynamic> payload,
   ) async {

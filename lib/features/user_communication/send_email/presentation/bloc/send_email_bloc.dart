@@ -11,6 +11,31 @@ class SendEmailForgotBloc
     required this.queueRepository,
   }) : super(const SendEmailForgotState()) {
     on<FetchSendEmailData>(_onFetchData);
+    on<ClearPendingRequests>(_onClearPending);
+  }
+
+  Future<void> _onClearPending(
+    ClearPendingRequests event,
+    Emitter<SendEmailForgotState> emit,
+  ) async {
+    emit(state.copyWith(status: SendEmailForgotStatus.loading));
+    try {
+      await queueRepository.clearPending();
+      emit(
+        state.copyWith(
+          status: SendEmailForgotStatus.success,
+          dataList: queueRepository.load(),
+          message: 'Pending local history cleared.',
+        ),
+      );
+    } catch (e) {
+      emit(
+        state.copyWith(
+          status: SendEmailForgotStatus.failure,
+          message: 'Failed to clear pending local history: $e',
+        ),
+      );
+    }
   }
 
   Future<void> _onFetchData(

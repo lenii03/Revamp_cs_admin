@@ -62,7 +62,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
 
     if (host.isEmpty) {
       setState(() {
-        _statusMessage = "Host / IP Address tidak boleh kosong.";
+        _statusMessage = "Host / IP Address cannot be empty.";
         _isSuccess = false;
       });
       return;
@@ -80,8 +80,8 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
       _isTesting = false;
       _isSuccess = ok;
       _statusMessage = ok
-          ? "Koneksi berhasil terhubung ke server!"
-          : "Gagal terhubung ke server. Periksa IP/Port.";
+          ? "Successfully connected to the server."
+          : "Unable to connect to the server. Check the IP address and port.";
     });
   }
 
@@ -91,7 +91,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
 
     if (host.isEmpty) {
       setState(() {
-        _statusMessage = "Host / IP Address tidak boleh kosong.";
+        _statusMessage = "Host / IP Address cannot be empty.";
         _isSuccess = false;
       });
       return;
@@ -111,7 +111,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
         _isSaving = false;
         _isSuccess = false;
         _statusMessage =
-            "Gagal terhubung ke server. Pastikan server aktif atau periksa IP/Port.";
+            "Unable to connect to the server. Make sure the server is running and check the IP address and port.";
       });
       return;
     }
@@ -145,7 +145,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              "Konfigurasi Server IP",
+              "Server Configuration",
               style: TextStyle(
                 color: Colors.white,
                 fontSize: 18,
@@ -163,7 +163,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
             ),
             const SizedBox(height: 8),
             CustomTextField(
-              hintText: "Contoh: 115.85.84.52 atau localhost",
+              hintText: "Example: 115.85.84.52 or localhost",
               controller: _hostController,
               prefixIcon: Icons.dns_outlined,
               maxLength: 253,
@@ -179,7 +179,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
             ),
             const SizedBox(height: 8),
             CustomTextField(
-              hintText: "Contoh: 9001 atau 8080",
+              hintText: "Example: 9001 or 8080",
               controller: _portController,
               prefixIcon: Icons.tag,
               maxLength: 5,
@@ -231,7 +231,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
                           ),
                         )
                       : const Icon(Icons.wifi_find_rounded, size: 16),
-                  label: const Text("Tes", style: TextStyle(fontSize: 13)),
+                  label: const Text("Test Connection", style: TextStyle(fontSize: 13)),
                   style: TextButton.styleFrom(
                     foregroundColor: AppColors.primaryColor,
                     padding: const EdgeInsets.symmetric(
@@ -253,7 +253,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
                         vertical: 12,
                       ),
                     ),
-                    child: const Text("Batal"),
+                    child: const Text("Cancel"),
                   ),
                 const SizedBox(width: 8),
                 ElevatedButton(
@@ -280,7 +280,7 @@ class _ServerConfigDialogState extends State<ServerConfigDialog> {
                           ),
                         )
                       : const Text(
-                          "Simpan",
+                          "Save",
                           style: TextStyle(fontWeight: FontWeight.w700),
                         ),
                 ),

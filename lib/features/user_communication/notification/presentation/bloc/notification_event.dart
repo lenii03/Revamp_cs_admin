@@ -1,17 +1,13 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
+abstract class NotificationEvent {
+  const NotificationEvent();
+}
 
-part 'notification_event.freezed.dart';
+class FetchSchedulers extends NotificationEvent {
+  const FetchSchedulers();
+}
 
-@freezed
-abstract class NotificationEvent with _$NotificationEvent {
-  const factory NotificationEvent.fetchSchedulers() = FetchSchedulers;
+class CreateScheduler extends NotificationEvent {
+  const CreateScheduler(this.payload);
 
-  const factory NotificationEvent.sendPushNotif({
-    required String title,
-    required String subtitle,
-  }) = SendPushNotif;
-
-  const factory NotificationEvent.createScheduler(
-    Map<String, dynamic> payload,
-  ) = CreateScheduler;
+  final Map<String, dynamic> payload;
 }

@@ -59,11 +59,11 @@ class AutoUpdateRepositoryImpl implements AutoUpdateRepository {
           response,
           savePath: savePath,
           () {
-            debugPrint("Selesai mengunduh $fileName");
+            debugPrint("Finished downloading $fileName");
           },
           (received, total) {
             if (total != -1) {
-              debugPrint("Mengunduh $fileName: $received/$total bytes");
+              debugPrint("Downloading $fileName: $received/$total bytes");
             }
           },
         );

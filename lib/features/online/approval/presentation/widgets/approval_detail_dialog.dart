@@ -569,7 +569,7 @@ class ApprovalDetailDialog extends StatelessWidget {
                     ),
                   ),
                   child: const Text(
-                    'Mengerti',
+                    'OK',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,

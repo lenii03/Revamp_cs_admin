@@ -6,6 +6,7 @@ import 'package:el_csadmin/injector.dart';
 import 'package:flutter/services.dart';
 import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
 import '../../../../../core/theme/src/app_colors.dart';
+import '../../../../../shared/widgets/app_notice_dialog.dart';
 
 class AddEditOnlineIdDialog extends StatefulWidget {
   final bool isEdit;
@@ -208,6 +209,60 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
         controller.text = '${picked.year}-$month-$day';
       });
     }
+  }
+
+  Future<void> _submit() async {
+    if (!(_formKey.currentState?.validate() ?? false)) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AppConfirmationDialog(
+        title: widget.isEdit ? 'Confirm Changes' : 'Confirm Submission',
+        message: widget.isEdit
+            ? 'Are you sure you want to save these changes?'
+            : 'Are the entered details correct and ready to submit?',
+        cancelLabel: 'Cancel',
+        confirmLabel: 'Confirm',
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+
+    var permissions = 0;
+    if (_viewOnly) permissions += 1;
+    if (_syariah) permissions += 2;
+    if (_delayed) permissions += 4;
+    if (_vip) permissions += 8;
+    if (_research) permissions += 16;
+    if (_announcement) permissions += 32;
+
+    final payload = <String, dynamic>{
+      'LoginId': _loginIdCtrl.text,
+      'Email': _emailCtrl.text.trim(),
+      'LoginType': _loginType,
+      'HandphoneNo': _handphoneCtrl.text.replaceAll(RegExp(r'[^0-9]'), ''),
+      'Permissions': permissions,
+      'LoginStatus': widget.isEdit ? (widget.initialData?['status'] ?? 1) : 1,
+      'SalesId': widget.initialData?['salesId']?.toString() ?? '',
+      'CreatedBy': locator<SessionService>().read(SessionKey.loginId),
+      'ActionType': widget.isEdit ? 2 : 1,
+      'ArrayAccountLink': _selectedAccountLinks
+          .map((account) => account.custId)
+          .toList(),
+      'ArrayAccountUnLink': _unlinkedAccountLinks
+          .map((account) => account.custId)
+          .toList(),
+    };
+
+    if (_birthDateCtrl.text.isNotEmpty) {
+      payload['BirthDate'] = _birthDateCtrl.text;
+    }
+    payload['AccountExpired'] = _neverExpired || _expiredDateCtrl.text.isEmpty
+        ? ''
+        : _expiredDateCtrl.text;
+
+    widget.onSave(payload);
+    Navigator.pop(context);
   }
 
   @override
@@ -507,59 +562,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
                     ),
                     const SizedBox(width: 12),
                     ElevatedButton(
-                      onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          int permissions = 0;
-                          if (_viewOnly) permissions += 1;
-                          if (_syariah) permissions += 2;
-                          if (_delayed) permissions += 4;
-                          if (_vip) permissions += 8;
-                          if (_research) permissions += 16;
-                          if (_announcement) permissions += 32;
-
-                          final Map<String, dynamic> payload = {
-                            "LoginId": _loginIdCtrl.text,
-                            "Email": _emailCtrl.text.trim(),
-                            "LoginType": _loginType,
-                            "HandphoneNo": _handphoneCtrl.text.replaceAll(
-                              RegExp(r'[^0-9]'),
-                              '',
-                            ),
-                            "Permissions": permissions,
-                            "LoginStatus": widget.isEdit
-                                ? (widget.initialData?['status'] ?? 1)
-                                : 1,
-                            "SalesId":
-                                widget.initialData?['salesId']?.toString() ??
-                                '',
-                            "CreatedBy": locator<SessionService>().read(
-                              SessionKey.loginId,
-                            ),
-                            "ActionType": widget.isEdit
-                                ? 2
-                                : 1, // 👈 2 = Edit, 1 = Add
-                            "ArrayAccountLink": _selectedAccountLinks
-                                .map((account) => account.custId)
-                                .toList(),
-                            "ArrayAccountUnLink": _unlinkedAccountLinks
-                                .map((account) => account.custId)
-                                .toList(),
-                          };
-
-                          if (_birthDateCtrl.text.isNotEmpty) {
-                            payload["BirthDate"] = _birthDateCtrl.text;
-                          }
-
-                          if (_neverExpired || _expiredDateCtrl.text.isEmpty) {
-                            payload["AccountExpired"] = "";
-                          } else {
-                            payload["AccountExpired"] = _expiredDateCtrl.text;
-                          }
-
-                          widget.onSave(payload);
-                          Navigator.pop(context);
-                        }
-                      },
+                      onPressed: _submit,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primaryColor,
                         shape: RoundedRectangleBorder(
@@ -722,7 +725,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Linked Account saat ini',
+                  'Currently Linked Accounts',
                   style: TextStyle(
                     color: textColor,
                     fontSize: 12,
@@ -768,7 +771,7 @@ class _AddEditOnlineIdDialogState extends State<AddEditOnlineIdDialog> {
               Align(
                 alignment: Alignment.centerLeft,
                 child: Text(
-                  'Akan dilepas (${_unlinkedAccountLinks.length})',
+                  'Accounts to Unlink (${_unlinkedAccountLinks.length})',
                   style: const TextStyle(
                     color: AppColors.destructiveRedDark,
                     fontSize: 12,

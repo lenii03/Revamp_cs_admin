@@ -1,27 +1,44 @@
 import 'package:flutter/material.dart';
 import 'package:window_manager/window_manager.dart';
+
 class AppWindowResizeFrame extends StatelessWidget {
-  const AppWindowResizeFrame({super.key, required this.child});
+  const AppWindowResizeFrame({
+    super.key,
+    required this.child,
+    this.showWindowFrame = true,
+  });
 
   final Widget child;
+  final bool showWindowFrame;
 
   static const double _resizeArea = 6;
+  static const double _cornerRadius = 10;
 
   @override
   Widget build(BuildContext context) {
     final borderColor = Theme.of(context).brightness == Brightness.dark
         ? const Color(0xFF233246)
         : const Color(0xFFD5DEE9);
+    final borderRadius = BorderRadius.circular(_cornerRadius);
+    final content = showWindowFrame
+        ? ClipRRect(borderRadius: borderRadius, child: child)
+        : child;
 
     return Stack(
       fit: StackFit.expand,
       children: [
-        child,
-        IgnorePointer(
-          child: DecoratedBox(
-            decoration: BoxDecoration(border: Border.all(color: borderColor)),
+        content,
+        if (showWindowFrame)
+          IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                borderRadius: borderRadius,
+                border: Border.all(
+                  color: borderColor,
+                ),
+              ),
+            ),
           ),
-        ),
         _ResizeArea(
           alignment: Alignment.topCenter,
           cursor: SystemMouseCursors.resizeUpDown,

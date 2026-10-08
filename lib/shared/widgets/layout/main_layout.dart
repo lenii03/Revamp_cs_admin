@@ -22,6 +22,7 @@ import '../../../features/cs/manage_cs/presentation/pages/manage_cs_page.dart';
 import 'app_sidebar.dart';
 import '../app_drag_to_move_area.dart';
 import '../app_window_controls.dart';
+import '../app_window_resize_frame.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -33,7 +34,6 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   String _selectedRoute = 'dashboard';
   bool _isSidebarOpen = true;
-  bool _isCompactSidebarOpen = false;
   bool _isLoggingOut = false;
   String _appVersion = '';
   String _serverUrl = '';
@@ -111,7 +111,8 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return AppWindowResizeFrame(
+      child: Scaffold(
         backgroundColor: Theme.of(context).scaffoldBackgroundColor,
         appBar: AppBar(
             backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -126,17 +127,6 @@ class _MainLayoutState extends State<MainLayout> {
             height: 1.0,
           ),
         ),
-            leading: MediaQuery.sizeOf(context).width < 800
-                ? IconButton(
-                    icon: Icon(
-                      Icons.menu,
-                      color: Theme.of(context).iconTheme.color,
-                    ),
-                    onPressed: () => setState(
-                      () => _isCompactSidebarOpen = !_isCompactSidebarOpen,
-                    ),
-                  )
-                : null,
             title: AppDragToMoveArea(
               child: SizedBox(
                 height: kToolbarHeight,
@@ -180,7 +170,7 @@ class _MainLayoutState extends State<MainLayout> {
                 DashboardNotificationCenter.instance.notifications,
             builder: (context, notifications, child) {
               return PopupMenuButton<void>(
-                tooltip: 'Approval notifications',
+                tooltip: 'Action notifications',
                 position: PopupMenuPosition.under,
                 color: Theme.of(context)
                     .extension<ThemeColors>()
@@ -275,81 +265,41 @@ class _MainLayoutState extends State<MainLayout> {
             ],
         ),
 
-        body: LayoutBuilder(
-        builder: (context, constraints) {
-          final compact = constraints.maxWidth < 800;
-          final page =
-              _pages[_selectedRoute] ??
-              const Center(
-                child: Text(
-                  'This page is under development',
-                  style: TextStyle(color: AppColors.secondaryTextColorDark),
-                ),
-              );
-
-          if (!compact) {
-            return Row(
-              children: [
-                // One source of truth drives both the sidebar width and its
-                // content width. This avoids the former 60-to-260 animation
-                // being out of sync with an already-expanded child menu.
-                TweenAnimationBuilder<double>(
-                  duration: const Duration(milliseconds: 180),
-                  curve: Curves.easeOutCubic,
-                  tween: Tween<double>(end: _isSidebarOpen ? 260 : 60),
-                  builder: (context, sidebarWidth, _) {
-                    final showLabels = sidebarWidth >= 190;
-                    return SizedBox(
-                      width: sidebarWidth,
-                      child: RepaintBoundary(
-                        child: _buildSidebar(
-                          isExpanded: showLabels,
-                          expandedWidth: sidebarWidth,
+        body: Row(
+          children: [
+            TweenAnimationBuilder<double>(
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOutCubic,
+              tween: Tween<double>(end: _isSidebarOpen ? 260 : 60),
+              builder: (context, sidebarWidth, _) {
+                final showLabels = sidebarWidth >= 190;
+                return SizedBox(
+                  width: sidebarWidth,
+                  child: RepaintBoundary(
+                    child: _buildSidebar(
+                      isExpanded: showLabels,
+                      expandedWidth: sidebarWidth,
+                    ),
+                  ),
+                );
+              },
+            ),
+            Expanded(
+              child: RepaintBoundary(
+                child: _pages[_selectedRoute] ??
+                    const Center(
+                      child: Text(
+                        'This page is under development',
+                        style: TextStyle(
+                          color: AppColors.secondaryTextColorDark,
                         ),
                       ),
-                    );
-                  },
-                ),
-                Expanded(child: RepaintBoundary(child: page)),
-              ],
-            );
-          }
-
-          final sidebarWidth = constraints.maxWidth.clamp(0, 260).toDouble();
-          return Stack(
-            children: [
-              Positioned.fill(child: page),
-              if (_isCompactSidebarOpen)
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: () =>
-                        setState(() => _isCompactSidebarOpen = false),
-                    child: Container(color: Colors.black38),
-                  ),
-                ),
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeInOut,
-                left: _isCompactSidebarOpen ? 0 : -sidebarWidth,
-                top: 0,
-                bottom: 0,
-                width: sidebarWidth,
-                child: Material(
-                  elevation: 12,
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                  child: _buildSidebar(
-                    closeAfterSelection: true,
-                    isExpanded: true,
-                    expandedWidth: sidebarWidth,
-                    onToggleRequested: () =>
-                        setState(() => _isCompactSidebarOpen = false),
-                  ),
-                ),
+                    ),
               ),
-            ],
-          );
-        },
+            ),
+          ],
         ),
+      ),
     );
   }
 
@@ -383,10 +333,8 @@ class _MainLayoutState extends State<MainLayout> {
   }
 
   Widget _buildSidebar({
-    bool closeAfterSelection = false,
     bool isExpanded = true,
     double expandedWidth = 260,
-    VoidCallback? onToggleRequested,
   }) {
     return Theme(
       data: Theme.of(context).copyWith(
@@ -401,17 +349,9 @@ class _MainLayoutState extends State<MainLayout> {
           expandedWidth: expandedWidth,
           selectedRoute: _selectedRoute,
           onExpandRequested: () => setState(() => _isSidebarOpen = true),
-          onToggleRequested:
-              onToggleRequested ??
-              () => setState(() => _isSidebarOpen = !_isSidebarOpen),
+          onToggleRequested: () => setState(() => _isSidebarOpen = !_isSidebarOpen),
           onItemSelected: (route) {
             _onMenuSelected(route);
-            if (closeAfterSelection && route != 'logout') {
-              setState(() {
-                _isSidebarOpen = false;
-                _isCompactSidebarOpen = false;
-              });
-            }
           },
         ),
       ),
@@ -445,7 +385,7 @@ class _NotificationHistoryPanel extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  'Approval History',
+                  'Action History',
                   style: TextStyle(
                     color: Theme.of(context).textTheme.bodyLarge?.color,
                     fontSize: 14,
@@ -477,7 +417,7 @@ class _NotificationHistoryPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'No approval notifications yet.',
+                    'No action notifications yet.',
                   style: TextStyle(color: secondaryColor, fontSize: 12),
                 ),
               ],
@@ -523,8 +463,6 @@ class _NotificationHistoryPanel extends StatelessWidget {
                           children: [
                             Text(
                               notification.message,
-                              maxLines: 3,
-                              overflow: TextOverflow.ellipsis,
                               style: TextStyle(
                                 color: Theme.of(context)
                                     .textTheme

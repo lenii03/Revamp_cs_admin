@@ -24,16 +24,6 @@ class NotificationRepositoryImpl implements NotificationRepository {
   }
 
   @override
-  Future<Either<String, String>> sendPush(Map<String, dynamic> payload) async {
-    try {
-      await _remoteDataSource.sendPush(payload);
-      return const Right('Push notification sent successfully');
-    } catch (e) {
-      return Left(e.toString());
-    }
-  }
-
-  @override
   Future<Either<String, String>> createScheduler(
     Map<String, dynamic> payload,
   ) async {

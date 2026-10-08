@@ -246,15 +246,11 @@ Future<void> setupLocator() async {
     () => GetSchedulersUseCase(locator<NotificationRepository>()),
   );
   locator.registerLazySingleton(
-    () => SendPushNotificationUseCase(locator<NotificationRepository>()),
-  );
-  locator.registerLazySingleton(
     () => CreateSchedulerUseCase(locator<NotificationRepository>()),
   );
   locator.registerFactory<NotificationBloc>(
     () => NotificationBloc(
       getSchedulers: locator<GetSchedulersUseCase>(),
-      sendPush: locator<SendPushNotificationUseCase>(),
       createScheduler: locator<CreateSchedulerUseCase>(),
     ),
   );

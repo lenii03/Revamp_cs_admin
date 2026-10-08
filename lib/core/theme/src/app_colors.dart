@@ -87,7 +87,7 @@ class AppColors {
   static const Color secondaryTextColorDark = Color(0xFF8BA3B5);
 
   static const Color separatorLight = Color(0xFFE2E8F0);
-  static const Color separatorDark = Color(0xFF1D2A3A); // Garis lebih halus
+  static const Color separatorDark = Color(0xFF1D2A3A);
 
   // ==========================================
   // 6. DESTRUCTIVE / ERROR
@@ -95,19 +95,14 @@ class AppColors {
   static const Color errorRed = Color(0xFFF6465D);
   static const Color destructiveRedLight = Color(0xFFEF4444);
   static const Color destructiveRedDark = Color(0xFFF87171);
-
-  // ==========================================
-  // --- KOMPATIBILITAS KODE LAMA ---
-  // (Variabel ini dicari oleh tema lama agar tidak merah)
-  // ==========================================
   static const Color white = Colors.white;
   static const Color black = Colors.black;
-  static const Color grey = Color(0xFF8BA3B5); // Alias untuk textGrey
+  static const Color grey = Color(0xFF8BA3B5);
   static const Color lightGrey = Color(0xFF8BA3B5);
   static const Color lighterGrey = Color(0xFFE2E8F0);
   static const Color darkerGrey = Color(0xFF475569);
   static const Color darkestGrey = Color(0xFF0F172A);
-  static const Color primary = Color(0xFF06B6D4); // Alias untuk primaryColor
+  static const Color primary = Color(0xFF06B6D4);
   static const Color foregroundLight = Color(0xFFFFFFFF);
   static const Color foregroundDark = Color(0xFF101924);
   static const Color backgroundLight = Color(0xFFF8FAFC);

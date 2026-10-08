@@ -47,9 +47,6 @@ abstract class ApiDatafeedRepository {
     int page = 1,
     int size = 10,
   });
-  Future<Either<String, String>> sendPushNotification(
-    Map<String, dynamic> payload,
-  );
   Future<Either<String, String>> createSchedulerNotification(
     Map<String, dynamic> payload,
   );

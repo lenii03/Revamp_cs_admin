@@ -51,6 +51,7 @@ class MainApp extends StatelessWidget {
             title: 'CS Admin',
             debugShowCheckedModeBanner: false,
             builder: (context, child) => AppWindowResizeFrame(
+              showWindowFrame: false,
               child: child ?? const SizedBox.shrink(),
             ),
             theme: lightTheme(),

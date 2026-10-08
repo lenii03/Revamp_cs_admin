@@ -58,7 +58,6 @@ abstract class ApiDatafeedNetworkDataSource {
     int page = 1,
     int size = 10,
   });
-  Future<void> sendPushNotification(Map<String, dynamic> payload);
   Future<void> createSchedulerNotification(Map<String, dynamic> payload);
   Future<String> postAddOnlineUser(Map<String, dynamic> payload);
   Future<List<AccountLinkModel>> fetchAccountLinks();
@@ -368,19 +367,6 @@ class ApiDatafeedNetworkDataSourceImpl implements ApiDatafeedNetworkDataSource {
       }
     } catch (e) {
       throw Exception('A network error occurred: ${e.toString()}');
-    }
-  }
-
-  @override
-  Future<void> sendPushNotification(Map<String, dynamic> payload) async {
-    final response = await _client.post(
-      Endpoint.pushNotification,
-      data: payload,
-    );
-    if (response.statusCode != 200 && response.statusCode != 201) {
-      throw Exception(
-        response.data['message'] ?? 'Failed to send push notification',
-      );
     }
   }
 
@@ -783,11 +769,6 @@ class ApiDatafeedNetworkDataSourceMockImpl
     int page = 1,
     int size = 10,
   }) {
-    throw UnimplementedError();
-  }
-
-  @override
-  Future<void> sendPushNotification(Map<String, dynamic> payload) {
     throw UnimplementedError();
   }
 

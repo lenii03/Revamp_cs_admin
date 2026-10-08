@@ -44,7 +44,7 @@ class AutoUpdateBloc extends Bloc<AutoUpdateEvent, AutoUpdateState> {
         return;
       }
 
-      emit(AutoUpdateLoading("Mengambil data hash dari API server..."));
+      emit(AutoUpdateLoading("Retrieving file hashes from the update server..."));
       final result = await repository.getListHashBinaryFile();
       String? serverError;
       result.fold(

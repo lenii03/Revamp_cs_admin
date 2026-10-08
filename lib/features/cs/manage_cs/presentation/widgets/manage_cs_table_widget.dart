@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:el_csadmin/core/notifications/dashboard_notification_center.dart';
 import 'package:el_csadmin/core/theme/theme.dart';
 import 'package:el_csadmin/data/local/session_service.dart';
 import 'package:el_csadmin/features/cs/manage_cs/presentation/bloc/manage_cs_event.dart';
@@ -14,6 +17,93 @@ import '../bloc/manage_cs_state.dart';
 
 class ManageCsTableWidget extends StatelessWidget {
   const ManageCsTableWidget({super.key});
+
+  void _showActionNotification(
+    BuildContext context, {
+    required String message,
+    required bool success,
+  }) {
+    DashboardNotificationCenter.instance.add(
+      message: message,
+      success: success,
+    );
+
+    final overlay = Overlay.of(context);
+    late final OverlayEntry notificationOverlay;
+    Timer? notificationTimer;
+
+    void hideNotification() {
+      notificationTimer?.cancel();
+      notificationOverlay.remove();
+    }
+
+    notificationOverlay = OverlayEntry(
+      builder: (overlayContext) => Positioned(
+        top: 92,
+        right: 220,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 270),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+            decoration: BoxDecoration(
+              color: success ? const Color(0xFF123C37) : const Color(0xFF4A2028),
+              borderRadius: BorderRadius.circular(9),
+              border: Border.all(
+                color: success
+                    ? const Color(0xFF2EBDAD)
+                    : const Color(0xFFFF647C),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.24),
+                  blurRadius: 16,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  success ? Icons.check_circle_outline : Icons.error_outline,
+                  size: 18,
+                  color: success
+                      ? const Color(0xFF5DE0D0)
+                      : const Color(0xFFFF8A9B),
+                ),
+                const SizedBox(width: 9),
+                Flexible(
+                  child: Text(
+                    message,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                InkWell(
+                  onTap: hideNotification,
+                  borderRadius: BorderRadius.circular(12),
+                  child: const Padding(
+                    padding: EdgeInsets.all(2),
+                    child: Icon(Icons.close, color: Colors.white70, size: 16),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(notificationOverlay);
+    notificationTimer = Timer(const Duration(seconds: 4), hideNotification);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -772,7 +862,29 @@ class ManageCsTableWidget extends StatelessWidget {
       builder: (dialogContext) {
         return BlocProvider.value(
           value: bloc,
-          child: Dialog(
+          child: BlocListener<ManageCsBloc, ManageCsState>(
+            listenWhen: (previous, current) =>
+                previous.status == ManageCsStatus.loading &&
+                current.status != ManageCsStatus.loading,
+            listener: (listenerContext, state) {
+              if (state.status == ManageCsStatus.success) {
+                Navigator.of(dialogContext).pop();
+                _showActionNotification(
+                  context,
+                  message: 'Password reset successfully for ${user.loginId}.',
+                  success: true,
+                );
+              } else if (state.status == ManageCsStatus.failure) {
+                _showActionNotification(
+                  context,
+                  message: state.errorMessage.isEmpty
+                      ? 'Unable to reset the password. Please try again.'
+                      : state.errorMessage,
+                  success: false,
+                );
+              }
+            },
+            child: Dialog(
             backgroundColor: AppColors.systemGroupedBackgroundDark,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -792,7 +904,7 @@ class ManageCsTableWidget extends StatelessWidget {
                         const Align(
                           alignment: Alignment.center,
                           child: Text(
-                            'Resset Password',
+                            'Reset Password',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 18,
@@ -910,8 +1022,9 @@ class ManageCsTableWidget extends StatelessWidget {
                           child: const Text('Close'),
                         ),
                         const SizedBox(width: 12),
-                        ElevatedButton(
-                          onPressed: () {
+                        BlocBuilder<ManageCsBloc, ManageCsState>(
+                          builder: (context, state) => ElevatedButton(
+                          onPressed: state.isLoading ? null : () {
                             if (formKey.currentState!.validate()) {
                               final modifiedBy = locator<SessionService>()
                                   .read(SessionKey.loginId);
@@ -931,7 +1044,6 @@ class ManageCsTableWidget extends StatelessWidget {
                                 'ModifiedBy': modifiedBy,
                               };
                               bloc.add(ResetPasswordCsUser(payload));
-                              Navigator.pop(dialogContext);
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -946,13 +1058,23 @@ class ManageCsTableWidget extends StatelessWidget {
                               vertical: 12,
                             ),
                           ),
-                          child: const Text(
-                            'Save',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
+                          child: state.isLoading
+                              ? const SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: Colors.white,
+                                  ),
+                                )
+                              : const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                        ),
                         ),
                       ],
                     ),
@@ -960,6 +1082,7 @@ class ManageCsTableWidget extends StatelessWidget {
                 ),
               ),
             ),
+          ),
           ),
         );
       },

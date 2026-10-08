@@ -9,13 +9,6 @@ class GetSchedulersUseCase {
       _repository.fetchSchedulers();
 }
 
-class SendPushNotificationUseCase {
-  const SendPushNotificationUseCase(this._repository);
-  final NotificationRepository _repository;
-  Future<Either<String, String>> call(Map<String, dynamic> payload) =>
-      _repository.sendPush(payload);
-}
-
 class CreateSchedulerUseCase {
   const CreateSchedulerUseCase(this._repository);
   final NotificationRepository _repository;

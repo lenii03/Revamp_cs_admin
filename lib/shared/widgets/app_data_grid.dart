@@ -83,15 +83,10 @@ class AppDataGrid extends StatelessWidget {
             enableRowHoverColor: true,
             rowHoveredColor: AppColors.primaryColor.withValues(alpha: 0.08),
             activatedColor:
-                selectingMode.isRow
-                    // An opaque selection colour stays consistent across frozen
-                    // and scrollable sections of the same row.
-                    ? const Color(0xFF123F4A)
-                    : themePluto?.activatedColor ??
-                          AppColors.primaryDark.withValues(alpha: 0.2),
-            activatedBorderColor: selectingMode.isRow
-                ? Colors.transparent
-                : const Color(0xFF06B6D4),
+                themePluto?.activatedColor ??
+                AppColors.primaryDark.withValues(alpha: 0.2),
+            activatedBorderColor:
+                themePluto?.activatedBorderColor ?? Colors.transparent,
             menuBackgroundColor:
                 themePluto?.menuBackgroundColor ??
                 AppColors.systemBackgroundDark,

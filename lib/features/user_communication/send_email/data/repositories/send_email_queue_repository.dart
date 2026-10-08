@@ -105,6 +105,15 @@ class SendEmailQueueRepository {
     });
   }
 
+  Future<void> clearPending() {
+    return _runExclusive(() async {
+      load();
+      _items.removeWhere((item) => item.status == 1);
+      await _removePendingFromLegacyQueues();
+      await _persist();
+    });
+  }
+
   Future<void> _persist() {
     return _sessionService.writeDB(SessionKey.listPwdNPIN, {
       'ListEmailForgotPINAndPassword': _items
@@ -282,6 +291,59 @@ class SendEmailQueueRepository {
       } catch (error) {
         throw FileSystemException(
           'Failed to synchronize the queue with the legacy CS Admin: $error',
+          file.path,
+        );
+      }
+    }
+  }
+
+  Future<void> _removePendingFromLegacyQueues() async {
+    final userProfile = Platform.environment['USERPROFILE'];
+    if (userProfile == null || userProfile.isEmpty) return;
+
+    for (final storageName in const ['Debug_CS_ADMIN', 'CS_ADMIN']) {
+      final file = File('$userProfile\\Documents\\$storageName.gs');
+      if (!file.existsSync()) continue;
+
+      try {
+        final rawStorage =
+            jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+        final encrypter = _legacyEncrypter(storageName);
+        final iv = IV.fromUtf8('1234567890123456');
+
+        String decrypt(String value) =>
+            encrypter.decrypt(Encrypted.fromBase64(value), iv: iv);
+        String encrypt(String value) => encrypter.encrypt(value, iv: iv).base64;
+
+        String? encryptedQueueKey;
+        for (final encryptedKey in rawStorage.keys) {
+          if (decrypt(encryptedKey) == SessionKey.listPwdNPIN) {
+            encryptedQueueKey = encryptedKey;
+            break;
+          }
+        }
+        if (encryptedQueueKey == null) continue;
+
+        final decoded = jsonDecode(
+          decrypt(rawStorage[encryptedQueueKey].toString()),
+        );
+        if (decoded is! Map) continue;
+
+        final existingQueue = decoded['ListEmailForgotPINAndPassword'];
+        if (existingQueue is! List) continue;
+
+        final retainedQueue = existingQueue.where((value) {
+          if (value is! Map) return true;
+          return int.tryParse(value['status']?.toString() ?? '') != 1;
+        }).toList();
+
+        rawStorage[encryptedQueueKey] = encrypt(
+          jsonEncode({'ListEmailForgotPINAndPassword': retainedQueue}),
+        );
+        await file.writeAsString(jsonEncode(rawStorage), flush: true);
+      } catch (error) {
+        throw FileSystemException(
+          'Failed to clear pending legacy requests: $error',
           file.path,
         );
       }

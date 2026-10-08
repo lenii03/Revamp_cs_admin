@@ -17,6 +17,9 @@ class ApprovalScreenBloc
   int currentPage = 1;
   int currentSize = 30;
   bool lastActionSucceeded = false;
+  bool lastActionRefreshFailed = false;
+  String? lastActionError;
+  List<ApprovalScreenModel> _lastLoadedApprovals = const [];
 
   void applyFilters({String? search, int? actionType, int? status}) {
     currentSearch = search?.trim();
@@ -45,8 +48,13 @@ class ApprovalScreenBloc
     });
   }
 
-  Future<void> _onFetchApprovals(Emitter<ApprovalScreenState> emit) async {
-    emit(const ApprovalScreenState.loading());
+  Future<void> _onFetchApprovals(
+    Emitter<ApprovalScreenState> emit, {
+    bool preserveDataOnError = false,
+  }) async {
+    if (!preserveDataOnError) {
+      emit(const ApprovalScreenState.loading());
+    }
 
     final result = await _getApprovals(
       search: currentSearch,
@@ -57,8 +65,18 @@ class ApprovalScreenBloc
     );
 
     result.fold(
-      (error) => emit(ApprovalScreenState.error(error)),
-      (data) => emit(ApprovalScreenState.loaded(data)),
+      (error) {
+        if (preserveDataOnError && _lastLoadedApprovals.isNotEmpty) {
+          lastActionRefreshFailed = true;
+          emit(ApprovalScreenState.loaded(_lastLoadedApprovals));
+          return;
+        }
+        emit(ApprovalScreenState.error(error));
+      },
+      (data) {
+        _lastLoadedApprovals = List.unmodifiable(data);
+        emit(ApprovalScreenState.loaded(data));
+      },
     );
   }
 
@@ -97,23 +115,22 @@ class ApprovalScreenBloc
     required Emitter<ApprovalScreenState> emit,
   }) async {
     lastActionSucceeded = false;
-    emit(const ApprovalScreenState.loading());
+    lastActionRefreshFailed = false;
+    lastActionError = null;
     final approvalId = int.tryParse(data.approvalId);
     if (approvalId == null) {
-      emit(
-        ApprovalScreenState.error(
-          'Failed to $actionName: invalid ApprovalId (${data.approvalId})',
-        ),
+      _emitActionFailure(
+        emit,
+        'Failed to $actionName: invalid ApprovalId (${data.approvalId})',
       );
       return;
     }
 
     final approvedBy = _sessionService.read(SessionKey.loginId);
     if (approvedBy.isEmpty) {
-      emit(
-        ApprovalScreenState.error(
-          'Failed to $actionName: the active CS Login ID was not found. Please log in again.',
-        ),
+      _emitActionFailure(
+        emit,
+        'Failed to $actionName: the active CS Login ID was not found. Please log in again.',
       );
       return;
     }
@@ -136,12 +153,28 @@ class ApprovalScreenBloc
 
     await result.fold(
       (error) async {
-        emit(ApprovalScreenState.error('Failed to $actionName: $error'));
+        _emitActionFailure(emit, 'Failed to $actionName: $error');
       },
       (_) async {
         lastActionSucceeded = true;
-        await _onFetchApprovals(emit);
+        await _onFetchApprovals(emit, preserveDataOnError: true);
       },
     );
+  }
+
+  void _emitActionFailure(
+    Emitter<ApprovalScreenState> emit,
+    String message,
+  ) {
+    lastActionError = message;
+    if (_lastLoadedApprovals.isNotEmpty) {
+      // Force an observable state transition. Emitting the same loaded list
+      // directly is ignored by Bloc, which would suppress the action error
+      // notification while the UI correctly keeps the existing list visible.
+      emit(const ApprovalScreenState.loading());
+      emit(ApprovalScreenState.loaded(_lastLoadedApprovals));
+      return;
+    }
+    emit(ApprovalScreenState.error(message));
   }
 }

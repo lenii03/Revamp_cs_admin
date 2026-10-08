@@ -34,6 +34,9 @@ class SendEmailForgotPage extends StatelessWidget {
           }
         },
         builder: (context, state) {
+          final pendingCount = state.dataList
+              .where((item) => item.status == 1)
+              .length;
           return Padding(
             padding: const EdgeInsets.all(32.0),
             child: Column(
@@ -50,6 +53,25 @@ class SendEmailForgotPage extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
+                    if (pendingCount > 0) ...[
+                      OutlinedButton.icon(
+                        onPressed: state.status == SendEmailForgotStatus.loading
+                            ? null
+                            : () => _confirmClearPending(
+                                context,
+                                pendingCount,
+                              ),
+                        icon: const Icon(Icons.delete_sweep_outlined, size: 18),
+                        label: Text('Clear Pending ($pendingCount)'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.destructiveRedDark,
+                          side: const BorderSide(
+                            color: AppColors.destructiveRedDark,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
                     IconButton(
                       tooltip: 'Refresh',
                       onPressed: () => context.read<SendEmailForgotBloc>().add(
@@ -95,5 +117,38 @@ class SendEmailForgotPage extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Future<void> _confirmClearPending(
+    BuildContext context,
+    int pendingCount,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Clear Pending Requests?'),
+        content: Text(
+          'This will permanently remove $pendingCount pending request${pendingCount == 1 ? '' : 's'} from local CS Admin history. It will not affect the server.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.destructiveRedDark,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Clear Pending'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true && context.mounted) {
+      context.read<SendEmailForgotBloc>().add(const ClearPendingRequests());
+    }
   }
 }

@@ -67,6 +67,7 @@ class _DashboardPendingApprovalWidgetState
     required ApprovalScreenModel item,
     required bool approve,
   }) {
+    if (_pendingAction != null) return;
     _pendingAction = approve ? 'approved' : 'rejected';
     _pendingLoginId = item.loginId;
     context.read<ApprovalScreenBloc>().add(
@@ -129,8 +130,7 @@ class _DashboardPendingApprovalWidgetState
                 Flexible(
                   child: Text(
                     message,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 4,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 12,
@@ -234,15 +234,25 @@ class _DashboardPendingApprovalWidgetState
                   loaded: (_) {
                     final action = _pendingAction!;
                     final loginId = _pendingLoginId ?? 'User';
+                    final approvalBloc = context.read<ApprovalScreenBloc>();
+                    final actionWasSaved = approvalBloc.lastActionSucceeded;
+                    final actionError = approvalBloc.lastActionError;
+                    final refreshFailed = approvalBloc.lastActionRefreshFailed;
                     _pendingAction = null;
                     _pendingLoginId = null;
                     _showActionNotification(
-                      message: '$loginId was successfully $action.',
-                      success: true,
+                      message: actionWasSaved
+                          ? refreshFailed
+                              ? '$loginId was successfully $action, but the approval list could not be refreshed.'
+                              : '$loginId was successfully $action.'
+                          : 'The approval could not be $action. ${actionError ?? 'Please try again.'}',
+                      success: actionWasSaved,
                     );
-                    context.read<DashboardBloc>().add(
-                      FetchDashboardMetricsEvent(),
-                    );
+                    if (actionWasSaved) {
+                      context.read<DashboardBloc>().add(
+                        FetchDashboardMetricsEvent(),
+                      );
+                    }
                   },
                   error: (message) {
                     final action = _pendingAction!;

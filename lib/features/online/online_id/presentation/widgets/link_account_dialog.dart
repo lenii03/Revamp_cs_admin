@@ -378,7 +378,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                         ),
                         const SizedBox(height: 14),
                         _section(
-                          title: 'Linked Account saat ini',
+                          title: 'Currently Linked Accounts',
                           accounts: _activeExisting.toList(),
                           emptyText: 'No linked accounts yet',
                           border: border,
@@ -412,7 +412,7 @@ class _LinkAccountDialogState extends State<LinkAccountDialog> {
                           ),
                         if (_toUnlink.isNotEmpty)
                           _section(
-                            title: 'Akan dilepas (${_toUnlink.length})',
+                            title: 'Accounts to Unlink (${_toUnlink.length})',
                             accounts: _toUnlink,
                             emptyText: '',
                             border: border,

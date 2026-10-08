@@ -19,7 +19,7 @@ class AutoUpdateDialog extends StatelessWidget {
           progressValue = state.progress;
           statusText = "Downloading update...";
           detailText =
-              "File ${state.currentFileIndex} dari ${state.totalFiles} (${(progressValue * 100).toStringAsFixed(1)}%)";
+              "File ${state.currentFileIndex} of ${state.totalFiles} (${(progressValue * 100).toStringAsFixed(1)}%)";
         } else if (state is AutoUpdateSuccess) {
           progressValue = 1.0;
           statusText = "Update Complete!";
